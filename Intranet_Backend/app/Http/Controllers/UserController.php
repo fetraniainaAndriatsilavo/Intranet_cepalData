@@ -110,7 +110,7 @@ class UserController extends Controller
     public function GetInfoUser($id)
     {
         try {
-            $user = User::with('position', 'classification', 'client', 'manager')->findOrFail($id);
+            $user = User::with('position', 'classification', 'client', 'manager', 'documents')->findOrFail($id);
 
             return response()->json([
                 'user' => [
@@ -122,7 +122,21 @@ class UserController extends Controller
                     'client_code' => $user->client ? $user->client->name : null,
                     'department' => $user->department ? $user->department->name : null,
                     'manager' => $user->manager ? $user->manager->first_name : null,
+                    'documents' => $user->documents->map(
+                        function ($doc) {
+                            return [
+                                'id' => $doc->id,
+                                'file_name' => $doc->file_name,
+                                'file_path' => $doc->file_path,
+                                'status' => $doc->status,
+                                'description' => $doc->description,
+                                'uploaded_at' => $doc->uploaded_at,
+                                'doc_type' => optional($doc->type)->name,
+                            ];
+                        }
+                    ),
                 ],
+
             ], 200);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([

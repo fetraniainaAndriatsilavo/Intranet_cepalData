@@ -12,11 +12,10 @@ class LeaveRequest extends Model
 
     protected $connection = 'intranet_extedim';
 
-    protected $table = "leave_requests";
+    protected $table = "ogc_leave_requests";
 
     protected $fillable = [
         'user_id',
-        'request_type',
         'reason',
         'start_date',
         'end_date',
@@ -24,16 +23,21 @@ class LeaveRequest extends Model
         'end_half_day',
         'number_day',
         'status',
+        'approved_at',
+        'approved_by',
+        'approved_comment',
+        'is_inserted_to_ogcumul',
+        'reason',
+        'leave_type_id',
+        'support_file_path',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
-    } 
-
-    public function userDetails()
+    }
+    public function leaveType()
     {
-        return $this->hasOneThrough(UserDetails::class, User::class, 'id', 'user_id');
-    } 
-    
+        return $this->belongsTo(LeaveType::class, 'leave_type_id');
+    }
 }

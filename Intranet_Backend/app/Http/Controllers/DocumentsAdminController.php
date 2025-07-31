@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\DocType;
 use App\Models\DocumentAdmin;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -11,22 +12,32 @@ use Illuminate\Support\Facades\Storage;
 
 class DocumentsAdminController extends Controller
 {
+
+    public function doc_type()
+    {
+        $doc_type = DocType::all();
+        return response()->json($doc_type);
+    }
+
     public function upload(Request $request)
     {
         try {
             $validated = $request->validate([
                 'user_id' => 'nullable|integer',
-                'nom_document' => 'required|string',
-                'type_document' => 'required|string',
+                'file_name' => 'required|string',
+                'doct_type_id' => 'required|string',
                 'uploaded_by' => 'nullable|integer',
-                'fichier_url' => 'required|file|mimes:pdf,jpg,png,docx,doc',
+                'description' => 'nullable|string',
+                'status' => 'required',
+                'period' => 'nullable|integer',
+                'file_path' => 'required|file|mimes:pdf,jpg,png,docx,doc',
             ]);
 
             $fileUrl = null;
 
 
-            if ($request->hasFile('fichier_url')) {
-                $file = $request->file('fichier_url');
+            if ($request->hasFile('file_path')) {
+                $file = $request->file('file_path');
 
                 $filename = uniqid() . '_' . $file->getClientOriginalName();
                 $directory = 'images/document';
@@ -44,17 +55,20 @@ class DocumentsAdminController extends Controller
 
                 DB::table('intranet_extedim.documents_admin')->insert([
                     'user_id' => $validated['user_id'],
-                    'nom_document' => $validated['nom_document'],
-                    'type_document' => $validated['type_document'],
-                    'fichier_url' => $fileUrl,
+                    'file_name' => $validated['file_name'],
+                    'doct_type_id' => $validated['doct_type_id'],
+                    'period' => $validated['period'],
+                    'status' => $validated['status'],
+                    'file_path' => $fileUrl,
                     'uploaded_by' => $validated['uploaded_by'],
-                    'created_at' => now(),
+                    'uploaded_at' => now(),
+                    'is_public' => true
                 ]);
 
                 return response()->json([
                     'success' => true,
                     'message' => 'Document enregistré avec succès.',
-                    'fichier_url' => $fileUrl,
+                    'file_path' => $fileUrl,
                 ], 201);
             } else {
                 return response()->json([

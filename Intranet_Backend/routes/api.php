@@ -115,8 +115,8 @@ Route::get('reset-password/{token}', function ($token) {
     return response()->json(['token' => $token]);
 })->name('password.reset');
 
-
-Route::post('documents-admin/upload', [DocumentsAdminController::class, 'upload']);
+Route::get('/documents/type', [DocumentsAdminController::class, 'doc_type']);
+Route::post('/documents-admin/upload', [DocumentsAdminController::class, 'upload']);
 Route::get('/documents/user/{userId}', [DocumentsAdminController::class, 'getUserDocuments']);
 
 Route::get('/messages/{user1}/{user2}', [MessageController::class, 'getConversation']);

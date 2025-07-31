@@ -142,4 +142,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Position::class);
     }
+
+    public function documents()
+    {
+        return $this->hasMany(DocumentAdmin::class, 'user_id');
+    }
 }
