@@ -235,7 +235,7 @@ export default function Permissions({ radioValue }) {
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             className="block p-2.5 w-2/3 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 mt-3"
-            placeholder="Ecrivez votre reason ici..."
+            placeholder="Ajoutez un commentaire pour appuyer votre demande..."
           ></textarea>
         </div>
 

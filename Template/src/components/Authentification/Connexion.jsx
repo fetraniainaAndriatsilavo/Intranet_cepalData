@@ -20,6 +20,7 @@ export default function Connexion() {
         e.preventDefault();
         setLoading(true);
         setError('');
+        setSuccess('');
 
         if (email === '' || password === '') {
             setError('Veuillez remplir les champs');
@@ -32,28 +33,24 @@ export default function Connexion() {
                 email,
                 password,
             });
+            
+            localStorage.setItem('user', JSON.stringify(response.data.user));
+            setUser(response.data.user);
+            setSuccess('Connexion réussie');
 
-            if (localStorage.length > 0) { 
-                setError('Veuillez retaper vos informations')
-                localStorage.clear()
-            } else {
-                localStorage.setItem('user', response.data)
-                setUser(response.data)
-            }
+            setTimeout(() => {
+                window.location.href = '/accueil';
+            }, 250);
 
-            if (localStorage.length == 1) {
-                setSuccess('Connexion réussie');
-                setTimeout(() => {
-                    window.location.href = '/accueil';
-                }, 250);
-            }
+            setEmail('');
+            setPassword('');
         } catch (err) {
             if (err.response && err.response.status === 401) {
                 setError('Email ou mot de passe incorrect');
             } else if (err.response && err.response.status === 422) {
                 setError(err.response.data.message);
             } else {
-                setError('Une erreur est survenue');
+                setError('Une erreur est survenue. Veuillez réessayer.');
             }
         } finally {
             setLoading(false);

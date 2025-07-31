@@ -27,6 +27,10 @@ class ReferenceDataController extends Controller
                 ->pluck('categ_name')
                 ->toArray();
 
+            $positions = DB::table('intranet_extedim.positions')
+                ->pluck('name', 'id')
+                ->toArray();
+
             $managers = DB::table('intranet_extedim.users')
                 ->where('role', 'manager')
                 ->select('id', 'first_name')
@@ -37,6 +41,7 @@ class ReferenceDataController extends Controller
                 'clients' => $clients,
                 'contract_types' => $contractTypes,
                 'departments' => $departments,
+                'positions' => $positions,
                 'classifications' => $classifications,
                 'managers' => $managers,
             ], 200);

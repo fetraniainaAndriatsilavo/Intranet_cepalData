@@ -20,9 +20,15 @@ export default function Conges() {
             valeur: "other",
         },
     ]
-    return <div className="bg-white rounded-lg shadow-md overflow-hidden max-w-6xl mx-auto p-3"> 
-    <h1 className="p-5 font-semibold lg:text-3xl w-full bg-gray-50 text-sky-500"> Demande de Congés </h1>
-        <Type lists={menus} setRadioValue={setRadioValue} />
-        <Permissions radioValue={radioValue} />
+    return <div className="sm:flex flex-col gap-5 sm:justify-between sm:items-center mb-8">
+        <div className="mb-4 sm:mb-0">
+            <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"> Demande de Congés </h1>
+        </div>
+        <div className="bg-white  w-full rounded-lg">
+            {/* <h3 className="p-3 "> Tous les Collaborateurs </h3> */}
+            <Type lists={menus} setRadioValue={setRadioValue} />
+            <Permissions radioValue={radioValue} />
+        </div>
+
     </div>
 }

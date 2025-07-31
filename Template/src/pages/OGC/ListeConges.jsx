@@ -1,8 +1,11 @@
+import { Pagination } from "@mui/material";
 import Table from "../../components/Conges/Table";
+import { useState } from "react";
 
 export default function ListeConges() {
+
     const listMenu = [
-        "Identifiant de l'utilisateur",
+        "Identifiant",
         "Solde de congés",
         "Motif de la demande",
         "Date de début",
@@ -12,49 +15,69 @@ export default function ListeConges() {
         "Statut de la demande"
     ];
 
-    return <div className="bg-white rounded-lg shadow-md overflow-hidden max-w-6xl mx-auto p-3">
-        <h1 className="p-5 font-semibold lg:text-3xl w-full bg-gray-50 text-sky-500 mb-3"> Historiques des Congés </h1>
-        <Table listHeader={listMenu} datas={[
-            {
-                user: {
-                    name: 'Hery Niaina'
-                },
-                reason: 'Vacances',
-                start_date: '07/28/2025',
-                end_date: '08/31/2025',
-                request_type: 'leave',
-                created_at: '25/07/2025'
+    const list = [
+        {
+            user: {
+                name: 'Hery Niaina'
             },
-            {
-                user: {
-                    name: 'Niaina'
-                },
-                reason: 'Vacances',
-                start_date: '07/28/2025',
-                end_date: '08/11/2025',
-                request_type: 'leave',
-                created_at: '25/07/2025'
+            reason: 'Vacances',
+            start_date: '07/28/2025',
+            end_date: '08/31/2025',
+            request_type: 'leave',
+            created_at: '25/07/2025'
+        },
+        {
+            user: {
+                name: 'Niaina'
             },
-            {
-                user: {
-                    name: 'Hery '
-                },
-                reason: 'Vacances',
-                start_date: '07/28/2025',
-                end_date: '08/01/2025',
-                request_type: 'leave',
-                created_at: '25/07/2025'
+            reason: 'Vacances',
+            start_date: '07/28/2025',
+            end_date: '08/11/2025',
+            request_type: 'leave',
+            created_at: '25/07/2025'
+        },
+        {
+            user: {
+                name: 'Hery '
             },
-            {
-                user: {
-                    name: 'Hery '
-                },
-                reason: 'Vacances',
-                start_date: '07/28/2025',
-                end_date: '08/04/2025',
-                request_type: 'leave',
-                created_at: '25/07/2025'
-            }
-        ]} />
+            reason: 'Vacances',
+            start_date: '07/28/2025',
+            end_date: '08/01/2025',
+            request_type: 'leave',
+            created_at: '25/07/2025'
+        },
+        {
+            user: {
+                name: 'Hery '
+            },
+            reason: 'Vacances',
+            start_date: '07/28/2025',
+            end_date: '08/04/2025',
+            request_type: 'leave',
+            created_at: '25/07/2025'
+        }
+    ]
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const userPerPage = 10;
+    const lastPageIndex = Math.ceil(list.length / userPerPage);
+    const [currentView, setCurrentView] = useState([])
+
+    const handleChange = (event, value) => {
+        setCurrentPage(value);
+        setCurrentView(list.slice((value * userPerPage) - 10, value * userPerPage))
+    };
+
+    return <div className="sm:flex flex-col gap-5 sm:justify-between sm:items-center mb-8">
+        <div className="mb-4 sm:mb-0">
+            <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"> Historiques des Congés </h1>
+        </div>
+        <div className="bg-white  w-full rounded-lg">
+            <h3 className="p-3 "> Tous les demandes <span className=" font-semibold text-gray-300"> {list.length} </span> </h3>
+            <Table listHeader={listMenu} datas={currentView.length < 1 ? list.slice(0, 10) : currentView} />
+        </div>
+        <div>
+            <Pagination count={lastPageIndex} page={currentPage} onChange={handleChange} />
+        </div>
     </div>
 }

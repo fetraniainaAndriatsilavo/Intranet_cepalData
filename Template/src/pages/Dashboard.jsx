@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import Sidebar from '../partials/Sidebar';
 import Header from '../partials/Header';
-import { useLocation } from 'react-router-dom';
+import { matchPath, useLocation } from 'react-router-dom';
 import TermsOfUse from './Parametres/TermOfUse';
 import Reinitialisation from './Parametres/Reinitialisation';
 import FilterButton from '../components/DropdownFilter';
@@ -117,8 +117,9 @@ function Dashboard() {
             {pathname == '/ajout-utilisateur' && <Collaborateur />}
             {pathname == '/liste-utilisateur' && <ListesUtilisateurs />}
             {pathname == '/mesinformations' && <Informations />}
-            {pathname == '/modif-utilisateur/:id' && <ModifCollaborateurs />}
-            {pathname == '/documents-utilisateurs' && <UploadDocument /> }
+            {/* {pathname == '/modif-utilisateur/:id' && <ModifCollaborateurs />} */}
+            {matchPath('/modif-utilisateur/:id', pathname) && <ModifCollaborateurs />}
+            {pathname == '/documents-utilisateurs' && <UploadDocument />}
           </div>
         </main>
       </div>

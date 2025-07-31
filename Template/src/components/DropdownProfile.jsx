@@ -2,13 +2,18 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Transition from '../utils/Transition';
 
-import UserAvatar from '../images/user-avatar-32.png';
+import { useContext } from 'react';
+import { AppContext } from '../context/AppContext';
+import { Avatar } from '@mui/material';
+import api from './axios';
 
 function DropdownProfile({
   align
 }) {
-
+  const { user } = useContext(AppContext)
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [error, setError] = useState('')
+
 
   const trigger = useRef(null);
   const dropdown = useRef(null);
@@ -34,6 +39,23 @@ function DropdownProfile({
     return () => document.removeEventListener('keydown', keyHandler);
   });
 
+
+  function splitName(firstname, lastname) {
+    return firstname.charAt(0).toUpperCase() + "" + lastname.charAt(0).toUpperCase()
+  }
+
+  const Deconnecter = async () => {
+    try {
+      await api.post('/logout');
+      localStorage.clear();
+      window.location.href = '/';
+    } catch (error) {
+      const message = error?.response?.data?.message || 'Erreur lors de la déconnexion';
+      console.error(message);
+      setError(message);
+    }
+  };
+
   return (
     <div className="relative inline-flex">
       <button
@@ -43,9 +65,9 @@ function DropdownProfile({
         onClick={() => setDropdownOpen(!dropdownOpen)}
         aria-expanded={dropdownOpen}
       >
-        <img className="w-8 h-8 rounded-full" src={UserAvatar} width="32" height="32" alt="User" />
+        <Avatar> {user ? splitName(user.first_name, user.last_name) : splitName('Utilisateur', '1')} </Avatar>
         <div className="flex items-center truncate">
-          <span className="truncate ml-2 text-sm font-medium text-gray-600 dark:text-gray-100 group-hover:text-gray-800 dark:group-hover:text-white"> Utilisateur </span>
+          <span className="truncate ml-2 text-sm font-medium text-gray-600 dark:text-gray-100 group-hover:text-gray-800 dark:group-hover:text-white"> {user ? user.last_name + " " + user.first_name : 'Utilisateur'} </span>
           <svg className="w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500" viewBox="0 0 12 12">
             <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
           </svg>
@@ -68,29 +90,35 @@ function DropdownProfile({
           onBlur={() => setDropdownOpen(false)}
         >
           <div className="pt-0.5 pb-2 px-3 mb-1 border-b border-gray-200 dark:border-gray-700/60">
-            <div className="font-medium text-gray-800 dark:text-gray-100"> Utilisateur </div>
+            <div className="font-medium text-gray-800 dark:text-gray-100"> {user ? user.first_name : 'Utilisateur'} </div>
             <div className="text-xs text-gray-500 dark:text-gray-400 italic">Administrator</div>
           </div>
-          <ul>
-            <li>
-              <Link
-                className="font-medium text-sm text-sky-500 hover:text-sky-600 dark:hover:text-sky-600 flex items-center py-1 px-3"
-                to="/settings"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-              >
-               Paramètres 
-              </Link>
-            </li>
-            <li>
-              <Link
-                className="font-medium text-sm text-sky-500 hover:text-sky-600 dark:hover:text-sky-600 flex items-center py-1 px-3"
-                to="/signin"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-              >
-                Se Déconnecter 
-              </Link>
-            </li>
-          </ul>
+          {
+            user && <ul>
+              <li>
+                <Link
+                  className="font-medium text-sm text-sky-500 hover:text-sky-600 dark:hover:text-sky-600 flex items-center py-1 px-3"
+                  to="/reinit"
+                  onClick={() => setDropdownOpen(!dropdownOpen)}
+                >
+                  Paramètres
+                </Link>
+              </li>
+              <li>
+                <Link
+                  className="font-medium text-sm text-sky-500 hover:text-sky-600 dark:hover:text-sky-600 flex items-center py-1 px-3"
+                  // to="/"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    setDropdownOpen(!dropdownOpen)
+                    Deconnecter()
+                  }}
+                >
+                  Se Déconnecter
+                </Link>
+              </li>
+            </ul>
+          }
         </div>
       </Transition>
     </div>

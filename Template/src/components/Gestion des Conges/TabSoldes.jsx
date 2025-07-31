@@ -1,6 +1,6 @@
 export default function TabSoldes({ data }) {
     return <tr
-        className={`bg-white hover:bg-gray-50 even:bg-gray-50 odd:bg-white `}
+        className={`bg-white hover:bg-gray-50  odd:bg-white `}
     >
         <td className="px-6 py-4 font-medium whitespace-nowrap font-semibold">
             {data.username || '—'}

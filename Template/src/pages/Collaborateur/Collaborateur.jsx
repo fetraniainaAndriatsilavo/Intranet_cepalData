@@ -1,29 +1,31 @@
-import { Autocomplete, Avatar, TextField } from "@mui/material";
-import { useState } from "react";
+import { Alert, Autocomplete, Avatar, TextField } from "@mui/material";
+import api from "../../components/axios";
+import { useEffect, useState } from "react";
 
 export default function Collaborateur() {
     const [profilePhoto, setProfilePhoto] = useState(null);
 
     const [form, setForm] = useState({
-        image: profilePhoto ? profilePhoto: '',
-        nom: "",
-        prenom: "",
+        image: profilePhoto ? profilePhoto : '',
+        first_name: "",
+        last_name: "",
         email: "",
-        phone: "",
-        adresse: "",
-        lieuNaissance: '',
-        dateNaissance: ' ',
-        situation: '',
-        genre: '',
+        phone_number: "",
+        address: "",
+        birth_place: '',
+        birth_date: ' ',
+        marital_status: '',
+        gender: '',
         role: '',
-        client: '',
+        client_code: '',
         type: '',
-        embaucheDate: '',
-        matriculeId: '',
-        CnapsNumber: '',
-        departement: '',
-        poste: '',
-        classification: ''
+        hire_date: '',
+        employee_number: '',
+        cnaps_number: '',
+        departement_id: '',
+        position_id: '',
+        class_id: '',
+        manager_id: ''
     });
 
     const [errorFields, setErrorFields] = useState([]);
@@ -33,17 +35,103 @@ export default function Collaborateur() {
         if (file) setProfilePhoto(URL.createObjectURL(file));
     };
 
+    // retourne les data comme  clients/contract_type/departments/classification/managers 
+    const [clients, setClients] = useState([])
+    const [contract, setContract] = useState([])
+    const [department, setDepartment] = useState([])
+    const [positions, setPositions] = useState([])
+    const [classification, setClassification] = useState([])
+    const [managers, setManagers] = useState([])
 
-    const Enregistrer = () => {
-        const requiredFields = ["nom", "prenom", "email", "role", "genre", "situation", "poste"];
+    useEffect(() => {
+        api.get("/data")
+            .then((response) => {
+                setClients(response.data.clients)
+                setContract(response.data.contract_types)
+                setPositions(response.data.positions)
+                setDepartment(response.data.departments)
+                setClassification(response.data.classifications)
+                setManagers(response.data.managers)
+            })
+            .catch((error) => {
+                alert(error.response.message)
+            })
+    }, []);
+
+    const positionOptions = Object.entries(positions).map(([id, label]) => ({
+        id: parseInt(id),
+        label
+    }));
+
+    const clientOptions = Object.entries(clients).map(([code, label]) => ({
+        code,
+        label
+    }));
+
+    // soumettre la création d'utilisateur 
+    const [error, setError] = useState('')
+    const Enregistrer = async (e) => {
+        e.preventDefault();
+
+        const requiredFields = [
+            "first_name",
+            "last_name",
+            "email",
+            "role",
+            "gender",
+            "marital_status",
+            "position_id",
+        ];
         const errors = requiredFields.filter((field) => !form[field]);
         setErrorFields(errors);
 
         if (errors.length === 0) {
-            // Proceed with form submission
-            console.log("Form submitted", form);
+            try {
+                const response = await api.post("/register", form, {
+                    headers: {
+                        'Content-Type': 'multipart/form-data'
+                    }
+                }
+                );
+                console.log("Response from backend:", response.data);
+
+                // Reset the form state to initial empty values
+                setForm({
+                    image: '',
+                    first_name: "",
+                    last_name: "",
+                    email: "",
+                    phone_number: "",
+                    address: "",
+                    birth_place: '',
+                    birth_date: '',
+                    marital_status: '',
+                    gender: '',
+                    role: '',
+                    client_code: '',
+                    type: '',
+                    hire_date: '',
+                    employee_number: '',
+                    cnaps_number: '',
+                    departement_id: '',
+                    position_id: '',
+                    class_id: '',
+                    manager_id: ''
+                });
+                setProfilePhoto(null);
+                setErrorFields([]);
+                setError('') 
+
+                setTimeout(() => {
+                    window.location.href = '/liste-utilisateur'
+                }, 250);
+
+            } catch (error) {
+                setError(error.response.data.message)
+            }
         }
     };
+
 
     return (
         <div className="bg-light min-h-screen p-6 flex justify-center">
@@ -73,20 +161,20 @@ export default function Collaborateur() {
                             <input
                                 type="text"
                                 placeholder="Nom **"
-                                className={`form-input border rounded px-3 py-2 text-sm ${errorFields.includes("nom") ? "border-red-500" : ""}`}
-                                value={form.nom}
-                                onChange={(e) => setForm({ ...form, nom: e.target.value })}
+                                className={`form-input border rounded px-3 py-2 text-sm ${errorFields.includes("last_name") ? "border-red-500" : ""}`}
+                                value={form.last_name}
+                                onChange={(e) => setForm({ ...form, last_name: e.target.value })}
                             />
                             <input
                                 type="text"
                                 placeholder="Prénom **"
-                                className={`form-input border rounded px-3 py-2 text-sm ${errorFields.includes("prenom") ? "border-red-500" : ""}`}
-                                value={form.prenom}
-                                onChange={(e) => setForm({ ...form, prenom: e.target.value })}
+                                className={`form-input border rounded px-3 py-2 text-sm ${errorFields.includes("first_name") ? "border-red-500" : ""}`}
+                                value={form.first_name}
+                                onChange={(e) => setForm({ ...form, first_name: e.target.value })}
                             />
                             <Autocomplete
                                 disablePortal
-                                options={[]}
+                                options={['user', 'admin', 'manager']}
                                 renderInput={(params) => (
                                     <TextField {...params} label="Role **" size="small" fullWidth error={errorFields.includes("role")} />
                                 )}
@@ -104,41 +192,41 @@ export default function Collaborateur() {
                                 type="text"
                                 placeholder="Numero de Téléphone"
                                 className="form-input border rounded px-3 py-2 col-span-2 text-sm"
-                                value={form.phone}
-                                onChange={(e) => setForm({ ...form, phone: e.target.value })}
+                                value={form.phone_number}
+                                onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
                             />
                             <input
                                 type="text"
                                 placeholder="Adresse"
                                 className="form-input border rounded px-3 py-2 col-span-2 text-sm"
-                                value={form.adresse}
-                                onChange={(e) => setForm({ ...form, adresse: e.target.value })}
+                                value={form.address}
+                                onChange={(e) => setForm({ ...form, address: e.target.value })}
                             />
                             <input
                                 type="date"
                                 placeholder="Date de Naissance"
                                 className="form-input border rounded px-3 py-2 col-span-2 text-sm"
-                                value={form.dateNaissance}
-                                onChange={(e) => setForm({ ...form, dateNaissance: e.target.value })}
+                                value={form.birth_date}
+                                onChange={(e) => setForm({ ...form, birth_date: e.target.value })}
                             />
                             <input
                                 type="text"
                                 placeholder="Lieu de Naissance"
                                 className="form-input border rounded px-3 py-2 col-span-2 text-sm"
-                                value={form.lieuNaissance}
-                                onChange={(e) => setForm({ ...form, lieuNaissance: e.target.value })}
+                                value={form.birth_place}
+                                onChange={(e) => setForm({ ...form, birth_place: e.target.value })}
                             />
                             <div className="mb-4">
                                 <p className="text-sm font-medium mb-2"> Genre **:  </p>
-                                {["Masculin", "Féminin"].map((opt) => (
+                                {["male", "female"].map((opt) => (
                                     <label key={opt} className="flex items-center gap-2 mb-1 text-sm">
                                         <input
                                             type="radio"
                                             name="genre"
                                             value={opt}
-                                            checked={form.genre === opt}
-                                            onChange={(e) => setForm({ ...form, genre: e.target.value })}
-                                            className={`${errorFields.includes("genre") ? "ring-2 ring-red-500" : ""}`}
+                                            checked={form.gender === opt}
+                                            onChange={(e) => setForm({ ...form, gender: e.target.value })}
+                                            className={`${errorFields.includes("gender") ? "ring-2 ring-red-500" : ""}`}
                                         />
                                         {opt}
                                     </label>
@@ -146,15 +234,15 @@ export default function Collaborateur() {
                             </div>
                             <div className="mb-4">
                                 <p className="text-sm font-medium mb-2"> Situation Matrimoniale ** :  </p>
-                                {["Célibataire", "Marié(e)", "Divorcé(e)", "Veuf(ve)"].map((opt) => (
+                                {["marié(e)", "veuf(e)", "célibataire", "divorcé(e)"].map((opt) => (
                                     <label key={opt} className="flex items-center gap-2 mb-1 text-sm">
                                         <input
                                             type="radio"
                                             name="situation"
                                             value={opt}
-                                            checked={form.situation === opt}
-                                            onChange={(e) => setForm({ ...form, situation: e.target.value })}
-                                            className={`${errorFields.includes("situation") ? "ring-2 ring-red-500" : ""}`}
+                                            checked={form.marital_status === opt}
+                                            onChange={(e) => setForm({ ...form, marital_status: e.target.value })}
+                                            className={`${errorFields.includes("marital_status") ? "ring-2 ring-red-500" : ""}`}
                                         />
                                         {opt}
                                     </label>
@@ -171,16 +259,42 @@ export default function Collaborateur() {
                             <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                                 <Autocomplete
                                     disablePortal
-                                    options={[]}
+                                    options={managers || []} // full manager objects
+                                    getOptionLabel={(option) => option.first_name || ''} // show first_name
                                     renderInput={(params) => (
-                                        <TextField {...params} label="Client" size="small" fullWidth />
+                                        <TextField {...params} label="Managers" size="small" fullWidth />
                                     )}
-                                    value={form.client}
-                                    onChange={(e, value) => setForm({ ...form, client: value })}
+                                    value={
+                                        managers.find((manager) => manager.id === form.manager_id) || null
+                                    }
+                                    onChange={(e, value) => {
+                                        setForm({ ...form, manager_id: value ? value.id : null })
+                                    }
+                                    }
                                 />
+
                                 <Autocomplete
                                     disablePortal
-                                    options={[]}
+                                    options={clientOptions}
+                                    getOptionLabel={(option) => option.label}
+                                    isOptionEqualToValue={(option, value) => option.code === value.code}
+                                    renderInput={(params) => (
+                                        <TextField
+                                            {...params}
+                                            label="Client"
+                                            size="small"
+                                            fullWidth
+                                        />
+                                    )}
+                                    value={clientOptions.find(c => c.code === form.client_code) || null}
+                                    onChange={(e, value) =>
+                                        setForm({ ...form, client_code: value ? value.code : "" })
+                                    }
+                                />
+
+                                <Autocomplete
+                                    disablePortal
+                                    options={contract ? contract : []}
                                     renderInput={(params) => (
                                         <TextField {...params} label="Contrat" size="small" fullWidth />
                                     )}
@@ -193,61 +307,101 @@ export default function Collaborateur() {
                                     size="small"
                                     InputLabelProps={{ shrink: true }}
                                     fullWidth
-                                    value={form.embaucheDate}
-                                    onChange={(e) => setForm({ ...form, embaucheDate: e.target.value })}
+                                    value={form.hire_date}
+                                    onChange={(e) => setForm({ ...form, hire_date: e.target.value })}
                                 />
                                 <div className="flex flex-row items-center gap-3 w-full">
+                                    {/* ID */}
                                     <input
                                         type="text"
                                         placeholder="Numero Cnaps"
                                         className="form-input border rounded px-3 py-2 col-span-2 text-sm"
-                                        value={form.CnapsNumber}
-                                        onChange={(e) => setForm({ ...form, CnapsNumber: e.target.value })}
+                                        value={form.cnaps_number}
+                                        onChange={(e) => setForm({ ...form, cnaps_number: e.target.value })}
                                     />
+
                                     <input
                                         type="text"
                                         placeholder="Matricule ID"
                                         className="form-input border rounded px-3 py-2 col-span-2 text-sm"
-                                        value={form.matriculeId}
-                                        onChange={(e) => setForm({ ...form, matriculeId: e.target.value })}
+                                        value={form.employee_number}
+                                        onChange={(e) => setForm({ ...form, employee_number: e.target.value })}
                                     />
                                 </div>
                                 <div className="w-full flex flex-col">
                                     <Autocomplete
                                         disablePortal
-                                        options={[]}
+                                        options={department || []}
                                         className="mb-3"
                                         renderInput={(params) => (
                                             <TextField {...params} label="Département" size="small" fullWidth name="departement" />
                                         )}
-                                        value={form.departement}
-                                        onChange={(e, value) => setForm({ ...form, departement: value })}
+                                        value={department[form.departement_id - 1] || null}
+                                        onChange={(e, value) => {
+                                            const index = department.indexOf(value);
+                                            setForm({
+                                                ...form,
+                                                departement_id: index >= 0 ? index + 1 : '', // 1-based ID
+                                            });
+                                        }}
                                     />
+
                                     <Autocomplete
                                         disablePortal
-                                        options={[]}
+                                        options={positionOptions}
+                                        getOptionLabel={(option) => option.label}
+                                        isOptionEqualToValue={(option, value) => option.id === value.id}
                                         className="mb-3"
                                         renderInput={(params) => (
-                                            <TextField {...params} label="Poste Occupé **" size="small" fullWidth name="poste" error={errorFields.includes("poste")} />
+                                            <TextField
+                                                {...params}
+                                                label="Poste Occupé **"
+                                                size="small"
+                                                fullWidth
+                                                name="poste"
+                                                error={errorFields.includes("poste")}
+                                            />
                                         )}
-                                        value={form.poste}
-                                        onChange={(e, value) => setForm({ ...form, poste: value })}
+                                        value={positionOptions.find((p) => p.id === form.position_id) || null}
+                                        onChange={(e, value) =>
+                                            setForm({ ...form, position_id: value ? value.id : null })
+                                        }
                                     />
+
                                 </div>
                                 <Autocomplete
                                     disablePortal
-                                    options={[]}
+                                    options={classification || []}
                                     renderInput={(params) => (
-                                        <TextField {...params} label="Classification" size="small" fullWidth name="classification" />
+                                        <TextField
+                                            {...params}
+                                            label="Classification"
+                                            size="small"
+                                            fullWidth
+                                            name="classification"
+                                        />
                                     )}
-                                    value={form.classification}
-                                    onChange={(e, value) => setForm({ ...form, classification: value })}
+                                    value={classification[form.class_id - 1] || null}
+                                    onChange={(e, value) => {
+                                        const index = classification.indexOf(value);
+                                        setForm({
+                                            ...form,
+                                            class_id: index >= 0 ? index + 1 : '',
+                                        });
+                                    }}
                                 />
+
                             </div>
                         </div>
+                        <div>
+                            {
+                                error && <Alert severity="error"> {error}</Alert>
+                            }
+                        </div>
+
                         <div className="flex justify-end mt-4 gap-3">
-                            <button className="px-3 py-2 border border-sky-600 text-sky-600 rounded uppercase cursor-pointer">
-                                Annuler
+                            <button className="px-3 py-2 border border-sky-600 text-sky-600 rounded uppercase cursor-pointer" type="reset">
+                                Effacer 
                             </button>
                             <button className="px-3 py-2 bg-sky-600 text-white rounded uppercase cursor-pointer" onClick={Enregistrer}>
                                 Enregistrer

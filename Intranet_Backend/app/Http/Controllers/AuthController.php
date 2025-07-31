@@ -122,7 +122,7 @@ class AuthController extends Controller
             $user = User::create([
                 'email' => $fields['email'],
                 'password' => bcrypt($defaultPassword),
-                'status' => $fields['status'] ?? null,
+                'status' => 'active',
                 'role' => $fields['role'],
                 'first_name' => $fields['first_name'] ?? null,
                 'last_name' => $fields['last_name'] ?? null,
@@ -223,7 +223,7 @@ class AuthController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'Connexion réussie.',
-                'user' => $user->only(['id', 'name', 'email']),
+                'user' => $user->only(['id', 'first_name', 'last_name', 'email']),
                 'token' => $token
             ], 200);
         } catch (\Throwable $e) {

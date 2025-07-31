@@ -29,7 +29,6 @@ export const chartAreaGradient = (ctx, chartArea, colorStops) => {
   });
   return gradient;
 };
-
 export const chartColors = {
   textColor: {
     light: getCssVariable('--color-gray-400'),
