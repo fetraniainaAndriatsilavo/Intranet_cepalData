@@ -39,7 +39,8 @@ function App() {
         <Route path='/mesinformations' element={<Dashboard />} /> 
         <Route path='/ajout-utilisateur' element={<Dashboard /> } /> 
         <Route path='/liste-utilisateur' element={<Dashboard /> } /> 
-        
+        <Route path='/modif-utilisateur/:id' element={<Dashboard />} /> 
+        <Route path='/documents-utilisateurs' element={<Dashboard />} /> 
         {/* OGC  */} 
         <Route path='/mesconges' element={<Dashboard />} /> 
         <Route path='/mesvalidations' element={<Dashboard />} />  

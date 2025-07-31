@@ -2,6 +2,7 @@ import { useState } from "react";
 import axios from "axios";
 import { useEffect } from "react";
 import { useContext } from "react";
+import { Autocomplete, TextField } from "@mui/material";
 // import { AppContext } from "../../../Context/AppContext";
 export default function Permissions({ radioValue }) {
   // const { user } = useContext(AppContext);
@@ -126,59 +127,44 @@ export default function Permissions({ radioValue }) {
         {radioValue === "other" && (
           <div>
             <label htmlFor="reason">Type d'absence </label>
-            <select
+            <Autocomplete
               id="reason"
-              name="reason"
+              disablePortal
+              options={["Hospitalisation", "Circoncision", "Mariage", "Urgence"]}
+              value={reason}
+              size="small"
+              className="w-1/3 mt-3 "
               onChange={(e) => setReason(e.target.value)}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  w-1/3 p-2.5 mb-3 mt-3"
-            >
-              <option value="Hospitalisation">Hospitalisation</option>
-              <option value="Circoncision">Circoncision</option>
-              <option value="Mariage">Mariage</option>
-              <option value="urgence">Urgence</option>
-            </select>
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  name="classification"
+                  variant="outlined"
+                />
+              )}
+            />
           </div>
         )}
 
         {radioValue === "permission" && (
           <div>
-            <label htmlFor="reason">Type de permissions</label>
-            <select
+            <label htmlFor="reason" className="mb-3">Type de permissions</label>
+            <Autocomplete
               id="reason"
-              name="reason"
+              disablePortal
+              options={["mariage salarié", "mariage enfant", "mariage fraternel", "décès parental ou epoux", "décès fraternel", "hospitalisation conjoint", "baptême", "confirmation"]}
+              value={reason}
+              size="small"
+              className="w-1/3 mt-3 "
               onChange={(e) => setReason(e.target.value)}
-              className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block  w-1/3 p-2.5 mb-3 mt-3"
-            >
-              <option value="mariage salarié">
-                Mariage du salarié
-              </option>
-              <option value="mariage enfant">
-                Mariage d’un enfant
-              </option>
-              <option value="mariage fraternel">
-                Mariage frère/sœur
-              </option>
-              <option value="naissance enfant">
-                Naissance d’un enfant
-              </option>
-              <option defaultValue="décès parental ou epoux">
-                {" "}
-                Décès (parents, enfant, époux(se))
-              </option>
-              <option value="décès fraternel">
-                {" "}
-                Décès (frère/sœur)
-              </option>
-              <option value="hospitalisation conjoint">
-                Hospitalisation (conjoint, enfant)
-              </option>
-              <option value="baptême">
-                Baptême, confirmation enfant
-              </option>
-              <option value="confirmation">
-                Confirmation du salarié
-              </option>
-            </select>
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  name="classification"
+                  variant="outlined"
+                />
+              )}
+            />
           </div>
         )}
         <div className="flex lg:flex-row md:flex-col gap-5 justify-center xs:flex-col sm:flex-col sm:gap-5">
@@ -236,7 +222,7 @@ export default function Permissions({ radioValue }) {
         <div className="mt-3">
           <span> Nombre de Jours : </span>{" "}
           <span className="font-semibold"> {number_day} </span>
-        </div>  
+        </div>
 
         <div className="mt-4 mb-4 flex flex-col ">
           <label htmlFor="reason" className="mb-2">

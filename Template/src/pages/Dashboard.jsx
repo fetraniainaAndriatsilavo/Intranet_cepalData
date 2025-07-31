@@ -22,11 +22,13 @@ import DashboardCard12 from '../partials/dashboard/DashboardCard12';
 import DashboardCard13 from '../partials/dashboard/DashboardCard13';
 import Informations from './Ma Fiche/Informations';
 import Conges from './Mes Conges/Conges';
-import Validation from './Mes Conges/Validation'; 
+import Validation from './Mes Conges/Validation';
 import ListeConges from './OGC/ListeConges';
 import Etats from './OGC/Etats';
 import Collaborateur from './Collaborateur/Collaborateur';
 import ListesUtilisateurs from './Collaborateur/ListesUtilisateurs';
+import ModifCollaborateurs from './Collaborateur/ModifCollaborateurs';
+import UploadDocument from './Collaborateur/UploadDocument';
 // import Banner from '../partials/Banner';
 
 function Dashboard() {
@@ -103,16 +105,20 @@ function Dashboard() {
                 {/* Card (Income/Expenses) */}
                 <DashboardCard13 />
               </div>
-            </>} 
+            </>}
             {pathname == '/cgu' && <TermsOfUse />}
-            {pathname == '/reinit' && <Reinitialisation />} 
-            {pathname == '/mesinformations' && <Informations /> } 
-            {pathname == '/mesconges' && <Conges /> } 
-            {pathname == '/mesvalidations' && <Validation /> }  
-            {pathname == '/listeconges' && <ListeConges /> } 
-            {pathname == '/etats' && <Etats /> } 
-            {pathname == '/ajout-utilisateur' && <Collaborateur /> } 
-            {pathname == '/liste-utilisateur' && <ListesUtilisateurs /> }
+            {pathname == '/reinit' && <Reinitialisation />}
+            {/* Gestion des congés */}
+            {pathname == '/mesconges' && <Conges />}
+            {pathname == '/mesvalidations' && <Validation />}
+            {pathname == '/listeconges' && <ListeConges />}
+            {pathname == '/etats' && <Etats />}
+            {/* Ressources Humaines  */}
+            {pathname == '/ajout-utilisateur' && <Collaborateur />}
+            {pathname == '/liste-utilisateur' && <ListesUtilisateurs />}
+            {pathname == '/mesinformations' && <Informations />}
+            {pathname == '/modif-utilisateur/:id' && <ModifCollaborateurs />}
+            {pathname == '/documents-utilisateurs' && <UploadDocument /> }
           </div>
         </main>
       </div>

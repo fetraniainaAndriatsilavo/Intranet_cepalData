@@ -328,7 +328,7 @@ function Sidebar({
                               <path d="M10.5 1a3.502 3.502 0 0 1 3.355 2.5H15a1 1 0 1 1 0 2h-1.145a3.502 3.502 0 0 1-6.71 0H1a1 1 0 0 1 0-2h6.145A3.502 3.502 0 0 1 10.5 1ZM9 4.5a1.5 1.5 0 1 1 3 0 1.5 1.5 0 0 1-3 0ZM5.5 9a3.502 3.502 0 0 1 3.355 2.5H15a1 1 0 1 1 0 2H8.855a3.502 3.502 0 0 1-6.71 0H1a1 1 0 1 1 0-2h1.145A3.502 3.502 0 0 1 5.5 9ZM4 12.5a1.5 1.5 0 1 0 3 0 1.5 1.5 0 0 0-3 0Z" fillRule="evenodd" />
                             </svg>
                             <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                              Paramètres 
+                              Paramètres
                             </span>
                           </div>
                           {/* Icon */}
@@ -353,8 +353,8 @@ function Sidebar({
                                 Mes Notifications
                               </span>
                             </NavLink>
-                          </li>  
-                           <li className="mb-1 last:mb-0">
+                          </li>
+                          <li className="mb-1 last:mb-0">
                             <NavLink
                               end
                               to="/cgu"
@@ -363,10 +363,10 @@ function Sidebar({
                               }
                             >
                               <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                               Conditions Générales d'Utilisation 
+                                Conditions Générales d'Utilisation
                               </span>
                             </NavLink>
-                          </li> 
+                          </li>
                           <li className="mb-1 last:mb-0">
                             <NavLink
                               end
@@ -398,75 +398,6 @@ function Sidebar({
             </h3>
             <ul>
               {/* User Back-office*/}
-              <SidebarLinkGroup>
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <a
-                        href="#0"
-                        className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${open ? "" : "hover:text-gray-900 dark:hover:text-white"}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleClick();
-                          setSidebarExpanded(true);
-                        }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <svg
-                              className="w-4 h-4 shrink-0 ml-1 text-gray-400 dark:text-gray-500 icon icon-tabler icons-tabler-outline icon-tabler-user"
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                              <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-                              <path d="M6 21v-2a4 4 0 0 1 4 -4h4a4 4 0 0 1 4 4v2" />
-                            </svg>
-                            <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                              Collaborateur
-                            </span>
-                          </div>
-                          {/* Icon */}
-                          <div className="flex shrink-0 ml-2">
-                            <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
-                              <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
-                            </svg>
-                          </div>
-                        </div>
-                      </a>
-                      <div className="lg:hidden lg:sidebar-expanded:block 2xl:block">
-                        <ul className={`pl-8 mt-1 ${!open && "hidden"}`}>
-                          <li className="mb-1 last:mb-0">
-                            <NavLink end to='/ajout-utilisateur' className={({ isActive }) =>
-                                "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                              }>
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Ajouter
-                              </span>
-                            </NavLink>
-                          </li>
-                          <li className="mb-1 last:mb-0">
-                            <NavLink end to="/liste-utilisateur" className={({ isActive }) =>
-                                "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                              }>
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Liste des Collaborateurs
-                              </span>
-                            </NavLink>
-                          </li>
-                        </ul>
-                      </div>
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup>
               <SidebarLinkGroup>
                 {(handleClick, open) => {
                   return (
@@ -517,18 +448,27 @@ function Sidebar({
                       <div className="lg:hidden lg:sidebar-expanded:block 2xl:block">
                         <ul className={`pl-8 mt-1 ${!open && "hidden"}`}>
                           <li className="mb-1 last:mb-0">
-                            <NavLink end to="https://cruip.com/mosaic/"  className={({ isActive }) =>
-                                "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                              }>
+                            <NavLink end to='/ajout-utilisateur' className={({ isActive }) =>
+                              "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                            }>
                               <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Fiche Employée
+                                Ajout Collaborateur
                               </span>
                             </NavLink>
                           </li>
                           <li className="mb-1 last:mb-0">
-                            <NavLink end to="https://cruip.com/mosaic/" className={({ isActive }) =>
-                                "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                              }> 
+                            <NavLink end to="/liste-utilisateur" className={({ isActive }) =>
+                              "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                            }>
+                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                Liste des Collaborateurs
+                              </span>
+                            </NavLink>
+                          </li>
+                          <li className="mb-1 last:mb-0">
+                            <NavLink end to="/documents-utilisateurs" className={({ isActive }) =>
+                              "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                            }>
                               <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
                                 Documents Admin.
                               </span>
@@ -591,8 +531,8 @@ function Sidebar({
                         <ul className={`pl-8 mt-1 ${!open && "hidden"}`}>
                           <li className="mb-1 last:mb-0">
                             <NavLink end to='/listeconges' className={({ isActive }) =>
-                                "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                              }>
+                              "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                            }>
                               <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
                                 Listes des demandes
                               </span>
@@ -600,8 +540,8 @@ function Sidebar({
                           </li>
                           <li className="mb-1 last:mb-0">
                             <NavLink end to="/etats" className={({ isActive }) =>
-                                "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                              }>
+                              "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                            }>
                               <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
                                 Etat des congés
                               </span>

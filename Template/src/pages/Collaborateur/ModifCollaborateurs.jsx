@@ -1,11 +1,10 @@
 import { Autocomplete, Avatar, TextField } from "@mui/material";
 import { useState } from "react";
 
-export default function Collaborateur() {
+export default function ModifCollaborateurs() {
     const [profilePhoto, setProfilePhoto] = useState(null);
 
     const [form, setForm] = useState({
-        image: profilePhoto ? profilePhoto: '',
         nom: "",
         prenom: "",
         email: "",
@@ -32,7 +31,6 @@ export default function Collaborateur() {
         const file = e.target.files[0];
         if (file) setProfilePhoto(URL.createObjectURL(file));
     };
-
 
     const Enregistrer = () => {
         const requiredFields = ["nom", "prenom", "email", "role", "genre", "situation", "poste"];

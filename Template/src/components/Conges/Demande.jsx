@@ -23,7 +23,7 @@ export default function Demande({ data }) {
 
   return (
     <tr
-      className={`bg-white hover:bg-gray-50 even:bg-gray-50 odd:bg-white ${data.status === 'refused' ? 'text-red-500' : 'text-gray-500'
+      className={`bg-white hover:bg-gray-50 odd:bg-white ${data.status === 'refused' ? 'text-red-500' : 'text-gray-500'
         }`}
     >
       {/* Nom d'utilisateur */}
