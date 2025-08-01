@@ -1,0 +1,275 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Mail\WelcomeUserMail;
+use App\Models\User;
+use App\Models\UserDetails;
+use App\Notifications\WelcomeUserNotification;
+use Dotenv\Exception\ValidationException;
+use Exception;
+use Illuminate\Container\Attributes\Log as AttributesLog;
+use Illuminate\Contracts\Mail\Mailer;
+use Illuminate\Database\QueryException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException as ValidationValidationException;
+
+
+class AuthController extends Controller
+{
+
+
+    //CREER UN COMPTE POUR L'USER
+    // public function register(Request $request)
+    // {
+    //     $messages = [
+    //         'name.required' => 'Le nom est requis.',
+    //         'name.max' => 'Le nom ne peut pas dépasser 255 caractères.',
+    //         'email.required' => 'L\'email est requis.',
+    //         'email.email' => 'L\'email doit être une adresse email valide.',
+    //         'email.unique' => 'Cet email est déjà utilisé. Essayez un autre.',
+    //         'password.required' => 'Le mot de passe est requis.',
+    //         'password.confirmed' => 'Les mots de passe ne correspondent pas.',
+    //     ];
+
+    //     $fields = $request->validate([
+    //         "name" => "required|max:255",
+    //         "email" => "required|email|unique:users",
+    //         "password" => "required|confirmed",
+    //         "role" => "required"
+    //     ], $messages);
+
+    //     try {
+    //         $user = User::create([
+    //             'name' => $fields['name'],
+    //             'email' => $fields['email'],
+    //             'password' => bcrypt($fields['password']),
+    //             'role' => $fields['role'], // Ajouter un rôle par défaut
+    //         ]);
+
+    //         return response()->json([
+    //             'user' => $user,
+    //         ], 201);
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'error' => 'Une erreur est survenue lors de l\'inscription.',
+    //             'message' => $e->getMessage(),
+    //         ], 500);
+    //     }
+    // }
+    public function register(Request $request)
+    {
+        $messages = [
+            'email.required' => 'L\'email est requis.',
+            'email.email' => 'L\'email doit être une adresse email valide.',
+            'email.unique' => 'Cet email est déjà utilisé. Essayez un autre.',
+            'role.required' => 'Le rôle est requis.',
+            'first_name.max' => 'Le prénom ne peut pas dépasser 255 caractères.',
+            'last_name.max' => 'Le nom ne peut pas dépasser 255 caractères.',
+            'birth_place.max' => 'Le lieu de naissance ne peut pas dépasser 255 caractères.',
+            'employee_number.max' => 'Le numéro matricule est trop long.',
+            'cnaps_number.max' => 'Le numéro CNAPS est trop long.',
+            'phone_number.max' => 'Le numéro de téléphone est trop long.',
+            'client_code.max' => 'Le code client est trop long.',
+            'gender.in' => 'Le genre doit être male, female ou other.',
+            'marital_status.in' => 'L\'état civil doit être single, married, divorced ou widowed.',
+            'ogc_leav_bal_init.numeric' => 'Le solde initial OGC doit être un nombre.',
+            'ogc_leav_bal.numeric' => 'Le solde OGC doit être un nombre.',
+            'ogc_perm_bal.numeric' => 'Le solde OGC permanent doit être un nombre.',
+            'ogc_othr_bal.numeric' => 'Le solde OGC autre doit être un nombre.',
+        ];
+
+        try {
+            $fields = $request->validate([
+                'email' => 'required|email|unique:users,email',
+                'status' => 'nullable|string',
+                'last_login' => 'nullable|date',
+                'role' => 'required|string',
+                'first_name' => 'nullable|string|max:255',
+                'last_name' => 'nullable|string|max:255',
+                'position_id' => 'nullable|integer',
+                'hire_date' => 'nullable|date',
+                'department_id' => 'nullable|integer',
+                'birth_date' => 'nullable|date',
+                'birth_place' => 'nullable|string|max:255',
+                'employee_number' => 'nullable|string|max:100',
+                'cnaps_number' => 'nullable|string|max:100',
+                'phone_number' => 'nullable|string|max:20',
+                'address' => 'nullable|string',
+                'class_id' => 'nullable|integer',
+                'image' => 'nullable|string',
+                'client_code' => 'nullable|string|max:100',
+                'manager_id' => 'nullable|integer',
+                'leaving_date' => 'nullable|date',
+                'updated_by' => 'nullable|integer',
+                'leaving_reason' => 'nullable|string',
+                'gender' => 'nullable|string|in:male,female,other',
+                'marital_status' => 'nullable|string',
+                'ogc_leav_bal_init' => 'nullable|numeric',
+                'ogc_leav_bal_init_date' => 'nullable|date',
+                'ogc_leav_bal' => 'nullable|numeric',
+                'ogc_leav_bal_date' => 'nullable|date',
+                'ogc_perm_bal' => 'nullable|numeric',
+                'ogc_perm_bal_date' => 'nullable|date',
+                'ogc_othr_bal' => 'nullable|numeric',
+
+            ], $messages);
+            $imagePath = null;
+            $imageUrl = null;
+
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $filename = uniqid() . '_' . $file->getClientOriginalName();
+                $directory = 'images/users';
+
+                $imagePath = $file->storeAs($directory, $filename, 'sftp');
+
+                $imageUrl = 'http://57.128.116.184/intranet/' . $imagePath;
+            }
+            $defaultPassword = 'intranet2025';
+            $user = User::create([
+                'email' => $fields['email'],
+                'password' => bcrypt($defaultPassword),
+                'status' => $fields['status'] ?? null,
+                'role' => $fields['role'],
+                'first_name' => $fields['first_name'] ?? null,
+                'last_name' => $fields['last_name'] ?? null,
+                'position_id' => $fields['position_id'] ?? null,
+                'hire_date' => $fields['hire_date'] ?? null,
+                'department_id' => $fields['department_id'] ?? null,
+                'birth_date' => $fields['birth_date'] ?? null,
+                'birth_place' => $fields['birth_place'] ?? null,
+                'employee_number' => $fields['employee_number'] ?? null,
+                'cnaps_number' => $fields['cnaps_number'] ?? null,
+                'phone_number' => $fields['phone_number'] ?? null,
+                'address' => $fields['address'] ?? null,
+                'class_id' => $fields['class_id'] ?? null,
+                'image' => $imagePath,
+                'client_code' => $fields['client_code'] ?? null,
+                'manager_id' => $fields['manager_id'] ?? null,
+                'leaving_date' => $fields['leaving_date'] ?? null,
+                'updated_by' => $fields['updated_by'] ?? null,
+                'leaving_reason' => $fields['leaving_reason'] ?? null,
+                'gender' => $fields['gender'] ?? null,
+                'marital_status' => $fields['marital_status'] ?? null,
+                'ogc_leav_bal_init' => $fields['ogc_leav_bal_init'] ?? null,
+                'ogc_leav_bal_init_date' => $fields['ogc_leav_bal_init_date'] ?? null,
+                'ogc_leav_bal' => $fields['ogc_leav_bal'] ?? null,
+                'ogc_leav_bal_date' => $fields['ogc_leav_bal_date'] ?? null,
+                'ogc_perm_bal' => $fields['ogc_perm_bal'] ?? null,
+                'ogc_perm_bal_date' => $fields['ogc_perm_bal_date'] ?? null,
+                'ogc_othr_bal' => $fields['ogc_othr_bal'] ?? null,
+
+            ]);
+            // Mail::to($user->email)->send(new WelcomeUserMail($user, $defaultPassword));
+            return response()->json([
+                'user' => $user,
+                'image_url' => $imageUrl,
+            ], 201);
+        } catch (ValidationException $ve) {
+            return response()->json([
+                'message' => 'Échec de la validation.',
+                'errors' => $ve->errors()
+            ], 422);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Erreur interne.',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+
+
+    //LOGIN
+
+    public function login(Request $request)
+    {
+        try {
+            // Étape 1 : Validation des données
+            $request->validate([
+                "email" => "required|email",
+                "password" => "required"
+            ], [
+                'email.required' => 'L\'email est requis.',
+                'email.email' => 'L\'email n\'est pas valide.',
+                'password.required' => 'Le mot de passe est requis.',
+            ]);
+
+            Log::info('Tentative de connexion pour : ' . $request->email);
+
+            // Étape 2 : Recherche de l'utilisateur
+            $user = User::where("email", $request->email)->first();
+
+            if (!$user) {
+                Log::warning('Aucun utilisateur trouvé avec cet email : ' . $request->email);
+                return response()->json([
+                    'message' => 'Utilisateur non trouvé avec cet email.'
+                ], 401);
+            }
+
+            // Étape 3 : Vérification du mot de passe
+            if (!Hash::check($request->password, $user->password)) {
+                Log::warning('Mot de passe invalide pour l\'email : ' . $request->email);
+                return response()->json([
+                    'message' => 'Mot de passe incorrect.'
+                ], 401);
+            }
+
+            // Étape 4 : Vérification du statut
+            if ($user->status !== 'active') {
+                Log::warning('Utilisateur inactif : ' . $request->email . ', statut : ' . $user->status);
+                return response()->json([
+                    'message' => 'Votre compte est ' . $user->status . '. Veuillez contacter le support.'
+                ], 403);
+            }
+
+            // Étape 5 : Création du token
+            $token = $user->createToken('auth_token')->plainTextToken;
+
+            Log::info('Connexion réussie pour : ' . $request->email);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Connexion réussie.',
+                'user' => $user->only(['id', 'first_name', 'last_name', 'email', 'gender', 'role']),
+                'token' => $token
+            ], 200);
+        } catch (\Throwable $e) {
+            Log::error('Erreur lors de la tentative de login : ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur serveur : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+
+
+    //LOGOUT
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Déconnexion réussie.',
+        ]);
+    }
+
+
+
+    public function getUser(Request $request)
+    {
+        return response()->json([
+            'user' => Auth::user()
+        ]);
+    }
+}
