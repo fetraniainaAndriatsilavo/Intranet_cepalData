@@ -82,7 +82,7 @@ class User extends Authenticatable
     }
     public function sendPasswordResetNotification($token)
     {
-        $url = url('http://localhost:5173/reset-password/' . $token);
+        $url = url('http://localhost:5173/changepswd/' . $token);
         Mail::to($this->email)->send(new ResetPasswordMail($url, $this));
     }
 

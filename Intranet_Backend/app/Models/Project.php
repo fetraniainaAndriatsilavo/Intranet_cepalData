@@ -8,17 +8,24 @@ class Project extends Model
 {
     protected $connection = 'intranet_extedim';
     protected $table = 'projects';
-    protected $primaryKey = 'project_id';
+    protected $primaryKey = 'id';
+    public $timestamps = false;
 
     protected $fillable = [
-        'project_id',
         'name',
         'description',
         'start_date',
         'project_lead_id',
         'type',
+        'client_code',
+        'updated_by',
+        'is_it',
         'status',
     ];
+    protected $attributes = [
+        'is_it' => true,
+    ];
+
 
     public function sprints()
     {

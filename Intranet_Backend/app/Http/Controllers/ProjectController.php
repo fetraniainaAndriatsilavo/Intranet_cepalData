@@ -11,7 +11,6 @@ class ProjectController extends Controller
 {
     public function store(Request $request)
     {
-
         try {
             $validated = $request->validate([
                 'name' => 'required|string|max:255',
@@ -19,28 +18,43 @@ class ProjectController extends Controller
                 'start_date' => 'required|date',
                 'project_lead_id' => 'required|exists:intranet_extedim.users,id',
                 'type' => 'nullable|string',
-                'status' => 'nullable',
+                'client_code' => 'nullable|string|max:100|exists:intranet_extedim.clients,code',
+                'updated_by' => 'nullable|integer|exists:intranet_extedim.users,id',
+                'status' => 'nullable|string|in:To-Do,Review,In-Progress,Deploy,Done',
             ], [
                 'name.required' => 'Le nom du projet est obligatoire.',
                 'name.string' => 'Le nom du projet doit être une chaîne de caractères.',
                 'name.max' => 'Le nom du projet ne peut pas dépasser 255 caractères.',
+
                 'description.string' => 'La description doit être une chaîne de caractères.',
+
                 'start_date.required' => 'La date de début est obligatoire.',
                 'start_date.date' => 'La date de début doit être une date valide.',
+
                 'project_lead_id.required' => 'Le chef de projet est obligatoire.',
                 'project_lead_id.exists' => 'Le chef de projet sélectionné est invalide.',
-                'type.string' => 'Le type de projet doit être une chaîne de caractères.',
-            ]);
 
+                'type.string' => 'Le type de projet doit être une chaîne de caractères.',
+
+                'client_code.string' => 'Le code client doit être une chaîne de caractères.',
+                'client_code.max' => 'Le code client ne peut pas dépasser 100 caractères.',
+
+                'updated_by.integer' => 'Le champ "mis à jour par" doit être un entier.',
+                'updated_by.exists' => 'L’utilisateur ayant mis à jour le projet est invalide.',
+
+
+                'status.string' => 'Le statut doit être une chaîne de caractères.',
+                'status.max' => 'Le statut ne peut pas dépasser 50 caractères.',
+            ]);
+            $validated['is_it'] = true;
             $project = Project::create($validated);
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Projet créé avec succès.',
-                'id_projet' => $project->project_id
+                'projet' => $project
             ], 201);
         } catch (\Exception $e) {
-
             Log::error('Erreur lors de la création du projet : ' . $e->getMessage());
 
             return response()->json([
@@ -50,49 +64,31 @@ class ProjectController extends Controller
             ], 500);
         }
     }
+
     public function updateProject(Request $request, $id)
     {
-        if (!$request->hasAny(['status', 'name'])) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Veuillez fournir au moins le statut ou le nom.',
-            ], 422);
-        }
+        $project = Project::findOrFail($id);
 
         $validated = $request->validate([
-            'status' => 'sometimes|required',
-            'name' => 'sometimes|required|string|max:255',
+            'status' => 'nullable|string|in:To-Do,Review,In-Progress,Deploy,Done',
+            'name' => 'nullable|string|max:255',
+            'description' => 'nullable|string',
+            'type' => 'nullable|string',
         ], [
-            'status.required' => 'Le statut est obligatoire si fourni.',
-            'name.required' => 'Le nom du groupe est obligatoire si fourni.',
+            'status.in' => 'Le statut doit être l\'un des suivants : "planned", "in_progress", "completed".',
             'name.string' => 'Le nom doit être une chaîne de caractères.',
-            'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
+            'name.max' => 'Le nom ne peut pas dépasser 255 caractères.',
+            'description.string' => 'La description doit être une chaîne de caractères.',
+            'type.string' => 'Le type doit être une chaîne de caractères.',
         ]);
 
-        $project = Project::find($id);
-
-        if (!$project) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Tâche non trouvée.',
-            ], 404);
-        }
-
         try {
-            if (isset($validated['status'])) {
-                $project->status = $validated['status'];
-            }
-
-            if (isset($validated['name'])) {
-                $project->name = $validated['name'];
-            }
-
-            $project->save();
+            $project->update(array_filter($validated));
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Tâche mise à jour avec succès.',
-                'id_tache' => $project->project_id,
+                'message' => 'Projet mis à jour avec succès.',
+                'id_projet' => $project->id,
                 'statut' => $project->status,
                 'nom' => $project->name,
             ]);
@@ -104,6 +100,7 @@ class ProjectController extends Controller
             ], 500);
         }
     }
+
 
     public function getProjectByUserId($userId)
     {
@@ -135,8 +132,8 @@ class ProjectController extends Controller
         }
 
         try {
-            $project->tasks()->delete();   
-            $project->sprints()->delete(); 
+            $project->tasks()->delete();
+            $project->sprints()->delete();
 
             $project->delete();
 
@@ -155,6 +152,6 @@ class ProjectController extends Controller
     }
     public function getProjectById($id)
     {
-        return Project::where('project_id', $id)->first();
+        return Project::where('id', $id)->first();
     }
 }

@@ -10,6 +10,7 @@ use Dotenv\Exception\ValidationException;
 use Exception;
 use Illuminate\Container\Attributes\Log as AttributesLog;
 use Illuminate\Contracts\Mail\Mailer;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -65,24 +66,67 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $messages = [
-            'email.required' => 'L\'email est requis.',
-            'email.email' => 'L\'email doit être une adresse email valide.',
-            'email.unique' => 'Cet email est déjà utilisé. Essayez un autre.',
+            'email.required' => 'L\'adresse e-mail est requise.',
+            'email.email' => 'L\'adresse e-mail doit être valide.',
+            'email.unique' => 'Cette adresse e-mail est déjà utilisée. Veuillez en choisir une autre.',
+
+            'status.string' => 'Le statut doit être une chaîne de caractères.',
+            'last_login.date' => 'La date de dernière connexion doit être une date valide.',
+
             'role.required' => 'Le rôle est requis.',
+            'role.string' => 'Le rôle doit être une chaîne de caractères.',
+
+            'first_name.string' => 'Le prénom doit être une chaîne de caractères.',
             'first_name.max' => 'Le prénom ne peut pas dépasser 255 caractères.',
+
+            'last_name.string' => 'Le nom doit être une chaîne de caractères.',
             'last_name.max' => 'Le nom ne peut pas dépasser 255 caractères.',
+
+            'position_id.integer' => 'L\'identifiant du poste doit être un nombre entier.',
+            'hire_date.date' => 'La date d\'embauche doit être une date valide.',
+            'department_id.integer' => 'L\'identifiant du département doit être un nombre entier.',
+            'birth_date.date' => 'La date de naissance doit être une date valide.',
+            'birth_place.string' => 'Le lieu de naissance doit être une chaîne de caractères.',
             'birth_place.max' => 'Le lieu de naissance ne peut pas dépasser 255 caractères.',
-            'employee_number.max' => 'Le numéro matricule est trop long.',
-            'cnaps_number.max' => 'Le numéro CNAPS est trop long.',
-            'phone_number.max' => 'Le numéro de téléphone est trop long.',
-            'client_code.max' => 'Le code client est trop long.',
-            'gender.in' => 'Le genre doit être male, female ou other.',
-            'marital_status.in' => 'L\'état civil doit être single, married, divorced ou widowed.',
-            'ogc_leav_bal_init.numeric' => 'Le solde initial OGC doit être un nombre.',
-            'ogc_leav_bal.numeric' => 'Le solde OGC doit être un nombre.',
-            'ogc_perm_bal.numeric' => 'Le solde OGC permanent doit être un nombre.',
+
+            'employee_number.string' => 'Le numéro matricule doit être une chaîne de caractères.',
+            'employee_number.max' => 'Le numéro matricule est trop long (maximum 100 caractères).',
+
+            'cnaps_number.string' => 'Le numéro CNAPS doit être une chaîne de caractères.',
+            'cnaps_number.max' => 'Le numéro CNAPS est trop long (maximum 100 caractères).',
+
+            'phone_number.string' => 'Le numéro de téléphone doit être une chaîne de caractères.',
+            'phone_number.max' => 'Le numéro de téléphone est trop long (maximum 20 caractères).',
+
+            'address.string' => 'L\'adresse doit être une chaîne de caractères.',
+            'class_id.integer' => 'L\'identifiant de la classification doit être un nombre entier.',
+            'image.string' => 'L\'image doit être un chemin sous forme de chaîne de caractères.',
+
+            'client_code.string' => 'Le code client doit être une chaîne de caractères.',
+            'client_code.max' => 'Le code client est trop long (maximum 100 caractères).',
+
+            'manager_id.integer' => 'L\'identifiant du manager doit être un nombre entier.',
+            'leaving_date.date' => 'La date de départ doit être une date valide.',
+            'updated_by.integer' => 'Le champ "modifié par" doit être un nombre entier.',
+            'leaving_reason.string' => 'Le motif de départ doit être une chaîne de caractères.',
+
+            'gender.in' => 'Le genre doit être "male", "female" ou "other".',
+            'gender.string' => 'Le genre doit être une chaîne de caractères.',
+
+            'marital_status.string' => 'L\'état civil doit être une chaîne de caractères.',
+
+            'ogc_leav_bal_init.numeric' => 'Le solde initial des congés OGC doit être un nombre.',
+            'ogc_leav_bal_init_date.date' => 'La date du solde initial OGC doit être une date valide.',
+
+            'ogc_leav_bal.numeric' => 'Le solde actuel des congés OGC doit être un nombre.',
+            'ogc_leav_bal_date.date' => 'La date du solde actuel OGC doit être une date valide.',
+
+            'ogc_perm_bal.numeric' => 'Le solde permanent OGC doit être un nombre.',
+            'ogc_perm_bal_date.date' => 'La date du solde permanent OGC doit être une date valide.',
+
             'ogc_othr_bal.numeric' => 'Le solde OGC autre doit être un nombre.',
         ];
+
 
         try {
             $fields = $request->validate([
@@ -183,6 +227,9 @@ class AuthController extends Controller
             ], 500);
         }
     }
+
+
+
 
 
 

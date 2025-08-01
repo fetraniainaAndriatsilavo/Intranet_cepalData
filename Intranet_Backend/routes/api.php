@@ -49,8 +49,17 @@ Route::post('/v1/auth', [AuthController::class, 'login']);
 Route::post('/logout', [AuthController::class, 'logout']);
 
 Route::get('/data', [ReferenceDataController::class, 'getDataUser']);
-Route::get('/users/{id}', [UserController::class, 'GetInfoUser']);
-Route::get('/users/all', [UserController::class, 'GetAllUsers']);
+Route::get('/user/{id}/info', [UserController::class, 'GetInfoUser']);
+Route::put('/user/{id}/update', [UserController::class, 'update']);
+Route::get('/getUser/all', [UserController::class, 'GetAllUsers']);
+
+Route::post('/projects/store', [ProjectController::class, 'store']);
+Route::put('/projects/{id}/status', [ProjectController::class, 'updateStatus']);
+Route::get('/getProject/{userId}', [ProjectController::class, 'getProjectByUserId']);
+
+Route::put('/projects/{id}/update', [ProjectController::class, 'updateProject']);
+Route::delete('/projects/{id}/delete', [ProjectController::class, 'destroy']);
+Route::get('/projects/{id}/getProject', [ProjectController::class, 'getProjectById']);
 
 
 
@@ -180,13 +189,7 @@ Route::get('manager/{managerId}/userCumul', [LeaveRequestController::class, 'get
 
 Route::patch('/conges/ajouter-solde', [LeaveBalanceController::class, 'ajouterSoldeMensuel']);
 
-Route::post('/projects', [ProjectController::class, 'store']);
-Route::put('/projects/{id}/status', [ProjectController::class, 'updateStatus']);
-Route::get('/getProject/{userId}', [ProjectController::class, 'getProjectByUserId']);
 
-Route::put('/projects/{id}/update', [ProjectController::class, 'updateProject']);
-Route::delete('/projects/{id}/delete', [ProjectController::class, 'destroy']);
-Route::get('/projects/{id}/getProject', [ProjectController::class, 'getProjectById']);
 
 Route::post('/sprints', [SprintController::class, 'store']);
 Route::get('/getSprint/{sprintId}', [SprintController::class, 'getSprintById']);
