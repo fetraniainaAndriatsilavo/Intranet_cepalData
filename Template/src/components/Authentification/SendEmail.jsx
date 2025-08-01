@@ -1,5 +1,6 @@
 import { Alert, TextField } from "@mui/material"
 import { useState } from "react";
+import api from "../axios";
 export default function SendEmail() {
 
     const [email, setEmail] = useState('')
@@ -9,17 +10,29 @@ export default function SendEmail() {
     const Soumettre = async (e) => {
         e.preventDefault()
         // setLoading(true) 
-        if (email === '') {
+        if (email == '') {
             setError('Veuillez remplir les champs')
         } else {
-            setError('une erreur crédentielles')
+            try {
+                const response = await api.post('/forgot-password', {
+                    email,
+                }, {
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                })
+                alert(response.data.message);
+                console.log("Réponse du serveur:", response.data);
+                setError(null);
+                setTimeout(() => {
+                    // setLoading(false)
+                    alert('Réussi')
+                }, 500)
+            } catch (err) {
+                console.error("Erreur:", err.response?.data || err.message);
+            }
         }
-        setTimeout(() => {
-            // setLoading(false)
-            alert('Réussi')
-        }, 500)
-    }
-
+    };
     return <div className="flex flex-col items-center justify-center gap-3 p-2 py-8 w-2/3 rounded-lg bg-white dark:bg-gray-800">
         <div className="flex flex-col items-center justify-center gap-3 mb-5">
             {/* <img alt='Logo' src={Logo} className="w-full " /> */}

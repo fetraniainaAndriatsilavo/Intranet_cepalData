@@ -63,8 +63,13 @@ export default function Collaborateur() {
         label
     }));
 
-    const clientOptions = Object.entries(clients).map(([code, label]) => ({
-        code,
+    const clientOptions = clients.map(client => ({
+        ...client,
+        label: client.name // This ensures the Autocomplete displays the name
+    }));
+
+    const classificationOptions = Object.entries(classification).map(([id, label]) => ({
+        id: parseInt(id),
         label
     }));
 
@@ -120,7 +125,7 @@ export default function Collaborateur() {
                 });
                 setProfilePhoto(null);
                 setErrorFields([]);
-                setError('') 
+                setError('')
 
                 setTimeout(() => {
                     window.location.href = '/liste-utilisateur'
@@ -371,7 +376,9 @@ export default function Collaborateur() {
                                 </div>
                                 <Autocomplete
                                     disablePortal
-                                    options={classification || []}
+                                    options={classificationOptions}
+                                    getOptionLabel={(option) => option.label}
+                                    isOptionEqualToValue={(option, value) => option.id === value.id}
                                     renderInput={(params) => (
                                         <TextField
                                             {...params}
@@ -381,15 +388,15 @@ export default function Collaborateur() {
                                             name="classification"
                                         />
                                     )}
-                                    value={classification[form.class_id - 1] || null}
+                                    value={classificationOptions.find(c => c.id === form.class_id) || null}
                                     onChange={(e, value) => {
-                                        const index = classification.indexOf(value);
                                         setForm({
                                             ...form,
-                                            class_id: index >= 0 ? index + 1 : '',
+                                            class_id: value ? value.id : ''
                                         });
                                     }}
                                 />
+
 
                             </div>
                         </div>
@@ -401,7 +408,7 @@ export default function Collaborateur() {
 
                         <div className="flex justify-end mt-4 gap-3">
                             <button className="px-3 py-2 border border-sky-600 text-sky-600 rounded uppercase cursor-pointer" type="reset">
-                                Effacer 
+                                Effacer
                             </button>
                             <button className="px-3 py-2 bg-sky-600 text-white rounded uppercase cursor-pointer" onClick={Enregistrer}>
                                 Enregistrer

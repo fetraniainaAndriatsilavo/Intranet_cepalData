@@ -2,10 +2,11 @@ import { useState } from "react";
 import axios from "axios";
 import { useEffect } from "react";
 import { useContext } from "react";
-import { Autocomplete, TextField } from "@mui/material";
-// import { AppContext } from "../../../Context/AppContext";
+import { Alert, Autocomplete, TextField } from "@mui/material";
+import { AppContext } from "../../context/AppContext";
+import api from "../axios";
 export default function Permissions({ radioValue }) {
-  // const { user } = useContext(AppContext);
+  const { user } = useContext(AppContext)
 
   const [request_type, setRequestType] = useState();
   const [start_date, setStartDate] = useState("");
@@ -14,11 +15,17 @@ export default function Permissions({ radioValue }) {
   const [end_half_day, setEnd_half_day] = useState("morning");
   const [reason, setReason] = useState("");
   const [number_day, setNumber_day] = useState(0);
-  // const [user_id, setUser_id] = useState(user.id);
+  const [user_id, setUser_id] = useState(user.id);
+  const [commentaire, setCommentaire] = useState('')
 
-  // useEffect(() => {
-  //   setUser_id(user.id);
-  // }, [use]);
+
+
+  const [success, setSuccess] = useState('');
+  const [error, setError] = useState('');
+
+  useEffect(() => {
+    setUser_id(user.id);
+  }, [user]);
 
   useEffect(() => {
     if (radioValue === "other") {
@@ -71,7 +78,7 @@ export default function Permissions({ radioValue }) {
     } else {
       try {
         const payload = {
-          // user_id,
+          user_id,
           request_type,
           start_date,
           start_half_day,
@@ -79,14 +86,13 @@ export default function Permissions({ radioValue }) {
           end_half_day,
           reason,
           number_day,
+          commentaire
         };
 
-        const response = await axios.post(
-          "http://127.0.0.1:8000/api/leave-requests",
+        const response = await api.post(
+          '/leave-requests',
           payload
         );
-        console.log("Success:", response.data);
-        alert("Demande envoyée avec succès");
         setEndDate("");
         setEnd_half_day("");
         setNumber_day(null);
@@ -94,6 +100,8 @@ export default function Permissions({ radioValue }) {
         setRequestType("");
         setStartDate("");
         setStart_half_day("");
+        setCommentaire('');
+        setSuccess('Demande envoyée avec succès')
       } catch (error) {
         console.error("Error submitting form:", error);
       }
@@ -232,14 +240,20 @@ export default function Permissions({ radioValue }) {
             name="reason"
             id="reason"
             rows="2"
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
+            value={commentaire}
+            onChange={(e) => setCommentaire(e.target.value)}
             className="block p-2.5 w-2/3 text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 mt-3"
             placeholder="Ajoutez un commentaire pour appuyer votre demande..."
           ></textarea>
         </div>
-
-
+        <div>
+          {
+            success && <Alert severity="success">T {success}</Alert>
+          }
+          {
+            error && <Alert severity="error">{error}</Alert>
+          }
+        </div>
         <div className="flex items-center justify-end">
           <button
             type="submit"

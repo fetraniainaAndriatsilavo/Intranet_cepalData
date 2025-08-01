@@ -1,6 +1,7 @@
 import { Pagination } from "@mui/material";
 import TableUser from "../../components/Collaborateurs/TableUser";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api from "../../components/axios";
 
 export default function ListesUtilisateurs() {
     const headers = [
@@ -11,32 +12,23 @@ export default function ListesUtilisateurs() {
         'Date d\'embauche',
         'Action'
     ]
-    const allUsers = [
-        {
-            profile: 'John Smith',
-            email: 'john@example.com',
-            poste: 'dev',
-            department: 'IT',
-            hire_date: 'yesterday'
-        }
-    ]
+    const [allUsers, setAllUsers] = useState([])
 
-    for (let i = 0; i < 101; i++) {
-        allUsers.push(
-            {
-                profile: 'John Smith',
-                email: 'john@example.com',
-                poste: 'dev',
-                department: 'IT',
-                hire_date: 'yesterday'
-            }
-        )
-    }
+    useEffect(() => {
+        api.get('/getUser/all')
+        .then((response) => {
+            setAllUsers(response.data.users)
+        }) 
+        .catch((error) => {
+            console.log(error)
+        })
+    }, [])
+
     const [currentPage, setCurrentPage] = useState(1);
     const userPerPage = 10;
     const lastPageIndex = Math.ceil(allUsers.length / userPerPage);
     const [currentView, setCurrentView] = useState([])
-    
+
     const handleChange = (event, value) => {
         setCurrentPage(value);
         setCurrentView(allUsers.slice((value * userPerPage) - 10, value * userPerPage))

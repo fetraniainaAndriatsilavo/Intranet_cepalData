@@ -1,15 +1,15 @@
 export default function UserRows({ data }) {
     return <tr
         className={`bg-white hover:bg-gray-50  odd:bg-white `}
-    > 
+    >
         <td className="px-6 py-4 font-medium whitespace-nowrap font-semibold">
-            {data.profile}
+            {data.first_name}
         </td>
         <td className="px-6 py-4 text-center">
             {data.email}
         </td>
         <td className="px-6 py-4 text-center">
-            {data.poste}
+            {data.position_name}
         </td>
         <td className="px-6 py-4 text-center">
             {data.department}
@@ -17,7 +17,7 @@ export default function UserRows({ data }) {
         <td className="px-6 py-4 text-center">  {data.hire_date} </td>
         <td className="px-6 py-4 text-center font-semibold gap-3 flex items-center justify-center">
             <button onClick={() => {
-                alert('Modifié')
+                window.location.href = `/modif-utilisateur/${data.id}`;
             }} className="cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-gray-300 icon icon-tabler icons-tabler-outline icon-tabler-edit">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -27,7 +27,7 @@ export default function UserRows({ data }) {
                 </svg>
             </button>
             <button onClick={() => {
-                alert('Supprimé')
+                alert('Supprimé '+ data.id)
             }} className="cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className=" text-red-500 icon icon-tabler icons-tabler-outline icon-tabler-trash">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -38,5 +38,5 @@ export default function UserRows({ data }) {
                     <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
                 </svg>
             </button> </td>
-    </tr>
+    </tr >
 }

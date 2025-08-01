@@ -7,8 +7,41 @@ import api from "../../components/axios";
 export default function Informations() {
     const { user } = useContext(AppContext)
     const [userInformation, setUserInformation] = useState({})
+
+    // retourne les data comme  clients/contract_type/departments/classification/managers 
+    const [clients, setClients] = useState([])
+    const [contract, setContract] = useState([])
+    const [department, setDepartment] = useState([])
+    const [positions, setPositions] = useState([])
+    const [classification, setClassification] = useState([])
+    const [managers, setManagers] = useState([])
+
     useEffect(() => {
-        api.get('/users/' + user.id)
+        api.get("/data")
+            .then((response) => {
+                setClients(response.data.clients)
+                setContract(response.data.contract_types)
+                setPositions(response.data.positions)
+                setDepartment(response.data.departments)
+                setClassification(response.data.classifications)
+                setManagers(response.data.managers)
+            })
+            .catch((error) => {
+                alert(error.response.message)
+            })
+    }, []);
+
+    const getValueFromId = (object, id) => {
+        return object[id] || null;
+    };
+
+
+    const classificationId = getValueFromId(classification, userInformation.classification_id);
+    const departmentId = getValueFromId(department, userInformation.department);
+    const positionId = getValueFromId(positions, userInformation.position_id);
+
+    useEffect(() => {
+        api.get('/user/' + user.id + '/info')
             .then((response) => {
                 setUserInformation(response.data.user)
             })
@@ -16,7 +49,6 @@ export default function Informations() {
                 console.log(error)
             })
     }, [user])
-
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden max-w-6xl mx-auto">
             {/* Cover Image */}
@@ -36,7 +68,7 @@ export default function Informations() {
                     <h2 className="text-xl font-semibold text-gray-800"> {userInformation.first_name} </h2>
                 </div>
                 <p className="text-sm text-gray-500">
-                    {userInformation.position_name}
+                    {departmentId}
                 </p>
                 <p className="text-sm text-gray-400">New York, USA</p>
             </div>
@@ -106,7 +138,7 @@ export default function Informations() {
                                 <path d="M17.27 20l-1.3 .75" />
                                 <path d="M15.97 17.25l1.3 .75" />
                                 <path d="M20.733 20l1.3 .75" /></svg>
-                            
+
                             <span>  {userInformation.manager} <CheckCircle className="text-blue-500" fontSize="small" />   </span>
                         </div>
 
@@ -131,7 +163,7 @@ export default function Informations() {
                                 <path d="M14 4h6v6h-6z" />
                                 <path d="M4 14h6v6h-6z" />
                                 <path d="M17 17m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0" /></svg>
-                            <span> {userInformation.classification_name}   </span>
+                            <span> {classificationId}   </span>
                         </div>
 
                         {/* Poste Occupé */}
@@ -141,7 +173,7 @@ export default function Informations() {
                                 <path d="M3 9a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2v-9z" />
                                 <path d="M8 7v-2a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v2" />
                             </svg>
-                            <span>  {userInformation.position_name} </span>
+                            <span>  {positionId} </span>
                         </div>
                         {/* Matricule */}
                         <div className="flex flex-row gap-2 items-center mb-3">

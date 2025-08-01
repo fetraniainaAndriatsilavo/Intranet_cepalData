@@ -1,8 +1,10 @@
 import { Alert, Autocomplete, Avatar, TextField } from "@mui/material";
 import api from "../../components/axios";
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 
 export default function ModifCollaborateurs() {
+    const { id } = useParams()
     const [profilePhoto, setProfilePhoto] = useState(null);
 
     const [form, setForm] = useState({
@@ -63,14 +65,62 @@ export default function ModifCollaborateurs() {
         label
     }));
 
-    const clientOptions = Object.entries(clients).map(([code, label]) => ({
-        code,
+    const clientOptions = clients.map(client => ({
+        ...client,
+        label: client.name
+    }));
+
+    const classificationOptions = Object.entries(classification).map(([id, label]) => ({
+        id: parseInt(id),
         label
     }));
 
-    // soumettre la création d'utilisateur 
+    const departmentOptions = Object.entries(department).map(([id, name]) => ({
+        id: parseInt(id),
+        label: name,
+    })); 
+
+    //collecte les donnés de l'utilisateur 
+    useEffect(() => {
+        if (!id) return;
+
+        api.get('/user/' + id + '/info')
+            .then((response) => {
+                const user = response.data.user;
+
+                // const classOption = classificationOptions.find(c => c.label === user.classification_name);
+
+                setForm({
+                    image: user.image || '',
+                    first_name: user.first_name || "",
+                    email: user.email || "",
+                    phone_number: user.phone_number || "",
+                    address: user.address || "",
+                    birth_place: user.birth_place || '',
+                    birth_date: user.birth_date || '',
+                    marital_status: user.marital_status || '',
+                    gender: user.gender || '',
+                    role: user.role || '',
+                    client_code: user.client_code || '',
+                    employee_number: user.employee_number || '',
+                    cnaps_number: user.cnaps_number || '',
+                    departement_id: user.department || '',
+                    position_id: user.position_id || '',
+                    class_id: user.classification_id || '',
+                    manager_id: user.manager || '',
+                });
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }, [id]);
+
+
+
+    // soumettre la modification de l'utilisateur 
     const [error, setError] = useState('')
-    const Enregistrer = async (e) => {
+    
+    const Modifier = async (e) => {
         e.preventDefault();
 
         const requiredFields = [
@@ -87,7 +137,7 @@ export default function ModifCollaborateurs() {
 
         if (errors.length === 0) {
             try {
-                const response = await api.post("/register", form, {
+                const response = await api.put("/user/" + id + "/update", form, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
@@ -95,7 +145,6 @@ export default function ModifCollaborateurs() {
                 );
                 console.log("Response from backend:", response.data);
 
-                // Reset the form state to initial empty values
                 setForm({
                     image: '',
                     first_name: "",
@@ -148,9 +197,7 @@ export default function ModifCollaborateurs() {
                     </div>
                     <div className="pt-16 px-6 pb-6">
                         <label className="uppercase mt-2 bg-white text-sm px-4 py-2 rounded shadow cursor-pointer hover:bg-gray-100 border-2 border-sky-600 text-sky-600 hover:border-none hover:bg-sky-600 hover:text-white">
-                            {
-                                form.image ? 'Mofidifer' : 'Ajouter'
-                            }
+                            Ajouter
                             <input type="file" accept="image/*" className="hidden" onChange={handleProfileUpload} />
                         </label>
                     </div>
@@ -333,17 +380,26 @@ export default function ModifCollaborateurs() {
                                 <div className="w-full flex flex-col">
                                     <Autocomplete
                                         disablePortal
-                                        options={department || []}
+                                        options={departmentOptions}
+                                        getOptionLabel={(option) => option.label}
+                                        isOptionEqualToValue={(option, value) => option.id === value.id}
                                         className="mb-3"
                                         renderInput={(params) => (
-                                            <TextField {...params} label="Département" size="small" fullWidth name="departement" />
+                                            <TextField
+                                                {...params}
+                                                label="Département"
+                                                size="small"
+                                                fullWidth
+                                                name="departement"
+                                            />
                                         )}
-                                        value={department[form.departement_id - 1] || null}
+                                        value={
+                                            departmentOptions.find((d) => d.id === form.departement_id) || null
+                                        }
                                         onChange={(e, value) => {
-                                            const index = department.indexOf(value);
                                             setForm({
                                                 ...form,
-                                                departement_id: index >= 0 ? index + 1 : '', // 1-based ID
+                                                departement_id: value ? value.id : "",
                                             });
                                         }}
                                     />
@@ -369,11 +425,12 @@ export default function ModifCollaborateurs() {
                                             setForm({ ...form, position_id: value ? value.id : null })
                                         }
                                     />
-
                                 </div>
                                 <Autocomplete
                                     disablePortal
-                                    options={classification || []}
+                                    options={classificationOptions}
+                                    getOptionLabel={(option) => option.label}
+                                    isOptionEqualToValue={(option, value) => option.id === value.id}
                                     renderInput={(params) => (
                                         <TextField
                                             {...params}
@@ -383,16 +440,14 @@ export default function ModifCollaborateurs() {
                                             name="classification"
                                         />
                                     )}
-                                    value={classification[form.class_id - 1] || null}
+                                    value={classificationOptions.find(c => c.id === form.class_id) || null}
                                     onChange={(e, value) => {
-                                        const index = classification.indexOf(value);
                                         setForm({
                                             ...form,
-                                            class_id: index >= 0 ? index + 1 : '',
+                                            class_id: value ? value.id : ''
                                         });
                                     }}
                                 />
-
                             </div>
                         </div>
                         <div>
@@ -405,7 +460,7 @@ export default function ModifCollaborateurs() {
                             <button className="px-3 py-2 border border-sky-600 text-sky-600 rounded uppercase cursor-pointer" type="reset">
                                 Effacer
                             </button>
-                            <button className="px-3 py-2 bg-sky-600 text-white rounded uppercase cursor-pointer" onClick={Enregistrer}>
+                            <button className="px-3 py-2 bg-sky-600 text-white rounded uppercase cursor-pointer hover:bg-sky-700" onClick={Modifier}>
                                 Enregistrer
                             </button>
                         </div>
