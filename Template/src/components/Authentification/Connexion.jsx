@@ -14,8 +14,7 @@ export default function Connexion() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
-    const { setUser } = useContext(AppContext)
-
+    const { setUser, setToken } = useContext(AppContext)
     const Soumettre = async (e) => {
         e.preventDefault();
         setLoading(true);
@@ -33,8 +32,9 @@ export default function Connexion() {
                 email,
                 password,
             });
-            
-            localStorage.setItem('user', JSON.stringify(response.data.user));
+            localStorage.setItem('token', response.data.token)
+            localStorage.setItem('user', JSON.stringify(response.data.user)); 
+            setToken(response.data.token)
             setUser(response.data.user);
             setSuccess('Connexion réussie');
 

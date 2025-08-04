@@ -1,3 +1,5 @@
+import api from "../axios";
+
 export default function Demande({ data }) {
 
   function getWorkingDays(startDateStr, endDateStr) {
@@ -18,8 +20,31 @@ export default function Demande({ data }) {
       }
       currentDate.setDate(currentDate.getDate() + 1);
     }
-    return count ;
+    return count;
   }
+
+  function FormatDate(d) {
+    let date = new Date(d)
+    return date.getDate() + "/" + date.getMonth() + "/" + date.getFullYear();
+  }
+
+  const toggleArchive = (id, ChangedStatus) => {
+    if (ChangedStatus == 'approved') {
+      api.put(`/leave-requests/${id}/approved`, { status: ChangedStatus })
+        .then(() => {
+        })
+        .catch((error) => {
+          console.error("Failed to update status:", error);
+        });
+    } else {
+      api.put(`/leave-requests/${id}/refused`, { status: ChangedStatus })
+        .then(() => {
+        })
+        .catch((error) => {
+          console.error("Failed to update status:", error);
+        });
+    }
+  };
 
   return (
     <tr
@@ -28,40 +53,44 @@ export default function Demande({ data }) {
     >
       {/* Nom d'utilisateur */}
       <td className="px-6 py-4 font-medium whitespace-nowrap font-semibold">
-        {data.user?.name || '—'}
+        {data.user?.first_name + " " + data.user?.last_name}
       </td>
 
       {/* Soldes */}
       <td className="px-6 py-4 text-center">
-        20
+        {data.user?.ogc_leav_bal}
       </td>
 
       {/* Motif */}
-      <td className="px-6 py-4">{data.reason}</td>
+      <td className="px-6 py-4">
+        {data.leave_type?.name}
+      </td>
 
       {/* Date de début */}
-      <td className="px-6 py-4">{data.start_date}</td>
+      <td className="px-6 py-4">
+        {FormatDate(data.start_date)}
+      </td>
 
       {/* Date de fin */}
-      <td className="px-6 py-4">{data.end_date}</td>
+      <td className="px-6 py-4">{FormatDate(data.end_date)}</td>
 
       {/* Durée */}
       <td className="px-6 py-4 text-center">
         {
-        getWorkingDays(data.start_date, data.end_date)
+          getWorkingDays(data.start_date, data.end_date)
         }
       </td>
 
 
       {/* Créé le */}
-      <td className="px-6 py-4">{data.created_at}</td>
+      <td className="px-6 py-4">{FormatDate(data.created_at)}</td>
 
       {/* Action */}
       <td className="px-6 py-4 flex items-center justify-center gap-2">
 
         {/* Vrai */}
         <button className="text-green-600 hover:underline cursor-pointer" onClick={() => {
-          alert('Vrai')
+          toggleArchive(data.id, 'approved')
         }}>
           <svg
             xmlns="http://www.w3.org/2000/svg"
@@ -78,7 +107,7 @@ export default function Demande({ data }) {
 
         {/* Faux*/}
         <button className="text-red-600 hover:underline cursor-pointer" onClick={() => {
-          alert('Faux')
+          toggleArchive(data.id, 'refused')
         }}>
           <svg
             xmlns="http://www.w3.org/2000/svg"

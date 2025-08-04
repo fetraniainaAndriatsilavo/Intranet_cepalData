@@ -3,7 +3,7 @@ import { createContext, useState } from "react";
 export const AppContext = createContext();
 
 export default function AppProvider({ children }) {
-//   const [token, setToken] = useState(localStorage.getItem("token"));
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
   let initialUser = null;
   try {
@@ -13,9 +13,8 @@ export default function AppProvider({ children }) {
   } 
 
   const [user, setUser] = useState(initialUser);
-
   return (
-    <AppContext.Provider value={{user, setUser }}>
+    <AppContext.Provider value={{token, setToken, user, setUser }}>
       {children}
     </AppContext.Provider>
   );

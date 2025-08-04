@@ -1,5 +1,4 @@
 import { useState } from "react";
-import axios from "axios";
 import { useEffect } from "react";
 import { useContext } from "react";
 import { Alert, Autocomplete, TextField } from "@mui/material";
@@ -13,29 +12,21 @@ export default function Permissions({ radioValue }) {
   const [start_half_day, setStart_half_day] = useState("morning");
   const [end_date, setEndDate] = useState("");
   const [end_half_day, setEnd_half_day] = useState("morning");
-  const [reason, setReason] = useState("");
   const [number_day, setNumber_day] = useState(0);
   const [user_id, setUser_id] = useState(user.id);
   const [commentaire, setCommentaire] = useState('')
 
 
-
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
+
+  const [permissionType, setPermissionType] = useState([])
+  const [autres, setAutres] = useState([])
+  const [leave_type_id, setLeave_type_id] = useState(0)
 
   useEffect(() => {
     setUser_id(user.id);
   }, [user]);
-
-  useEffect(() => {
-    if (radioValue === "other") {
-      setReason("Hospitalisation");
-    } else if (radioValue === "permission") {
-      setReason("mariage salarié");
-    } else {
-      setReason('')
-    }
-  }, [radioValue]);
 
   useEffect(() => {
     if (start_date && end_date) {
@@ -68,7 +59,33 @@ export default function Permissions({ radioValue }) {
 
       setNumber_day(total);
     }
-  }, [start_date, end_date, start_half_day, end_half_day]);
+  }, [start_date, end_date, start_half_day, end_half_day]); 
+
+  // les types de permissions et autres
+  const excludedNames = [
+    'Congé payé',
+    "Congé sans solde",
+    "Hospitalisation d'un enfant",
+    "Hospitalisation de conjoint",
+    "Mises à pieds"
+  ];
+
+  useEffect(() => {
+    api.get('/type/leave')
+      .then((response) => {
+        setPermissionType(response.data.filter(data => !excludedNames.includes(data.name)));
+        setAutres(response.data.filter(data =>
+          data.name === "Congé sans solde" ||
+          data.name === "Hospitalisation d'un enfant" ||
+          data.name === "Hospitalisation de conjoint" ||
+          data.name === "Mises à pieds"
+        ));
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  }, [])
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -84,9 +101,9 @@ export default function Permissions({ radioValue }) {
           start_half_day,
           end_date,
           end_half_day,
-          reason,
           number_day,
-          commentaire
+          commentaire,
+          leave_type_id
         };
 
         const response = await api.post(
@@ -96,7 +113,6 @@ export default function Permissions({ radioValue }) {
         setEndDate("");
         setEnd_half_day("");
         setNumber_day(null);
-        setReason("");
         setRequestType("");
         setStartDate("");
         setStart_half_day("");
@@ -132,22 +148,24 @@ export default function Permissions({ radioValue }) {
           </div>
         )}
 
-        {radioValue === "other" && (
+        {radioValue === "autres" && (
           <div>
-            <label htmlFor="reason">Type d'absence </label>
+            <label htmlFor="reason" className="mb-3">Type de permissions</label>
             <Autocomplete
               id="reason"
               disablePortal
-              options={["Hospitalisation", "Circoncision", "Mariage", "Urgence"]}
-              value={reason}
+              options={autres || []}
+              getOptionLabel={(option) => option.name || ""}
+              value={autres.find((opt) => opt.id)}
+              onChange={(e, newValue) => setLeave_type_id(newValue?.id || null)}
               size="small"
-              className="w-1/3 mt-3 "
-              onChange={(e) => setReason(e.target.value)}
+              className="w-1/3 mt-3"
               renderInput={(params) => (
                 <TextField
                   {...params}
                   name="classification"
                   variant="outlined"
+                  label="Type de permission"
                 />
               )}
             />
@@ -160,16 +178,18 @@ export default function Permissions({ radioValue }) {
             <Autocomplete
               id="reason"
               disablePortal
-              options={["mariage salarié", "mariage enfant", "mariage fraternel", "décès parental ou epoux", "décès fraternel", "hospitalisation conjoint", "baptême", "confirmation"]}
-              value={reason}
+              options={permissionType || []}
+              getOptionLabel={(option) => option.name || ""}
+              value={permissionType.find((opt) => opt.id)}
+              onChange={(e, newValue) => setLeave_type_id(newValue?.id || null)}
               size="small"
-              className="w-1/3 mt-3 "
-              onChange={(e) => setReason(e.target.value)}
+              className="w-1/3 mt-3"
               renderInput={(params) => (
                 <TextField
                   {...params}
                   name="classification"
                   variant="outlined"
+                  label="Type de permission"
                 />
               )}
             />
@@ -246,7 +266,8 @@ export default function Permissions({ radioValue }) {
             placeholder="Ajoutez un commentaire pour appuyer votre demande..."
           ></textarea>
         </div>
-        <div>
+
+        <div className="mt-2 mb-2">
           {
             success && <Alert severity="success">T {success}</Alert>
           }
@@ -254,6 +275,7 @@ export default function Permissions({ radioValue }) {
             error && <Alert severity="error">{error}</Alert>
           }
         </div>
+
         <div className="flex items-center justify-end">
           <button
             type="submit"

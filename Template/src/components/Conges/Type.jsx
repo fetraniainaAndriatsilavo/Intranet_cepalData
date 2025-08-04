@@ -6,7 +6,7 @@ export default function Type({ lists, setRadioValue }) {
   const getValue = (e) => {
     setSelectedValue(e.target.value); 
     setRadioValue(e.target.value)
-  }; 
+  };  
   return (
     <div className="grid grid-cols bg-white p-5 rounded-lg">
       {lists &&
@@ -19,9 +19,9 @@ export default function Type({ lists, setRadioValue }) {
                 type="radio"
                 value={list.valeur}
                 name="type"
-                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500  focus:ring-2 " 
+                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 focus:bg-blue-500 focus:ring-2 " 
                 onChange={getValue} 
-                checked={selectedValue === list.valeur}
+                checked={selectedValue == list.valeur}
               />
             </div>
             <div className="ms-2 text-sm">

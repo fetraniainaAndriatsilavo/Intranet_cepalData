@@ -3,16 +3,16 @@ export default function TabSoldes({ data }) {
         className={`bg-white hover:bg-gray-50  odd:bg-white `}
     >
         <td className="px-6 py-4 font-medium whitespace-nowrap font-semibold">
-            {data.username || '—'}
+            {data.first_name || '—'}
         </td>
         <td className="px-6 py-4 text-center">
-            20
+            {data.ogc_leav_bal}
         </td>
         <td className="px-6 py-4 text-center">
-            17
+             {data.ogc_perm_bal}
         </td>
         <td className="px-6 py-4 text-center">
-            11
+             {data.ogc_othr_bal}
         </td>
     </tr>
 }

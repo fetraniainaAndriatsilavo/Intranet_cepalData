@@ -61,13 +61,25 @@ Route::put('/projects/{id}/update', [ProjectController::class, 'updateProject'])
 Route::delete('/projects/{id}/delete', [ProjectController::class, 'destroy']);
 Route::get('/projects/{id}/getProject', [ProjectController::class, 'getProjectById']);
 
+Route::post('/leave-requests', [LeaveRequestController::class, 'store']);
+Route::get(
+    '/type/leave',
+    [LeaveRequestController::class, 'getAllLeaveType']
+);
+Route::get('/users/{id}/leave-balances', [LeaveRequestController::class, 'getLeaveBalances']);
+Route::get('manager/{managerId}/leave-requests', [LeaveRequestController::class, 'getTeamLeaveRequests']);
+Route::get('/all-requests', [LeaveRequestController::class, 'getAllLeaveRequests']);
 
+
+
+Route::put('/leave-requests/{id}/change', [LeaveRequestController::class, 'changeStatus']);
+Route::put('/leave-requests/{id}/refused', [LeaveRequestController::class, 'refusedStatus']);
 
 //UserController
 // Route::get('/notifications', [UserController::class, 'getNotifications']);
 // Route::get('/v1/users', [UserController::class, 'getUser']);
 // Route::get('/v1/user/{id}', [UserController::class, 'getPersonalUser']);
-// Route::post('v1/users/{id}', [UserController::class, 'toggleStatus']);
+Route::put('v1/users/{id}', [UserController::class, 'toggleStatus']);
 // Route::get('/all-manager', [UserController::class, 'getAllManagers']);
 
 //PayrollRecordController
@@ -167,15 +179,7 @@ Route::middleware('auth:api')->post('/pusher/auth', function (Request $request) 
     return Broadcast::auth($request);
 });
 
-Route::post('/leave-requests', [LeaveRequestController::class, 'store']);
-Route::get('/users/{id}/leave-balances', [LeaveRequestController::class, 'getLeaveBalances']);
-Route::get('manager/{managerId}/leave-requests', [LeaveRequestController::class, 'getTeamLeaveRequests']);
-Route::get('/all-requests', [LeaveRequestController::class, 'getAllLeaveRequests']);
 
-
-
-Route::put('/leave-requests/{id}/approved', [LeaveRequestController::class, 'approvedStatus']);
-Route::put('/leave-requests/{id}/refused', [LeaveRequestController::class, 'refusedStatus']);
 
 
 Route::get('/ogc-cumul', [OgCumulController::class, 'getAllCumuls']);

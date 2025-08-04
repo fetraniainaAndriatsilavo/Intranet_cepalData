@@ -3,9 +3,11 @@
 namespace App\Http\Controllers;
 
 use App\Models\LeaveRequest;
+use App\Models\LeaveType;
 use App\Models\OgCumul;
 use App\Models\User;
 use App\Models\UserDetails;
+use Carbon\Carbon;
 use Illuminate\Foundation\Exceptions\Renderer\Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -14,6 +16,7 @@ use LeaveRequestStatusNotification;
 
 class LeaveRequestController extends Controller
 {
+
     /**
      * Crée une nouvelle demande de congé/permission/autre
      */
@@ -84,7 +87,7 @@ class LeaveRequestController extends Controller
                     'start_half_day' => $validated['start_half_day'],
                     'end_half_day' => $validated['end_half_day'],
                     'number_day' => $validated['number_day'],
-                    'status' => "pending",
+                    'status' => "created",
                     'approved_at' => $validated['approved_at'] ?? null,
                     'approved_by' => $validated['approved_by'] ?? null,
                     'approved_comment' => $validated['approved_comment'] ?? null,
@@ -117,13 +120,12 @@ class LeaveRequestController extends Controller
     }
 
 
-    public function approvedStatus(Request $request, $id)
+    public function changeStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:approved,refused',
+            'status' => 'required|in:approved,refused,pending,canceled',
         ], [
             'status.required' => 'Le statut est requis.',
-            'status.in' => 'Le statut doit être approved ou refused.',
         ]);
 
         $leaveRequest = LeaveRequest::find($id);
@@ -142,34 +144,50 @@ class LeaveRequestController extends Controller
         ]);
     }
 
-    public function refusedStatus(Request $request, $id)
+
+
+    public function approveExpiredLeaveRequests()
     {
-        $request->validate([
-            'status' => 'required|in:approved,refused',
-            'commentaire' => 'required'
-        ], [
-            'status.required' => 'Le statut est requis.',
-            'status.in' => 'Le statut doit être approved ou refused.',
-            'commentaire.required' => 'Le commentaire est requis.',
+        $today = Carbon::today();
 
-        ]);
-
-        $leaveRequest = LeaveRequest::find($id);
-
-        if (!$leaveRequest) {
-            return response()->json(['message' => 'Demande introuvable.'], 404);
-        }
-
-        $leaveRequest->status = $request->status;
-        $leaveRequest->commentaire = $request->commentaire;
-
-        $leaveRequest->save();
-
-        return response()->json([
-            'message' => "Demande mise à jour avec succès en tant que {$request->status}.",
-            'data' => $leaveRequest
-        ]);
+        LeaveRequest::where('status', 'pending')
+            ->whereDate('end_date', '<', $today)
+            ->update([
+                'status' => 'approved',
+                'approved_at' => now(),
+                'approved_comment' => 'Approuvé automatiquement car date expirée',
+            ]);
     }
+
+
+    // public function refusedStatus(Request $request, $id)
+    // {
+    //     $request->validate([
+    //         'status' => 'required|in:approved,refused',
+    //         'commentaire' => 'required'
+    //     ], [
+    //         'status.required' => 'Le statut est requis.',
+    //         'status.in' => 'Le statut doit être approved ou refused.',
+    //         'commentaire.required' => 'Le commentaire est requis.',
+
+    //     ]);
+
+    //     $leaveRequest = LeaveRequest::find($id);
+
+    //     if (!$leaveRequest) {
+    //         return response()->json(['message' => 'Demande introuvable.'], 404);
+    //     }
+
+    //     $leaveRequest->status = $request->status;
+    //     $leaveRequest->commentaire = $request->commentaire;
+
+    //     $leaveRequest->save();
+
+    //     return response()->json([
+    //         'message' => "Demande mise à jour avec succès en tant que {$request->status}.",
+    //         'data' => $leaveRequest
+    //     ]);
+    // }
 
     public function getLeaveBalances($id)
     {
@@ -286,5 +304,11 @@ class LeaveRequestController extends Controller
         $leaveRequests = LeaveRequest::with('user', 'leaveType')->get();
 
         return response()->json($leaveRequests);
+    }
+
+    public function getAllTypeLeave()
+    {
+        $leavetype = LeaveType::all();
+        return response()->json($leavetype);
     }
 }

@@ -7,10 +7,11 @@ import { AppContext } from '../context/AppContext';
 import { Avatar } from '@mui/material';
 import api from './axios';
 
+
 function DropdownProfile({
   align
 }) {
-  const { user } = useContext(AppContext)
+  const { user, token } = useContext(AppContext)
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [error, setError] = useState('')
 
@@ -44,9 +45,28 @@ function DropdownProfile({
     return firstname.charAt(0).toUpperCase() + "" + lastname.charAt(0).toUpperCase()
   }
 
+  function Role(role) {
+    if (role == 'user') {
+      return 'Utilisateur'
+    } else if (role == 'admin') {
+      return 'Administrateur'
+    } else if (role == 'manager') {
+      return 'Manager'
+    } else {
+      return '';
+    }
+  }
   const Deconnecter = async () => {
     try {
-      await api.post('/logout');
+      await api.post('/logout',
+        {
+          token
+        }, {
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+      );
       localStorage.clear();
       window.location.href = '/';
     } catch (error) {
@@ -91,7 +111,9 @@ function DropdownProfile({
         >
           <div className="pt-0.5 pb-2 px-3 mb-1 border-b border-gray-200 dark:border-gray-700/60">
             <div className="font-medium text-gray-800 dark:text-gray-100"> {user ? user.first_name : 'Utilisateur'} </div>
-            <div className="text-xs text-gray-500 dark:text-gray-400 italic">Administrator</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400 italic">{
+              user ? Role(user.role) : ''
+            }</div>
           </div>
           {
             user && <ul>

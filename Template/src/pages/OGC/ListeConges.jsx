@@ -18,43 +18,51 @@ export default function ListeConges() {
     const list = [
         {
             user: {
-                name: 'Hery Niaina'
+                first_name: 'Hery Niaina',
+                last_name: 'Tianarivola'
             },
             reason: 'Vacances',
             start_date: '07/28/2025',
             end_date: '08/31/2025',
             request_type: 'leave',
-            created_at: '25/07/2025'
+            created_at: '25/07/2025',
+            status: 'refused'
         },
         {
             user: {
-                name: 'Niaina'
+                first_name: 'Hery Niaina',
+                last_name: 'Tianarivola'
             },
             reason: 'Vacances',
             start_date: '07/28/2025',
             end_date: '08/11/2025',
             request_type: 'leave',
-            created_at: '25/07/2025'
+            created_at: '25/07/2025',
+            status: 'approved'
         },
         {
             user: {
-                name: 'Hery '
+                first_name: 'Hery Niaina',
+                last_name: 'Tianarivola'
             },
             reason: 'Vacances',
             start_date: '07/28/2025',
             end_date: '08/01/2025',
             request_type: 'leave',
-            created_at: '25/07/2025'
+            created_at: '25/07/2025',
+            status: 'pending'
         },
         {
             user: {
-                name: 'Hery '
+                first_name: 'Hery Niaina',
+                last_name: 'Tianarivola'
             },
             reason: 'Vacances',
             start_date: '07/28/2025',
             end_date: '08/04/2025',
             request_type: 'leave',
-            created_at: '25/07/2025'
+            created_at: '25/07/2025',
+            status: 'approved'
         }
     ]
 
@@ -74,7 +82,7 @@ export default function ListeConges() {
         </div>
         <div className="bg-white  w-full rounded-lg">
             <h3 className="p-3 "> Tous les demandes <span className=" font-semibold text-gray-300"> {list.length} </span> </h3>
-            <Table listHeader={listMenu} datas={currentView.length < 1 ? list.slice(0, 10) : currentView} />
+            <Table listHeader={listMenu} datas={currentView.length < 1 ? list.slice(0, 10) : currentView} type='historic'/>
         </div>
         <div>
             <Pagination count={lastPageIndex} page={currentPage} onChange={handleChange} />
