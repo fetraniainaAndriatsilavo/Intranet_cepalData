@@ -78,6 +78,15 @@ export default function PublicDocuments() {
                     <input id="dropzone-file" type="file" />
                 </label>
             </div>
+
+            <div className="flex justify-end mt-4 gap-3">
+                <button className="px-3 py-2 border border-sky-600 text-sky-600 rounded uppercase cursor-pointer" type="reset">
+                    Annuler
+                </button>
+                <button className="px-3 py-2 bg-sky-600 text-white rounded uppercase cursor-pointer">
+                    Enregistrer
+                </button>
+            </div>
         </div>
     );
 }

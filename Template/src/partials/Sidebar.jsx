@@ -219,7 +219,7 @@ function Sidebar({
                             </li>
                           }
                           {
-                            user && user.role == 'user' && <li className="mb-1 last:mb-0">
+                            user && user.role != 'user' && <li className="mb-1 last:mb-0">
                               <NavLink
                                 end
                                 to='/mesvalidations'
@@ -384,7 +384,7 @@ function Sidebar({
                           <li className="mb-1 last:mb-0">
                             <NavLink
                               end
-                              to="https://cruip.com/mosaic/"
+                              to="/mesnotifications"
                               className={({ isActive }) =>
                                 "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
                               }

@@ -33,7 +33,7 @@ export default function Connexion() {
                 password,
             });
             localStorage.setItem('token', response.data.token)
-            localStorage.setItem('user', JSON.stringify(response.data.user)); 
+            localStorage.setItem('user', JSON.stringify(response.data.user));
             setToken(response.data.token)
             setUser(response.data.user);
             setSuccess('Connexion réussie');
@@ -49,7 +49,9 @@ export default function Connexion() {
                 setError('Email ou mot de passe incorrect');
             } else if (err.response && err.response.status === 422) {
                 setError(err.response.data.message);
-            } else {
+            } else if (err.response && err.response.status === 403) {
+                setError(err.response.data.message);
+            }else {
                 setError('Une erreur est survenue. Veuillez réessayer.');
             }
         } finally {

@@ -56,6 +56,9 @@ function App() {
             {/* Projet */}
             <Route path="/creer-projet" element={<Dashboard />} />
 
+
+            {/* Mes Notifications */} 
+            <Route path='/mesnotifications' element={<Dashboard />} />
             {/* Fallback route for authenticated users */}
             <Route path="*" element={<Navigate to="/accueil" />} />
           </>

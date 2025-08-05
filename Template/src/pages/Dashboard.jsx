@@ -30,6 +30,7 @@ import ListesUtilisateurs from './Collaborateur/ListesUtilisateurs';
 import ModifCollaborateurs from './Collaborateur/ModifCollaborateurs';
 import UploadDocument from './Collaborateur/UploadDocument';
 import Createprojet from '../components/Projets/create/Createprojet';
+import Notifications from './Mes Notifications/Notifications';
 // import Banner from '../partials/Banner';
 
 function Dashboard() {
@@ -120,11 +121,11 @@ function Dashboard() {
             {pathname == '/mesinformations' && <Informations />}
             {/* {pathname == '/modif-utilisateur/:id' && <ModifCollaborateurs />} */}
             {matchPath('/modif-utilisateur/:id', pathname) && <ModifCollaborateurs />}
-            {pathname == '/documents-utilisateurs' && <UploadDocument />} 
-
-
-            {/* Projets */} 
-            {pathname == '/creer-projet' && <Createprojet/>}
+            {pathname == '/documents-utilisateurs' && <UploadDocument />}
+            {/* notifications */}
+            {pathname == '/mesnotifications' && <Notifications />}
+            {/* Projets */}
+            {pathname == '/creer-projet' && <Createprojet />}
           </div>
         </main>
       </div>

@@ -25,7 +25,9 @@ export default function Collaborateur() {
         departement_id: '',
         position_id: '',
         class_id: '',
-        manager_id: ''
+        manager_id: '',
+        start_contract: '',
+        end_contract: ''
     });
 
     const [errorFields, setErrorFields] = useState([]);
@@ -306,6 +308,22 @@ export default function Collaborateur() {
                                     value={form.type}
                                     onChange={(e, value) => setForm({ ...form, type: value })}
                                 />
+                                <div className="p-3 flex items-center justify-center gap-3 ">
+                                    {
+                                        form.type && <TextField label='début du Contrat' size="small" type="date" InputLabelProps={{ shrink: true }} value={form.start_contract}
+                                            onChange={(e) => {
+                                                setForm({ ...form, start_contract: value })
+                                            }} />
+
+                                    }
+                                    {
+                                        form.type && form.type == 'CDD' && <TextField label='fin du Contrat' size="small" type="date" InputLabelProps={{ shrink: true }} value={form.end_contract}
+                                            onChange={(e) => {
+                                                setForm({ ...form, end_contract: value })
+                                            }}
+                                        />
+                                    }
+                                </div>
                                 <TextField
                                     type="date"
                                     label="Date d'embauche"
