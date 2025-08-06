@@ -31,6 +31,11 @@ import ModifCollaborateurs from './Collaborateur/ModifCollaborateurs';
 import UploadDocument from './Collaborateur/UploadDocument';
 import Createprojet from '../components/Projets/create/Createprojet';
 import Notifications from './Mes Notifications/Notifications';
+import CreateTimeSheet from './Mes Feuilles de Temps/CreateTimesheet';
+import ListTimeSheet from './Mes Feuilles de Temps/ListTimesheet';
+import ModifyTimeSheet from './Mes Feuilles de Temps/ModifyTimesheet';
+import TeamTimesheet from './Mes Feuilles de Temps/TeamTimesheet';
+import AllTimesheet from './Admin Feuille de Temps/AllTimesheet';
 // import Banner from '../partials/Banner';
 
 function Dashboard() {
@@ -122,6 +127,12 @@ function Dashboard() {
             {/* {pathname == '/modif-utilisateur/:id' && <ModifCollaborateurs />} */}
             {matchPath('/modif-utilisateur/:id', pathname) && <ModifCollaborateurs />}
             {pathname == '/documents-utilisateurs' && <UploadDocument />}
+
+            {/* mes feuilles de temps */}
+            {pathname == '/list-timesheet' && <ListTimeSheet />}
+            {matchPath('/modify-timesheet/:id', pathname) && <ModifyTimeSheet />}
+            {pathname == '/equipe-timesheet' && <TeamTimesheet />} 
+            {pathname == '/all-timesheet' && <AllTimesheet /> }
             {/* notifications */}
             {pathname == '/mesnotifications' && <Notifications />}
             {/* Projets */}

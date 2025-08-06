@@ -56,8 +56,15 @@ function App() {
             {/* Projet */}
             <Route path="/creer-projet" element={<Dashboard />} />
 
+            {/* Mes Feuille de Temps  */}
+            <Route path='/list-timesheet' element={<Dashboard />} />
+            <Route path='/modify-timesheet/:id' element={<Dashboard />} />
+            <Route path='/equipe-timesheet' element={<Dashboard />} />
 
-            {/* Mes Notifications */} 
+            {/* Feuille de Temps Back-office */}
+            <Route path='/all-timesheet' element={<Dashboard />} />
+
+            {/* Mes Notifications */}
             <Route path='/mesnotifications' element={<Dashboard />} />
             {/* Fallback route for authenticated users */}
             <Route path="*" element={<Navigate to="/accueil" />} />

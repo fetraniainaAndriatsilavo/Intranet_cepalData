@@ -255,6 +255,24 @@ export default function Collaborateur() {
                                     </label>
                                 ))}
                             </div>
+                            {
+                                form.marital_status && form.marital_status == 'marié(e)' && <input
+                                    type="text"
+                                    placeholder="nom du conjoint **"
+                                    className={`w-full form-input border rounded px-3 py-2 text-sm ${errorFields.includes("last_name") ? "border-red-500" : ""}`}
+                                    value={form.last_name}
+                                    onChange={(e) => setForm({ ...form, last_name: e.target.value })}
+                                />
+                            }
+                            {
+                                form.marital_status && form.marital_status != 'célibataire' && <input
+                                    type="text"
+                                    placeholder="nom de l'enfant"
+                                    className={`w-full form-input border rounded px-3 py-2 text-sm ${errorFields.includes("last_name") ? "border-red-500" : ""}`}
+                                    value={form.last_name}
+                                    onChange={(e) => setForm({ ...form, last_name: e.target.value })}
+                                />
+                            }
                         </div>
                     </div>
 
