@@ -22,7 +22,8 @@ export default function Permissions({ radioValue }) {
 
   const [permissionType, setPermissionType] = useState([])
   const [autres, setAutres] = useState([])
-  const [leave_type_id, setLeave_type_id] = useState(0)
+  const [congeType, setCongeType] = useState([])
+  const [leave_type_id, setLeave_type_id] = useState('')
 
   useEffect(() => {
     setUser_id(user.id);
@@ -59,7 +60,9 @@ export default function Permissions({ radioValue }) {
 
       setNumber_day(total);
     }
-  }, [start_date, end_date, start_half_day, end_half_day]); 
+  }, [start_date, end_date, start_half_day, end_half_day]);
+
+
 
   // les types de permissions et autres
   const excludedNames = [
@@ -80,11 +83,24 @@ export default function Permissions({ radioValue }) {
           data.name === "Hospitalisation de conjoint" ||
           data.name === "Mises à pieds"
         ));
+        setCongeType(response.data.filter(data =>
+          data.name === "Congé payé"
+        ))
       })
       .catch((error) => {
         console.log(error)
       })
   }, [])
+
+  useEffect(() => {
+    if (radioValue === 'congés' && congeType.length > 0) {
+      setLeave_type_id(congeType[0].id);
+    } else if (radioValue === 'autres' && autres.length > 0) {
+      setLeave_type_id(autres[0].id);
+    } else if (radioValue === 'permission' && permissionType.length > 0) {
+      setLeave_type_id(permissionType[0].id);
+    }
+  }, [radioValue, congeType, permissionType, autres]);
 
 
   const handleSubmit = async (e) => {
@@ -127,7 +143,6 @@ export default function Permissions({ radioValue }) {
   useEffect(() => {
     setRequestType(radioValue);
   }, [radioValue]);
-
   return (
     <div className="bg-white p-5 rounded-lg">
       <form onSubmit={handleSubmit}>
@@ -247,10 +262,10 @@ export default function Permissions({ radioValue }) {
 
         </div>
 
-        <div className="mt-3">
+        {/* <div className="mt-3">
           <span> Nombre de Jours : </span>{" "}
           <span className="font-semibold"> {number_day} </span>
-        </div>
+        </div> */}
 
         <div className="mt-4 mb-4 flex flex-col ">
           <label htmlFor="reason" className="mb-2">

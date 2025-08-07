@@ -1,7 +1,7 @@
+import { useEffect, useState } from "react";
 import api from "../axios";
 
-export default function Demande({ data }) {
-
+export default function Demande({ data, setMessage, setOpen, fetchDemandes }) {
   function getWorkingDays(startDateStr, endDateStr) {
     const startDate = new Date(startDateStr);
     const endDate = new Date(endDateStr);
@@ -29,21 +29,15 @@ export default function Demande({ data }) {
   }
 
   const toggleArchive = (id, ChangedStatus) => {
-    if (ChangedStatus == 'approved') {
-      api.put(`/leave-requests/${id}/approved`, { status: ChangedStatus })
-        .then(() => {
-        })
-        .catch((error) => {
-          console.error("Failed to update status:", error);
-        });
-    } else {
-      api.put(`/leave-requests/${id}/refused`, { status: ChangedStatus })
-        .then(() => {
-        })
-        .catch((error) => {
-          console.error("Failed to update status:", error);
-        });
-    }
+    api.put(`/leave-requests/${id}/change`, { status: ChangedStatus })
+      .then((response) => {
+        setMessage(response.data.message)
+        setOpen(true) 
+        fetchDemandes();
+      })
+      .catch((error) => {
+        console.error("Failed to update status:", error);
+      });
   };
 
   return (

@@ -28,7 +28,7 @@ class DocumentsAdminController extends Controller
                 'doct_type_id' => 'required|string',
                 'uploaded_by' => 'nullable|integer',
                 'description' => 'nullable|string',
-                'status' => 'required',
+                'is_public' => 'nullable|boolean',
                 'period' => 'nullable|integer',
                 'file_path' => 'required|file|mimes:pdf,jpg,png,docx,doc',
             ]);
@@ -39,8 +39,22 @@ class DocumentsAdminController extends Controller
             if ($request->hasFile('file_path')) {
                 $file = $request->file('file_path');
 
-                $filename = uniqid() . '_' . $file->getClientOriginalName();
-                $directory = 'images/document';
+                $userId = $validated['user_id'];
+                $originalName = $file->getClientOriginalName();
+                $extension = $file->getClientOriginalExtension();
+
+                $baseName = pathinfo($originalName, PATHINFO_FILENAME);
+                $dateSuffix = now()->format('Y-m-d_H-i-s');
+
+                $filename = $baseName . '_' . $dateSuffix . '.' . $extension;
+
+                $directory = 'users/' . $userId . '/documents_admin';
+
+                $disk = Storage::disk('sftp');
+
+                if (!$disk->exists($directory)) {
+                    $disk->makeDirectory($directory);
+                }
 
                 $storedPath = $file->storeAs($directory, $filename, 'sftp');
 
@@ -58,11 +72,11 @@ class DocumentsAdminController extends Controller
                     'file_name' => $validated['file_name'],
                     'doct_type_id' => $validated['doct_type_id'],
                     'period' => $validated['period'],
-                    'status' => $validated['status'],
+                    'status' => "active",
                     'file_path' => $fileUrl,
+                    'is_public' => $validated['is_public'],
                     'uploaded_by' => $validated['uploaded_by'],
                     'uploaded_at' => now(),
-                    'is_public' => true
                 ]);
 
                 return response()->json([
@@ -87,6 +101,29 @@ class DocumentsAdminController extends Controller
         }
     }
 
+    public function changeStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:inactive,active',
+        ], [
+            'status.required' => 'Le statut est requis.',
+        ]);
+
+        $document = DocumentAdmin::find($id);
+
+        if (!$document) {
+            return response()->json(['message' => 'Document introuvable.'], 404);
+        }
+
+        $document->status = $request->status;
+        $document->save();
+
+
+        return response()->json([
+            'message' => "Document mise à jour avec succès en tant que {$request->status}.",
+            'data' => $document
+        ]);
+    }
     public function getUserDocuments($userId)
     {
 

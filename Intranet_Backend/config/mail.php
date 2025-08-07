@@ -110,7 +110,7 @@ return [
 
     'from' => [
         'address' => env('MAIL_FROM_ADDRESS', 'herinirinavalisoaandre@gmail.com'),
-        'name' => env('MAIL_FROM_NAME', 'CEPAL_DATA'),
+        'name' => env('MAIL_FROM_NAME', 'INTRANET'),
     ],
 
 ];

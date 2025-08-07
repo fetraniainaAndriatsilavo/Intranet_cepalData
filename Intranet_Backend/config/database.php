@@ -28,7 +28,7 @@ return [
     | is supported by Laravel. You're free to add / remove connections.
     |
     */
-'connections' => [
+    'connections' => [
 
         'pgsql' => [
             'driver' => 'pgsql',
@@ -39,7 +39,7 @@ return [
             'password' => env('DB_PASSWORD', ''),
             'charset' => 'utf8',
             'prefix' => '',
-            'schema' => 'public',
+            'schema' => 'intranet_extedim',
             'sslmode' => 'prefer',
         ],
 
@@ -91,7 +91,7 @@ return [
 
         'options' => [
             'cluster' => env('REDIS_CLUSTER', 'redis'),
-            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_database_'),
+            'prefix' => env('REDIS_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_') . '_database_'),
             'persistent' => env('REDIS_PERSISTENT', false),
         ],
 

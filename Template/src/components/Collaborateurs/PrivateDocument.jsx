@@ -27,7 +27,6 @@ export default function PrivateDocument() {
 
     const handleRemoveUser = () => {
         setUsers([]);
-        suggestions = []
     };
 
     const suggestions = allUsers.filter((user) =>

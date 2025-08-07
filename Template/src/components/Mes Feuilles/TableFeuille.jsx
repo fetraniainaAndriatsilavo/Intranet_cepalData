@@ -1,6 +1,7 @@
 import TableHeader from "../Conges/TableHeader";
 import AdminFeuille from "./AdminFeuille";
 import RowFeuille from "./RowFeuille";
+import RowSessions from "./RowSessions";
 import TeamRowFeuille from "./TeamRowFeuille";
 
 export default function TableFeuille({ header, datas, type }) {
@@ -25,6 +26,11 @@ export default function TableFeuille({ header, datas, type }) {
                 {
                     type && type == 'admin' && datas && datas.map((data, index) => {
                         return <AdminFeuille data={data} key={index} />
+                    })
+                }
+                {
+                    type && type == 'sessions' && datas && datas.map((data, index) => {
+                        return <RowSessions data={data} key={index} />
                     })
                 }
             </tbody>

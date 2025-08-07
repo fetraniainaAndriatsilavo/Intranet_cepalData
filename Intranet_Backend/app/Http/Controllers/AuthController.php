@@ -130,13 +130,13 @@ class AuthController extends Controller
 
         try {
             $fields = $request->validate([
-                'email' => 'required|email|unique:users,email',
+                'email' => 'required|email|unique:intranet_extedim.users,email',
                 'status' => 'nullable|string',
                 'last_login' => 'nullable|date',
                 'role' => 'required|string',
                 'first_name' => 'nullable|string|max:255',
                 'last_name' => 'nullable|string|max:255',
-                'position_id' => 'nullable|integer',
+                'position_id' => 'required|integer',
                 'hire_date' => 'nullable|date',
                 'department_id' => 'nullable|integer',
                 'birth_date' => 'nullable|date',
@@ -166,15 +166,26 @@ class AuthController extends Controller
             $imagePath = null;
             $imageUrl = null;
 
-            if ($request->hasFile('image')) {
-                $file = $request->file('image');
-                $filename = uniqid() . '_' . $file->getClientOriginalName();
-                $directory = 'images/users';
+            // $user = new User();
+            // $user->first_name = $request->input('first_name');
+            // $user->save();
 
-                $imagePath = $file->storeAs($directory, $filename, 'sftp');
+            // if ($request->hasFile('image')) {
+            //     $file = $request->file('image');
 
-                $imageUrl = 'http://57.128.116.184/intranet/' . $imagePath;
-            }
+            //     $extension = $file->getClientOriginalExtension();
+            //     $filename = 'profile@user' . $user->id . '.' . $extension;
+
+            //     $directory = 'users/' . $user->id . '/profil';
+
+            //     $imagePath = $file->storeAs($directory, $filename, 'sftp');
+
+            //     $imageUrl = 'http://57.128.116.184/intranet/' . $imagePath;
+
+            //     $user->image = $imageUrl;
+            //     $user->save();
+            // }
+
             $defaultPassword = 'intranet2025';
             $user = User::create([
                 'email' => $fields['email'],
@@ -211,6 +222,8 @@ class AuthController extends Controller
 
             ]);
             // Mail::to($user->email)->send(new WelcomeUserMail($user, $defaultPassword));
+            $user->notify(new WelcomeUserNotification($defaultPassword));
+
             return response()->json([
                 'user' => $user,
                 'image_url' => $imageUrl,
@@ -239,7 +252,6 @@ class AuthController extends Controller
     public function login(Request $request)
     {
         try {
-            // Étape 1 : Validation des données
             $request->validate([
                 "email" => "required|email",
                 "password" => "required"
@@ -251,7 +263,6 @@ class AuthController extends Controller
 
             Log::info('Tentative de connexion pour : ' . $request->email);
 
-            // Étape 2 : Recherche de l'utilisateur
             $user = User::where("email", $request->email)->first();
 
             if (!$user) {
@@ -261,7 +272,6 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            // Étape 3 : Vérification du mot de passe
             if (!Hash::check($request->password, $user->password)) {
                 Log::warning('Mot de passe invalide pour l\'email : ' . $request->email);
                 return response()->json([
@@ -269,7 +279,6 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            // Étape 4 : Vérification du statut
             if ($user->status !== 'active') {
                 Log::warning('Utilisateur inactif : ' . $request->email . ', statut : ' . $user->status);
                 return response()->json([
@@ -277,7 +286,6 @@ class AuthController extends Controller
                 ], 403);
             }
 
-            // Étape 5 : Création du token
             $token = $user->createToken('auth_token')->plainTextToken;
 
             Log::info('Connexion réussie pour : ' . $request->email);

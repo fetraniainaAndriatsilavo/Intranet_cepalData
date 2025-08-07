@@ -36,6 +36,8 @@ import ListTimeSheet from './Mes Feuilles de Temps/ListTimesheet';
 import ModifyTimeSheet from './Mes Feuilles de Temps/ModifyTimesheet';
 import TeamTimesheet from './Mes Feuilles de Temps/TeamTimesheet';
 import AllTimesheet from './Admin Feuille de Temps/AllTimesheet';
+import Sessions from './Admin Feuille de Temps/Sessions';
+import ListSessions from './Admin Feuille de Temps/ListSessions';
 // import Banner from '../partials/Banner';
 
 function Dashboard() {
@@ -131,8 +133,9 @@ function Dashboard() {
             {/* mes feuilles de temps */}
             {pathname == '/list-timesheet' && <ListTimeSheet />}
             {matchPath('/modify-timesheet/:id', pathname) && <ModifyTimeSheet />}
-            {pathname == '/equipe-timesheet' && <TeamTimesheet />} 
-            {pathname == '/all-timesheet' && <AllTimesheet /> }
+            {pathname == '/equipe-timesheet' && <TeamTimesheet />}
+            {pathname == '/all-timesheet' && <AllTimesheet />}
+            {pathname == '/messessions' && <ListSessions />}
             {/* notifications */}
             {pathname == '/mesnotifications' && <Notifications />}
             {/* Projets */}

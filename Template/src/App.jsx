@@ -60,7 +60,7 @@ function App() {
             <Route path='/list-timesheet' element={<Dashboard />} />
             <Route path='/modify-timesheet/:id' element={<Dashboard />} />
             <Route path='/equipe-timesheet' element={<Dashboard />} />
-
+            <Route path='/messessions' element={<Dashboard />} />
             {/* Feuille de Temps Back-office */}
             <Route path='/all-timesheet' element={<Dashboard />} />
 

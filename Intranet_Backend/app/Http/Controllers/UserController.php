@@ -123,18 +123,36 @@ class UserController extends Controller
             $imageUrl = null;
 
             if ($request->hasFile('image')) {
-                $file = $request->file('image');
-                $filename = uniqid() . '_' . $file->getClientOriginalName();
-                $directory = 'images/users';
+                try {
+                    $file = $request->file('image');
 
-                $imagePath = $file->storeAs($directory, $filename, 'sftp');
-                $imageUrl = 'http://57.128.116.184/intranet/' . $imagePath;
+                    $extension = $file->getClientOriginalExtension();
+                    $filename = 'profile@user' . $user->id . '.' . $extension;
+
+                    $directory = 'users/' . $user->id . '/profil';
+
+                    $disk = Storage::disk('sftp');
+                    if (!$disk->exists($directory)) {
+                        $disk->makeDirectory($directory);
+                    }
+
+                    $imagePath = $file->storeAs($directory, $filename, 'sftp');
+
+                    $imageUrl = 'http://57.128.116.184/intranet/' . $imagePath;
+
+                    $user->update(array_merge(
+                        $fields,
+                        ['image' => $imagePath]
+                    ));
+                } catch (Exception $e) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Erreur lors de la mise à jour de l\'image.',
+                        'error' => $e->getMessage(),
+                    ], 500);
+                }
             }
 
-            $user->update(array_merge(
-                $fields,
-                ['image' => $imagePath]
-            ));
 
             return response()->json([
                 'user' => $user,

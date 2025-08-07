@@ -1,6 +1,7 @@
 import { Pagination } from "@mui/material";
 import Table from "../../components/Conges/Table";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import api from "../../components/axios";
 
 export default function ListeConges() {
 
@@ -15,56 +16,17 @@ export default function ListeConges() {
         "Statut de la demande"
     ];
 
-    const list = [
-        {
-            user: {
-                first_name: 'Hery Niaina',
-                last_name: 'Tianarivola'
-            },
-            reason: 'Vacances',
-            start_date: '07/28/2025',
-            end_date: '08/31/2025',
-            request_type: 'leave',
-            created_at: '25/07/2025',
-            status: 'refused'
-        },
-        {
-            user: {
-                first_name: 'Hery Niaina',
-                last_name: 'Tianarivola'
-            },
-            reason: 'Vacances',
-            start_date: '07/28/2025',
-            end_date: '08/11/2025',
-            request_type: 'leave',
-            created_at: '25/07/2025',
-            status: 'approved'
-        },
-        {
-            user: {
-                first_name: 'Hery Niaina',
-                last_name: 'Tianarivola'
-            },
-            reason: 'Vacances',
-            start_date: '07/28/2025',
-            end_date: '08/01/2025',
-            request_type: 'leave',
-            created_at: '25/07/2025',
-            status: 'pending'
-        },
-        {
-            user: {
-                first_name: 'Hery Niaina',
-                last_name: 'Tianarivola'
-            },
-            reason: 'Vacances',
-            start_date: '07/28/2025',
-            end_date: '08/04/2025',
-            request_type: 'leave',
-            created_at: '25/07/2025',
-            status: 'approved'
-        }
-    ]
+    const [list, setList] = useState([])
+    useEffect(() => {
+        api.get('/all-requests')
+            .then((response) => {
+                setList(response.data); 
+                // .filter((demande) => demande.status !== 'created')
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+    }, [])
 
     const [currentPage, setCurrentPage] = useState(1);
     const userPerPage = 10;
@@ -82,7 +44,7 @@ export default function ListeConges() {
         </div>
         <div className="bg-white  w-full rounded-lg">
             <h3 className="p-3 "> Tous les demandes <span className=" font-semibold text-gray-300"> {list.length} </span> </h3>
-            <Table listHeader={listMenu} datas={currentView.length < 1 ? list.slice(0, 10) : currentView} type='historic'/>
+            <Table listHeader={listMenu} datas={currentView.length < 1 ? list.slice(0, 10) : currentView} type='historic' />
         </div>
         <div>
             <Pagination count={lastPageIndex} page={currentPage} onChange={handleChange} />

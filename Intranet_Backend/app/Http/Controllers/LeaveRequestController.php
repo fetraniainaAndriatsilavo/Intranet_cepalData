@@ -12,7 +12,11 @@ use Illuminate\Foundation\Exceptions\Renderer\Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use LeaveRequestStatusNotification;
+use Carbon\CarbonPeriod;
+use App\Models\OgcHoliday;
+use App\Notifications\LeaveRequestCreated;
 
 class LeaveRequestController extends Controller
 {
@@ -22,8 +26,8 @@ class LeaveRequestController extends Controller
      */
     public function store(Request $request)
     {
+
         try {
-            // Étape 1 : validation
             try {
                 $validated = $request->validate([
                     'user_id' => 'required|integer|exists:intranet_extedim.users,id',
@@ -32,7 +36,6 @@ class LeaveRequestController extends Controller
                     'end_date' => 'required|date|after_or_equal:start_date',
                     'start_half_day' => 'required',
                     'end_half_day' => 'required',
-                    'number_day' => 'required|numeric|min:0.5',
                     'approved_at' => 'nullable|date',
                     'approved_by' => 'nullable|integer|exists:intranet_extedim.users,id',
                     'approved_comment' => 'nullable|string',
@@ -50,13 +53,25 @@ class LeaveRequestController extends Controller
 
             $fileUrl = null;
 
-            // Étape 2 : gestion du fichier s'il existe
+            $user = $validated['user_id'];
+
             if ($request->hasFile('support_file_path')) {
                 try {
                     $file = $request->file('support_file_path');
 
-                    $filename = uniqid() . '_' . $file->getClientOriginalName();
-                    $directory = 'images/ogc';
+                    $typeConge = $request->input('type_conge', 'justificatif');
+                    $date = now()->format('Y-m-d_H-i-s');
+                    $extension = $file->getClientOriginalExtension();
+
+                    $filename = $typeConge . '_' . $date . '.' . $extension;
+
+                    $directory = 'users/' . $user->id . '/documents';
+
+
+                    $disk = Storage::disk('sftp');
+                    if (!$disk->exists($directory)) {
+                        $disk->makeDirectory($directory);
+                    }
 
                     $storedPath = $file->storeAs($directory, $filename, 'sftp');
 
@@ -77,7 +92,35 @@ class LeaveRequestController extends Controller
                 }
             }
 
-            // Étape 3 : création de la demande
+            $start = Carbon::parse($validated['start_date']);
+            $end = Carbon::parse($validated['end_date']);
+            $period = CarbonPeriod::create($start, $end);
+
+            $holidayDates = OgcHoliday::whereBetween('date', [$start, $end])
+                ->pluck('date')
+                ->map(fn($date) => Carbon::parse($date)->format('Y-m-d'))
+                ->toArray();
+
+            $daysCount = 0;
+            foreach ($period as $date) {
+                $day = $date->format('Y-m-d');
+
+                if ($date->isWeekend()) continue;
+
+                if (!in_array($day, $holidayDates)) {
+                    $daysCount++;
+                }
+            }
+
+            $numberDay = $daysCount;
+
+            if ($validated['start_half_day'] === 'afternoon') {
+                $numberDay -= 0.5;
+            }
+            if ($validated['end_half_day'] === 'morning') {
+                $numberDay -= 0.5;
+            }
+
             try {
                 $leaveRequest = LeaveRequest::create([
                     'user_id' => $validated['user_id'],
@@ -86,7 +129,7 @@ class LeaveRequestController extends Controller
                     'end_date' => $validated['end_date'],
                     'start_half_day' => $validated['start_half_day'],
                     'end_half_day' => $validated['end_half_day'],
-                    'number_day' => $validated['number_day'],
+                    'number_day' => $numberDay,
                     'status' => "created",
                     'approved_at' => $validated['approved_at'] ?? null,
                     'approved_by' => $validated['approved_by'] ?? null,
@@ -95,6 +138,20 @@ class LeaveRequestController extends Controller
                     'leave_type_id' => $validated['leave_type_id'],
                     'support_file_path' => $fileUrl,
                 ]);
+
+                $user = User::find($validated['user_id']);
+
+                if ($user && $user->manager_id) {
+                    $manager = User::find($user->manager_id);
+                    if ($manager) {
+                        $manager->notify(new LeaveRequestCreated($leaveRequest));
+                    }
+                }
+
+                $admins = User::where('role', 'admin')->get();
+                foreach ($admins as $admin) {
+                    $admin->notify(new LeaveRequestCreated($leaveRequest));
+                }
             } catch (\Exception $e) {
                 return response()->json([
                     'success' => false,
@@ -102,6 +159,7 @@ class LeaveRequestController extends Controller
                     'error' => $e->getMessage(),
                 ], 500);
             }
+
 
             return response()->json([
                 'success' => true,
@@ -118,7 +176,6 @@ class LeaveRequestController extends Controller
             ], 500);
         }
     }
-
 
     public function changeStatus(Request $request, $id)
     {
@@ -144,8 +201,6 @@ class LeaveRequestController extends Controller
         ]);
     }
 
-
-
     public function approveExpiredLeaveRequests()
     {
         $today = Carbon::today();
@@ -158,36 +213,6 @@ class LeaveRequestController extends Controller
                 'approved_comment' => 'Approuvé automatiquement car date expirée',
             ]);
     }
-
-
-    // public function refusedStatus(Request $request, $id)
-    // {
-    //     $request->validate([
-    //         'status' => 'required|in:approved,refused',
-    //         'commentaire' => 'required'
-    //     ], [
-    //         'status.required' => 'Le statut est requis.',
-    //         'status.in' => 'Le statut doit être approved ou refused.',
-    //         'commentaire.required' => 'Le commentaire est requis.',
-
-    //     ]);
-
-    //     $leaveRequest = LeaveRequest::find($id);
-
-    //     if (!$leaveRequest) {
-    //         return response()->json(['message' => 'Demande introuvable.'], 404);
-    //     }
-
-    //     $leaveRequest->status = $request->status;
-    //     $leaveRequest->commentaire = $request->commentaire;
-
-    //     $leaveRequest->save();
-
-    //     return response()->json([
-    //         'message' => "Demande mise à jour avec succès en tant que {$request->status}.",
-    //         'data' => $leaveRequest
-    //     ]);
-    // }
 
     public function getLeaveBalances($id)
     {
@@ -294,10 +319,12 @@ class LeaveRequestController extends Controller
 
         $leaveRequests = LeaveRequest::with('user', 'leaveType')
             ->whereIn('user_id', $teamUserIds)
+            ->where('status', 'pending')
             ->get();
 
         return response()->json($leaveRequests);
     }
+
 
     public function getAllLeaveRequests()
     {

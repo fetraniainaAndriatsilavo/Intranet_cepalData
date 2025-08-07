@@ -16,12 +16,13 @@ use App\Http\Controllers\LeaveBalanceController;
 use App\Http\Controllers\LeaveRequestController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OgCumulController;
-use App\Http\Controllers\PayrollRecordController;
+use App\Http\Controllers\PeriodeController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\SprintController;
 use App\Http\Controllers\TaskController;
+use App\Http\Controllers\TimesheetController;
 use App\Http\Controllers\UserController;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -64,16 +65,37 @@ Route::get('/projects/{id}/getProject', [ProjectController::class, 'getProjectBy
 Route::post('/leave-requests', [LeaveRequestController::class, 'store']);
 Route::get(
     '/type/leave',
-    [LeaveRequestController::class, 'getAllLeaveType']
+    [LeaveRequestController::class, 'getAllTypeLeave']
 );
 Route::get('/users/{id}/leave-balances', [LeaveRequestController::class, 'getLeaveBalances']);
 Route::get('manager/{managerId}/leave-requests', [LeaveRequestController::class, 'getTeamLeaveRequests']);
 Route::get('/all-requests', [LeaveRequestController::class, 'getAllLeaveRequests']);
-
-
-
 Route::put('/leave-requests/{id}/change', [LeaveRequestController::class, 'changeStatus']);
-Route::put('/leave-requests/{id}/refused', [LeaveRequestController::class, 'refusedStatus']);
+
+
+
+Route::get('/documents/type', [DocumentsAdminController::class, 'doc_type']);
+Route::post('/documents-admin/upload', [DocumentsAdminController::class, 'upload']);
+Route::get('/documents/user/{userId}', [DocumentsAdminController::class, 'getUserDocuments']);
+Route::put('/document/{id}/changeStatus', [DocumentsAdminController::class, 'changeStatus']);
+
+
+Route::post('/timesheet-periods/store', [PeriodeController::class, 'store']);
+Route::put('/timesheet-periods/{id}/update', [PeriodeController::class, 'update']);
+Route::delete('/timesheet-periods/{id}/destroy', [PeriodeController::class, 'destroy']);
+Route::get('/timesheet-periods/all', [PeriodeController::class, 'getAll']);
+Route::get('/timesheet/all', [TimesheetController::class, 'getAll']);
+Route::get('/timesheet/{id}/user', [TimesheetController::class, 'getUserTimesheets']);
+Route::post('/timesheet/store', [TimesheetController::class, 'store']);
+Route::put('/timesheet/{id}/update', [TimesheetController::class, 'update']);
+Route::put('timesheets/{id}/approve', [TimesheetController::class, 'approveTimesheet']);
+Route::delete('/timesheet/{id}/destroy', [TimesheetController::class, 'destroy']);
+
+
+
+
+
+
 
 //UserController
 // Route::get('/notifications', [UserController::class, 'getNotifications']);
@@ -82,9 +104,7 @@ Route::put('/leave-requests/{id}/refused', [LeaveRequestController::class, 'refu
 Route::put('v1/users/{id}', [UserController::class, 'toggleStatus']);
 // Route::get('/all-manager', [UserController::class, 'getAllManagers']);
 
-//PayrollRecordController
-Route::post('/payroll-records', [PayrollRecordController::class, 'store']);
-Route::get('/payroll-records/user/{userId}', [PayrollRecordController::class, 'getUserPayroll']);
+
 
 Route::get('fliter/{mois_avant}/{mois_apres}/{recherche}');
 
@@ -138,9 +158,8 @@ Route::get('reset-password/{token}', function ($token) {
     return response()->json(['token' => $token]);
 })->name('password.reset');
 
-Route::get('/documents/type', [DocumentsAdminController::class, 'doc_type']);
-Route::post('/documents-admin/upload', [DocumentsAdminController::class, 'upload']);
-Route::get('/documents/user/{userId}', [DocumentsAdminController::class, 'getUserDocuments']);
+
+
 
 Route::get('/messages/{user1}/{user2}', [MessageController::class, 'getConversation']);
 
@@ -257,18 +276,7 @@ Route::post('event/create', [EventController::class, 'store']);
 Route::delete('event/delete/{event_id}', [EventController::class, 'destroy']);
 Route::get('event/get', [EventController::class, 'getEvent']);
 
-//FT
-Route::post('/feuilles_de_temps/create', [FeuilleDeTempsController::class, 'store']);
-Route::put('/feuilles_de_temps/{id}/update', [FeuilleDeTempsController::class, 'update']);
-Route::get('/feuilles_de_temps/getByManager/{managerId}', [FeuilleDeTempsController::class, 'getSessionsByManager']);
-Route::get('/sessions/getUser/{userId}', [FtPeriodeController::class, 'getSessionByUser']);
-Route::get('/sessions/fromManager/{managerId}', [FtPeriodeController::class, 'getAllSessionsByManager']);
-Route::get('/feuilles_de_temps/getByUser/{userId}/{periodeId}', [FeuilleDeTempsController::class, 'getByUserAndPeriode']);
-Route::post('/session/create', [FtPeriodeController::class, 'store']);
-Route::put('/sessions/{id}/update', [FtPeriodeController::class, 'update']);
-Route::get('/sessions/backOffice/', [FtPeriodeController::class, 'getAllSessionsBackOffice']);
-Route::get('/feuilles_de_temps/getFormBackOffice/{userId}/{periodeId}', [FeuilleDeTempsController::class, 'getFeuileFromBackOffice']);
-Route::get('/sessions/getSession/{sessionId}', [FtPeriodeController::class, 'getSessionById']);
+
 Route::post('/change-password/{userId}', [UserController::class, 'changePassword']);
 
 

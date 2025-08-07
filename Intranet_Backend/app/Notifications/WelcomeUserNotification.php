@@ -17,7 +17,7 @@ class WelcomeUserNotification extends Notification
 
     public function via($notifiable)
     {
-        return ['mail'];
+        return ['mail', 'database'];
     }
 
     public function toMail($notifiable)
@@ -32,13 +32,13 @@ class WelcomeUserNotification extends Notification
             ->line('Merci de votre collaboration.');
     }
 
-    // public function toDatabase($notifiable)
-    // {
-    //     return [
-    //         'title' => 'Bienvenue ' . $notifiable->first_name,
-    //         'message' => 'Votre compte a été créé avec succès. Email: ' . $notifiable->email,
-    //         'action_url' => 'http://localhost:3000/settings',
-    //         'schema' => 'intranet_extedim',
-    //     ];
-    // }
+    public function toDatabase($notifiable)
+    {
+        return [
+            'title' => 'Bienvenue ' . $notifiable->first_name,
+            'message' => 'Votre compte a été créé avec succès. Email: ' . $notifiable->email,
+            'action_url' => 'http://localhost:3000/settings',
+            'schema' => 'intranet_extedim',
+        ];
+    }
 }
