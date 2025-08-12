@@ -19,7 +19,23 @@ export default function ListTimeSheet() {
     const [lists, setLists] = useState([])
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
+    const [sessionsId, setSessions] = useState()
 
+    useEffect(() => {
+        api.get("/timesheet-periods/all")
+            .then((response) => {
+                const activeSessions = response.data.filter(
+                    (session) => session.status === "active"
+                );
+                console.log(activeSessions)
+                if (activeSessions.length > 0) {
+                    setSessions(activeSessions[activeSessions.length - 1].id);
+                }
+            })
+            .catch((error) => {
+                console.error("Error fetching timesheet periods:", error);
+            });
+    }, []);
     const fetchTimeSheetUser = (id) => {
         api.get('/timesheet/' + id + '/user')
             .then((response) => {
@@ -89,10 +105,11 @@ export default function ListTimeSheet() {
         </div>
         {
             isMiddleOfMonth(d) == true && <div>
-                <button className="px-3 bg-sky-600 py-2 text-white cursor-pointer rounded" onClick={(e) => {
+                <button className="px-3 bg-sky-600 py-2 text-white cursor-pointer rounded" onClick={(e) => { 
                     e.preventDefault()
-                    api.put('/timesheet-periods/' + FeuilleId + '/update', {
-                        id: user.id,
+                    api.put('/timesheet-periods/' + sessionsId + '/update', {
+                        status: 'sent',
+                        updated_by: user.id,
                     })
                         .then((response) => {
                             console.log(response.data)
@@ -103,7 +120,7 @@ export default function ListTimeSheet() {
                         })
                         .catch((error) => {
                             console.log(error.response.data)
-                            setError(error.response.data.message) 
+                            setError(error.response.data.message)
                         })
                 }}> Terminer la sessions </button>
             </div>

@@ -89,7 +89,8 @@ Route::get('/timesheet-periods/active', [PeriodeController::class, 'getActiveSes
 Route::get(
     '/timesheet-periods/grouped-by-manager/{managerId}',
     [PeriodeController::class, 'getActiveSessionsGroupedByManager']
-);
+); 
+Route::get('/timesheet/{id}', [TimesheetController::class, 'getTimesheetById']);
 Route::get('/timesheet/all', [TimesheetController::class, 'getAll']);
 Route::get('/timesheet/{id}/user', [TimesheetController::class, 'getUserTimesheets']);
 Route::post('/timesheet/store', [TimesheetController::class, 'store']);

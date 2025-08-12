@@ -1,15 +1,7 @@
 import {
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    InputLabel,
-    TextField,
-    FormControl,
-    NativeSelect,
-    Button,
-    Alert,
-    Autocomplete,
+    Dialog, DialogTitle, DialogContent, DialogActions,
+    InputLabel, TextField, FormControl, NativeSelect,
+    Button, Alert, Autocomplete,
 } from "@mui/material";
 import { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../context/AppContext";
@@ -18,90 +10,116 @@ import api from "../../components/axios";
 export default function ModifyTimeSheet({ open, onClose, id }) {
     const { user } = useContext(AppContext);
 
-    // retourne les data comme  clients/contract_type/departments/classification/managers 
-    const [clients, setClients] = useState([])
+    const [clients, setClients] = useState([]);
+    const [formData, setFormData] = useState(initialFormState());
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
 
-    const clientOptions = clients.map(client => ({
-        ...client,
-        label: client.name // This ensures the Autocomplete displays the name
-    }));
+    function initialFormState() {
+        return {
+            user_id: user?.id ?? null,
+            client: "",
+            projet: "",
+            type: "tache",
+            date: "",
+            nb_hour: "",
+            description: "",
+        };
+    }
 
-    const [formData, setFormData] = useState({
-        user_id: user.id ?? null,
-        client: "",
-        projet: "",
-        type: "tache",
-        date: "",
-        nb_hour: "",
-        description: "",
-    });
-
-    const [error, SetError] = useState(null);
-    const [success, SetSuccess] = useState(null);
-
-    const handleChange = (e) => {
-        setFormData((prev) => ({
-            ...prev,
-            [e.target.id]: e.target.value,
-        }));
-    };
-
-    useEffect(() => {
-        api.get("/data")
-            .then((response) => {
-                setClients(response.data.clients)
-            })
-            .catch((error) => {
-                alert(error.response.message)
-            })
-    }, []);
-
-    const handleSubmit = () => {
-        api.put('/timesheet/' + id + '/update', formData, {
-            headers: {
-                "Content-Type": "application/json",
-            },
-        })
-            .then((response) => {
-                setFormData({
-                    user_id: user.id ?? null,
-                    client: "",
-                    projet: "",
-                    type: "tache",
-                    date: "",
-                    nb_hour: "",
-                    description: "",
-                });
-                SetSuccess(response.data.message);
-                SetError(null);
-                setTimeout(() => {
-                    onClose();
-                }, 3000);
-            })
-            .catch((error) => {
-                if (error.response && error.response.status === 422) {
-                    SetError(error.response.data.message);
-                } else {
-                    SetError("Erreur lors de l'enregistrement.");
-                }
-                SetSuccess(null);
-            });
-    };
-
+    // const formatDate = (date) => {
+    //     const d = new Date(date);
+    //     return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
+    // };
 
     function convertIntoTime(n) {
-        let totalMinutes = Math.round(n * 60);
-
-        let hours = Math.floor(totalMinutes / 60);
-        let minutes = totalMinutes % 60;
-
-        return String(hours).padStart(2, '0') + ":" +
-            String(minutes).padStart(2, '0') + ":00";
+        const totalMinutes = Math.round(n * 60);
+        const hours = Math.floor(totalMinutes / 60);
+        const minutes = totalMinutes % 60;
+        return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`;
     }
 
 
+    const fetchTimesheet = async (timesheetId) => {
+        try {
+            const { data } = await api.get(`/timesheet/${timesheetId}`);
+            console.log({data})
+            setFormData({
+                user_id: user?.id ?? null,
+                client: data.client_code || "",
+                projet: data.project_id || "",
+                type: data.type || "tache",
+                date: data.date || "",
+                nb_hour: data.nb_hour || "",
+                description: data.description || "",
+            });
+        } catch (err) {
+            const errorMessage = err.response?.data?.message || err.message || "Erreur inconnue";
+            console.error("Erreur lors du chargement du timesheet:", errorMessage);
+            setError(errorMessage);
+        }
+    };
+
+    const fetchClients = async () => {
+        try {
+            const { data } = await api.get("/data"); 
+            setClients(data.clients || []); 
+        } catch (err) {
+            alert(err.response?.message || "Erreur de chargement des données");
+        }
+    };
+
+    // ---------- Lifecycle ----------
+    useEffect(() => {
+        if (id) fetchTimesheet(id);
+    }, [id]);
+
+    useEffect(() => {
+        fetchClients();
+    }, []);
+
+    // ---------- Handlers ----------
+    const handleChange = (e) => {
+        const { id, value, name } = e.target;
+        setFormData((prev) => ({
+            ...prev,
+            [id || name]: value,
+        }));
+    };
+
+    const handleSubmit = async () => {
+        try {
+            const { data } = await api.put(`/timesheet/${id}/update`, formData, {
+                headers: { "Content-Type": "application/json" },
+            });
+            setSuccess(data.message);
+            setError(null);
+            setFormData(initialFormState());
+            setTimeout(() => onClose(), 3000);   
+            window.location.reload()
+        } catch (err) {
+            if (err.response?.status === 422) {
+                setError(err.response.data.message);
+            } else {
+                setError("Erreur lors de l'enregistrement.");
+            }
+            setSuccess(null);
+        }
+    };
+
+    const handleClose = () => {
+        onClose();
+        setFormData(initialFormState());
+    };
+
+    const clientOptions = clients.map((client) => ({
+        ...client,
+        label: client.name,
+    }));
+
+    // ---------- Render ----------
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
             <DialogTitle>
                 <div className="flex items-center gap-3">
                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -133,24 +151,23 @@ export default function ModifyTimeSheet({ open, onClose, id }) {
             </DialogTitle>
 
             <DialogContent dividers>
+                {/* Client & Projet */}
                 <div className="flex gap-4 mb-4">
                     <Autocomplete
                         fullWidth
                         disablePortal
                         options={clientOptions}
-                        getOptionLabel={(option) => option.label}
+                        getOptionLabel={(option) => option.label ?? ""}
                         isOptionEqualToValue={(option, value) => option.code === value.code}
                         renderInput={(params) => (
-                            <TextField
-                                {...params}
-                                label="Client"
-                                size="small"
-                                fullWidth
-                            />
+                            <TextField {...params} label="Client" size="small" fullWidth />
                         )}
-                        value={clientOptions.find(c => c.code === formData.client) || null}
+                        value={clientOptions.find((c) => c.code === formData.client) || null}
                         onChange={(e, value) =>
-                            setFormData({ ...formData, client: value ? value.code : "" })
+                            setFormData((prev) => ({
+                                ...prev,
+                                client: value ? value.code : "",
+                            }))
                         }
                     />
                     <TextField
@@ -164,17 +181,13 @@ export default function ModifyTimeSheet({ open, onClose, id }) {
                     />
                 </div>
 
+                {/* Type */}
                 <FormControl fullWidth className="mb-4">
-                    <InputLabel variant="standard" htmlFor="type">
-                        Type
-                    </InputLabel>
+                    <InputLabel variant="standard" htmlFor="type">Type</InputLabel>
                     <NativeSelect
                         value={formData.type}
                         onChange={handleChange}
-                        inputProps={{
-                            name: "type",
-                            id: "type",
-                        }}
+                        inputProps={{ name: "type", id: "type" }}
                     >
                         <option value="tache">Tâches</option>
                         <option value="conges">Congés</option>
@@ -184,6 +197,7 @@ export default function ModifyTimeSheet({ open, onClose, id }) {
                     </NativeSelect>
                 </FormControl>
 
+                {/* Date & Heure */}
                 <div className="flex gap-4 mb-4 mt-4">
                     <TextField
                         id="date"
@@ -199,7 +213,13 @@ export default function ModifyTimeSheet({ open, onClose, id }) {
                     <Autocomplete
                         options={[0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8]}
                         value={formData.nb_hour}
-                        onChange={(event, newValue) => setFormData({ ...formData, nb_hour: convertIntoTime(newValue) })}
+                        onChange={(event, newValue) =>
+                            setFormData((prev) => ({
+                                ...prev,
+                                nb_hour: newValue ? String(convertIntoTime(newValue)) : "",
+                            }))
+                        }
+                        getOptionLabel={(option) => option.toString()}
                         renderInput={(params) => <TextField {...params} label="Durée (heure)" />}
                         isOptionEqualToValue={(option, value) => option === value}
                         size="small"
@@ -207,6 +227,7 @@ export default function ModifyTimeSheet({ open, onClose, id }) {
                     />
                 </div>
 
+                {/* Description */}
                 <TextField
                     id="description"
                     type="text"
@@ -221,25 +242,14 @@ export default function ModifyTimeSheet({ open, onClose, id }) {
                     className="mb-4"
                 />
 
-                {success && (
-                    <Alert severity="success" sx={{ mt: 2 }}>
-                        {success}
-                    </Alert>
-                )}
-                {error && (
-                    <Alert severity="error" sx={{ mt: 2 }}>
-                        {error}
-                    </Alert>
-                )}
+                {/* Alerts */}
+                {success && <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>}
+                {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
             </DialogContent>
 
             <DialogActions>
-                <Button variant="outlined" onClick={onClose}>
-                    Annuler
-                </Button>
-                <Button variant="contained" onClick={handleSubmit}>
-                    Enregistrer
-                </Button>
+                <Button variant="outlined" onClick={handleClose}>Annuler</Button>
+                <Button variant="contained" onClick={handleSubmit}>Enregistrer</Button>
             </DialogActions>
         </Dialog>
     );

@@ -41,7 +41,7 @@ class TimesheetController extends Controller
             $validated = $request->validate([
                 'user_id' => 'required|exists:intranet_extedim.users,id',
                 'date' => 'required|date',
-                'nb_hour' => 'required|numeric|min:0',
+                'nb_hour' => 'required|min:0',
                 'client_code' => 'nullable|string',
                 'project_id' => 'nullable|integer|exists:intranet_extedim.projects,id',
                 'type' => 'nullable|string',
@@ -162,7 +162,7 @@ class TimesheetController extends Controller
 
         $validated = $request->validate([
             'date' => 'sometimes|required|date',
-            'nb_hour' => 'sometimes|required|numeric|min:0',
+            'nb_hour' => 'sometimes|required|min:0',
             'client_code' => 'nullable|string',
             'project_id' => 'nullable|integer',
             'type' => 'nullable|string',
@@ -185,5 +185,25 @@ class TimesheetController extends Controller
         $entry->delete();
 
         return response()->json(['message' => 'Deleted successfully']);
+    }
+
+    public function getTimesheetById($id)
+    {
+        try {
+            $timesheet = Timesheet::find($id);
+
+            if (!$timesheet) {
+                return response()->json([
+                    'error' => 'Feuille de temps introuvable'
+                ], 404);
+            }
+
+            return response()->json($timesheet, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Erreur interne',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

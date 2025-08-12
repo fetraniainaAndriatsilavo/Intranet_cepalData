@@ -1,11 +1,12 @@
 import { useContext } from "react"
 import { AppContext } from "../../context/AppContext"
+import api from "../axios"
 
-export default function RowFeuille({ data, onEdit}) {  
-    const {user} = useContext(AppContext)
+export default function RowFeuille({ data, onEdit }) {
+    const { user } = useContext(AppContext)
     return <tr
         className={`bg-white hover:bg-gray-50 odd:bg-white`}>
-        <td className="px-6 py-4 font-medium whitespace-nowrap font-semibold"> {data ? user.first_name +" " +user.last_name : '' } </td>
+        <td className="px-6 py-4 font-medium whitespace-nowrap font-semibold"> {data ? user.first_name + " " + user.last_name : ''} </td>
         <td className="px-6 py-4 text-center"> {data.description} </td>
         <td className="px-6 py-4 text-center"> {data.clients} </td>
         <td className="px-6 py-4 text-center">{data.nb_hour} </td>
@@ -18,7 +19,15 @@ export default function RowFeuille({ data, onEdit}) {
                     <path d="M16 5l3 3" />
                 </svg>
             </button>
-            <button className="text-green-600 hover:underline cursor-pointer">
+            <button className="text-green-600 hover:underline cursor-pointer" onClick={() => {
+                api.delete('/timesheet/' + data.id + '/destroy')
+                    .then((response) => {
+                        window.location.reload()
+                    })
+                    .catch((error) => {
+                        alert(error.response.data.message)
+                    })
+            }}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-red-500 icon icon-tabler icons-tabler-outline icon-tabler-trash">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                     <path d="M4 7l16 0" />
