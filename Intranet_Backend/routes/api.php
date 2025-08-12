@@ -3,7 +3,6 @@
 use App\Http\Controllers\API\GroupController;
 use App\Http\Controllers\API\GroupMessageController;
 use App\Http\Controllers\API\MessageController;
-use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\DocumentsAdminController;
@@ -18,6 +17,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\OgCumulController;
 use App\Http\Controllers\PeriodeController;
 use App\Http\Controllers\PositionController;
+use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\SprintController;
@@ -79,11 +79,17 @@ Route::post('/documents-admin/upload', [DocumentsAdminController::class, 'upload
 Route::get('/documents/user/{userId}', [DocumentsAdminController::class, 'getUserDocuments']);
 Route::put('/document/{id}/changeStatus', [DocumentsAdminController::class, 'changeStatus']);
 
-
+Route::get('/sessions/{id}', [PeriodeController::class, 'getSessionById']);
 Route::post('/timesheet-periods/store', [PeriodeController::class, 'store']);
 Route::put('/timesheet-periods/{id}/update', [PeriodeController::class, 'update']);
 Route::delete('/timesheet-periods/{id}/destroy', [PeriodeController::class, 'destroy']);
 Route::get('/timesheet-periods/all', [PeriodeController::class, 'getAll']);
+Route::get('/timesheet-periods/{id}/timesheets', [PeriodeController::class, 'getTimesheetsByPeriod']);
+Route::get('/timesheet-periods/active', [PeriodeController::class, 'getActiveSessionsWithUsersTotals']);
+Route::get(
+    '/timesheet-periods/grouped-by-manager/{managerId}',
+    [PeriodeController::class, 'getActiveSessionsGroupedByManager']
+);
 Route::get('/timesheet/all', [TimesheetController::class, 'getAll']);
 Route::get('/timesheet/{id}/user', [TimesheetController::class, 'getUserTimesheets']);
 Route::post('/timesheet/store', [TimesheetController::class, 'store']);
@@ -92,8 +98,13 @@ Route::put('timesheets/{id}/approve', [TimesheetController::class, 'approveTimes
 Route::delete('/timesheet/{id}/destroy', [TimesheetController::class, 'destroy']);
 
 
-
-
+// Route::apiResource('posts', PostController::class);
+Route::post('/posts/store', [PostController::class, 'store']);
+Route::get('/posts/all', [PostController::class, 'postAll']);
+Route::get('/posts/published', [PostController::class, 'getPublishedPosts']);
+Route::get('/posts/{post}/getInfo', [PostController::class, 'show']);
+Route::put('/posts/{postId}/update', [PostController::class, 'update']);
+Route::delete('/posts/{postIs}/delete', [PostController::class, 'destroy']);
 
 
 
@@ -227,31 +238,13 @@ Route::put('/taches/{id}/update', [TaskController::class, 'updateTache']);
 Route::get('/taches/{id}/getTache', [TaskController::class, 'getTacheById']);
 Route::delete('/taches/{id}/delete', [TaskController::class, 'destroy']);
 
-Route::post('/posts/create', [PostController::class, 'store']);
-Route::put('/posts/{id}/approved', [PostController::class, 'approvedPost']);
-Route::get('/posts/all/published', [PostController::class, 'getAllPostsPublished']);
-Route::get('/posts/all/pending', [PostController::class, 'getAllPostsPending']);
-Route::get('/posts/user/{userId}', [PostController::class, 'getUserPosts']);
-Route::delete('/posts/{id}/refused', [PostController::class, 'refusePost']);
 
 
 
 
 
-//reaction
-Route::post('/posts/{postId}/react', [PostController::class, 'reactToPost']);
-Route::get('/posts/{id}/getReact', [PostController::class, 'getReact']);
 
 
-//comments 
-Route::post('/posts/{postId}/comment', [PostController::class, 'commentToPost']);
-Route::get('/posts/{id}/getCommentCount', [PostController::class, 'getCommentCount']);
-Route::get('/posts/{id}/getComment', [PostController::class, 'getComment']);
-Route::put('/posts/{postId}/modify', [PostController::class, 'updatePost']);
-Route::get('/posts/{id}/getOnePost', [PostController::class, 'getOnePost']);
-Route::get('/comments/{id}/getOneComment', [PostController::class, 'getOneComment']);
-Route::put('/comments/{commentId}/modify', [PostController::class, 'updateComment']);
-Route::delete('/comments/{commentId}/delete', [PostController::class, 'destroyComment']);
 
 //notifications
 Route::get('/notifications/{userId}', [NotificationController::class, 'getUserNotifications']);

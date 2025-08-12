@@ -4,7 +4,7 @@ import RowFeuille from "./RowFeuille";
 import RowSessions from "./RowSessions";
 import TeamRowFeuille from "./TeamRowFeuille";
 
-export default function TableFeuille({ header, datas, type }) {
+export default function TableFeuille({ header, datas, type, onEdit, fetchSession }) {
     return <div className="relative overflow-x-auto rounded-lg">
         <table className="w-full text-sm text-center rtl:text-right text-gray-500 ">
             <thead className="text-xs  uppercase bg-gray-50">
@@ -15,7 +15,7 @@ export default function TableFeuille({ header, datas, type }) {
             <tbody>
                 {
                     type && type == 'personnel' && datas && datas.map((data, index) => {
-                        return <RowFeuille data={data} key={index} />
+                        return <RowFeuille data={data} key={index} onEdit={onEdit}  />
                     })
                 }
                 {
@@ -30,7 +30,7 @@ export default function TableFeuille({ header, datas, type }) {
                 }
                 {
                     type && type == 'sessions' && datas && datas.map((data, index) => {
-                        return <RowSessions data={data} key={index} />
+                        return <RowSessions data={data} key={index} onEdit={onEdit} fetchSession={fetchSession} />
                     })
                 }
             </tbody>

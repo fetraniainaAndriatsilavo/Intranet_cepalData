@@ -1,59 +1,51 @@
-export default function RowSessions({data}) {
-    return <tr
-        className={`bg-white hover:bg-gray-50 odd:bg-white`}
-    >
-        <td className="px-6 py-4 font-medium whitespace-nowrap font-semibold"> {data.periode} </td>
-        <td className="px-6 py-4 text-center"> {data.start_date} </td>
-        <td className="px-6 py-4 text-center"> {data.end_date} </td>   
-        <td className="px-6 py-4 text-center">  {data.updated_at} </td> 
-        <td className="px-6 py-4 flex items-center justify-center gap-2">
+import api from "../axios"
 
-        {/* Vrai */}
-        <button className="text-green-600 hover:underline cursor-pointer" onClick={() => {
-          toggleArchive(data.id, 'approved')
-        }}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="icon icon-tabler icons-tabler-filled icon-tabler-circle-check"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-1.293 5.953a1 1 0 0 0 -1.32 -.083l-.094 .083l-3.293 3.292l-1.293 -1.292l-.094 -.083a1 1 0 0 0 -1.403 1.403l.083 .094l2 2l.094 .083a1 1 0 0 0 1.226 0l.094 -.083l4 -4l.083 -.094a1 1 0 0 0 -.083 -1.32z" />
-          </svg>
-        </button>
+export default function RowSessions({ data, onEdit, fetchSession }) {
 
-        {/* Faux*/}
-        <button className="text-red-600 hover:underline cursor-pointer" onClick={() => {
-          toggleArchive(data.id, 'refused')
+  function destroy(id) {
+    api.delete('/timesheet-periods/' + id + '/destroy')
+      .then((response) => {
+        fetchSession()
+      })
+      .catch((error) => {
+      })
+  }
+
+
+  return <tr
+    className={`bg-white hover:bg-gray-50 odd:bg-white`}
+  >
+    <td className="px-6 py-4 font-medium whitespace-nowrap font-semibold"> {data.periode} </td>
+    <td className="px-6 py-4 text-center"> {data.start_date} </td>
+    <td className="px-6 py-4 text-center"> {data.end_date} </td>
+    <td className="px-6 py-4 text-center">  {data.updated_at} </td>
+    <td className="px-6 py-4 flex items-center justify-center gap-2" >
+      <button className="text-green-600 hover:underline cursor-pointer"
+        onClick={() => {
+          onEdit(data.id)
         }}>
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="icon icon-tabler icons-tabler-outline icon-tabler-circle-dashed-x"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M8.56 3.69a9 9 0 0 0 -2.92 1.95" />
-            <path d="M3.69 8.56a9 9 0 0 0 -.69 3.44" />
-            <path d="M3.69 15.44a9 9 0 0 0 1.95 2.92" />
-            <path d="M8.56 20.31a9 9 0 0 0 3.44 .69" />
-            <path d="M15.44 20.31a9 9 0 0 0 2.92 -1.95" />
-            <path d="M20.31 15.44a9 9 0 0 0 .69 -3.44" />
-            <path d="M20.31 8.56a9 9 0 0 0 -1.95 -2.92" />
-            <path d="M15.44 3.69a9 9 0 0 0 -3.44 -.69" />
-            <path d="M14 14l-4 -4" />
-            <path d="M10 14l4 -4" />
-          </svg>
-        </button>
-      </td>
-    </tr>
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-gray-500 icon icon-tabler icons-tabler-outline icon-tabler-edit">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />
+          <path d="M20.385 6.585a2.1 2.1 0 0 0 -2.97 -2.97l-8.415 8.385v3h3l8.385 -8.415z" />
+          <path d="M16 5l3 3" />
+        </svg>
+      </button>
+      <button className="text-green-600 hover:underline cursor-pointer" onClick={(e) => {
+        if (confirm('Tous les feuilles de temps rattachées à ce session seront suprrimées?')) {
+          e.preventDefault()
+          destroy(data.id)
+        }
+      }}  >
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-red-500 icon icon-tabler icons-tabler-outline icon-tabler-trash">
+          <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+          <path d="M4 7l16 0" />
+          <path d="M10 11l0 6" />
+          <path d="M14 11l0 6" />
+          <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
+          <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
+        </svg>
+      </button>
+    </td>
+  </tr>
 }

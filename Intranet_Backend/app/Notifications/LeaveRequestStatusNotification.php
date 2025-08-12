@@ -1,4 +1,5 @@
 <?
+
 namespace App\Notifications;
 
 use Illuminate\Notifications\Notification;

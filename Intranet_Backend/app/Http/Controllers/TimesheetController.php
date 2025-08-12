@@ -35,9 +35,6 @@ class TimesheetController extends Controller
         return response()->json($timesheets);
     }
 
-
-
-
     public function store(Request $request)
     {
         try {

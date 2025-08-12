@@ -132,7 +132,6 @@ function Dashboard() {
 
             {/* mes feuilles de temps */}
             {pathname == '/list-timesheet' && <ListTimeSheet />}
-            {matchPath('/modify-timesheet/:id', pathname) && <ModifyTimeSheet />}
             {pathname == '/equipe-timesheet' && <TeamTimesheet />}
             {pathname == '/all-timesheet' && <AllTimesheet />}
             {pathname == '/messessions' && <ListSessions />}

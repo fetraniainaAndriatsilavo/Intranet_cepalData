@@ -7,10 +7,12 @@ import {
     DialogActions,
     Button,
 } from "@mui/material";
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import api from "../../components/axios";
+import { AppContext } from "../../context/AppContext";
 
-export default function Sessions({ open, onClose }) {
+export default function EditSessions({ open, onClose, sessionsId }) {
+    const { user } = useContext(AppContext)
     const [success, setSuccess] = useState("");
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
@@ -19,6 +21,7 @@ export default function Sessions({ open, onClose }) {
         periode: "",
         start_date: "",
         end_date: "",
+        updated_by: user ? user.id : null
     });
 
     const handleChange = (e) => {
@@ -29,26 +32,37 @@ export default function Sessions({ open, onClose }) {
         }));
     };
 
-    const handleOpen = () => {
-        setSuccess("");
-        setError("");
-        setOpen(true);
-    };
+    const fetchSession = (sessionsId) => {
+        api.get('/sessions/' + sessionsId)
+            .then((response) => {
+                const data = response.data;
+                setForm({
+                    periode: data.periode || "",
+                    start_date: data.start_date || "",
+                    end_date: data.end_date || "", 
+                    updated_by: user ? user.id : null
+                });
+            })
+            .catch((error) => {
+                console.log(error.response.data.message)
+            })
+    }
 
-    const handleClose = () => {
-        setOpen(false);
 
-    };
+    useEffect(() => {
+        fetchSession(sessionsId)
+    }, [sessionsId])
 
     const Creer = async () => {
         try {
-            const response = await api.post("/timesheet-periods/store", form);
+            const response = await api.put('/timesheet-periods/' + sessionsId + '/update', form);
             setSuccess(response.data.message);
             setError("");
             setForm({ periode: "", start_date: "", end_date: "" });
             setTimeout(() => {
-                setOpen(false)
+                onClose()
             }, 2000);
+            window.location.reload()
         } catch (err) {
             setError(err.response?.data?.message || "Erreur inconnue");
             setSuccess("");
@@ -70,6 +84,7 @@ export default function Sessions({ open, onClose }) {
                 onChange={handleChange}
                 fullWidth
                 size="small"
+                className="mt-3"
             />
 
             <TextField
@@ -113,7 +128,7 @@ export default function Sessions({ open, onClose }) {
                 variant="contained"
                 disabled={loading}
             >
-                {loading ? "Enregistrement..." : "Enregistrer"}
+                {loading ? "Modification..." : "Modifier"}
             </Button>
         </DialogActions>
     </Dialog>

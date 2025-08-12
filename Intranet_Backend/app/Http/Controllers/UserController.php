@@ -316,7 +316,7 @@ class UserController extends Controller
                 ],
 
             ], 200);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return response()->json([
                 'error' => 'Utilisateur non trouvé.',
                 'message' => 'Aucun utilisateur ne correspond à cet ID.',

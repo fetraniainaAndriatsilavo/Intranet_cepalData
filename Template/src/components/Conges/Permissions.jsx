@@ -83,9 +83,7 @@ export default function Permissions({ radioValue }) {
           data.name === "Hospitalisation de conjoint" ||
           data.name === "Mises à pieds"
         ));
-        setCongeType(response.data.filter(data =>
-          data.name === "Congé payé"
-        ))
+        setCongeType(response.data.filter(data => data.name === "Congé payé"))
       })
       .catch((error) => {
         console.log(error)

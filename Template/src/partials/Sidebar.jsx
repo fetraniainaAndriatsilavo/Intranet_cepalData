@@ -368,9 +368,10 @@ function Sidebar({
                 >
                   <div className="flex items-center justify-between">
                     <div className="grow flex items-center">
-                      <svg className={`shrink-0 fill-current ${pathname.includes('messages') ? 'text-violet-500' : 'text-gray-400 dark:text-gray-500'}`} xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-                        <path d="M13.95.879a3 3 0 0 0-4.243 0L1.293 9.293a1 1 0 0 0-.274.51l-1 5a1 1 0 0 0 1.177 1.177l5-1a1 1 0 0 0 .511-.273l8.414-8.414a3 3 0 0 0 0-4.242L13.95.879ZM11.12 2.293a1 1 0 0 1 1.414 0l1.172 1.172a1 1 0 0 1 0 1.414l-8.2 8.2-3.232.646.646-3.232 8.2-8.2Z" />
-                        <path d="M10 14a1 1 0 1 0 0 2h5a1 1 0 1 0 0-2h-5Z" />
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className=" text-gray-400 icon icon-tabler icons-tabler-outline icon-tabler-brand-messenger">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M3 20l1.3 -3.9a9 8 0 1 1 3.4 2.9l-4.7 1" />
+                        <path d="M8 13l3 -2l2 2l3 -2" />
                       </svg>
                       <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
                         Discussions
@@ -379,6 +380,33 @@ function Sidebar({
                     {/* Badge */}
                     <div className="flex shrink-0 ml-2">
                       <span className="inline-flex items-center justify-center h-5 text-xs font-medium text-white px-2 rounded-sm" style={{ backgroundColor: '#04adf0' }}>4</span>
+                    </div>
+                  </div>
+                </NavLink>
+              </li>
+              <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r ${pathname.includes("messages") && "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"}`}>
+                <NavLink
+                  end
+                  to="https://cruip.com/mosaic/"
+                  className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${pathname.includes("messages") ? "" : "hover:text-gray-900 dark:hover:text-white"
+                    }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="grow flex items-center">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-gray-400  icon icon-tabler icons-tabler-outline icon-tabler-news">
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M16 6h3a1 1 0 0 1 1 1v11a2 2 0 0 1 -4 0v-13a1 1 0 0 0 -1 -1h-10a1 1 0 0 0 -1 1v12a3 3 0 0 0 3 3h11" />
+                        <path d="M8 8l4 0" />
+                        <path d="M8 12l4 0" />
+                        <path d="M8 16l4 0" />
+                      </svg>
+                      <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                        Social News
+                      </span>
+                    </div>
+                    {/* Badge */}
+                    <div className="flex shrink-0 ml-2">
+                      <span className="inline-flex items-center justify-center h-5 text-xs font-medium text-white px-2 rounded-sm" style={{ backgroundColor: '#04adf0' }}> 1 </span>
                     </div>
                   </div>
                 </NavLink>
@@ -477,295 +505,295 @@ function Sidebar({
               </SidebarLinkGroup>
             </ul>
           </div>
-
-          <div>
-            <h3 className="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
-              <span className="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">
-                •••
-              </span>
-              <span className="lg:hidden lg:sidebar-expanded:block 2xl:block"> back-office </span>
-            </h3>
-            <ul>
-              {/* User Back-office*/}
-              <SidebarLinkGroup>
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <a
-                        href="#0"
-                        className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${open ? "" : "hover:text-gray-900 dark:hover:text-white"}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleClick();
-                          setSidebarExpanded(true);
-                        }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <svg
-                              className="w-4 h-4 shrink-0 ml-1 text-gray-400 dark:text-gray-500 icon icon-tabler icons-tabler-outline icon-tabler-address-book"
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                              <path d="M20 6v12a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2z" />
-                              <path d="M10 16h6" />
-                              <path d="M13 11m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                              <path d="M4 8h3" />
-                              <path d="M4 12h3" />
-                              <path d="M4 16h3" />
-                            </svg>
-                            <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                              Ressources H.
-                            </span>
+          {
+            user && user.role == 'user' && <div>
+              <h3 className="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
+                <span className="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">
+                  •••
+                </span>
+                <span className="lg:hidden lg:sidebar-expanded:block 2xl:block"> back-office </span>
+              </h3>
+              <ul>
+                {/* User Back-office*/}
+                <SidebarLinkGroup>
+                  {(handleClick, open) => {
+                    return (
+                      <React.Fragment>
+                        <a
+                          href="#0"
+                          className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${open ? "" : "hover:text-gray-900 dark:hover:text-white"}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleClick();
+                            setSidebarExpanded(true);
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <svg
+                                className="w-4 h-4 shrink-0 ml-1 text-gray-400 dark:text-gray-500 icon icon-tabler icons-tabler-outline icon-tabler-address-book"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M20 6v12a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h10a2 2 0 0 1 2 2z" />
+                                <path d="M10 16h6" />
+                                <path d="M13 11m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                                <path d="M4 8h3" />
+                                <path d="M4 12h3" />
+                                <path d="M4 16h3" />
+                              </svg>
+                              <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                Ressources H.
+                              </span>
+                            </div>
+                            {/* Icon */}
+                            <div className="flex shrink-0 ml-2">
+                              <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
+                                <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
+                              </svg>
+                            </div>
                           </div>
-                          {/* Icon */}
-                          <div className="flex shrink-0 ml-2">
-                            <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
-                              <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
-                            </svg>
-                          </div>
+                        </a>
+                        <div className="lg:hidden lg:sidebar-expanded:block 2xl:block">
+                          <ul className={`pl-8 mt-1 ${!open && "hidden"}`}>
+                            <li className="mb-1 last:mb-0">
+                              <NavLink end to='/ajout-utilisateur' className={({ isActive }) =>
+                                "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                              }>
+                                <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                  Ajout Collaborateur
+                                </span>
+                              </NavLink>
+                            </li>
+                            <li className="mb-1 last:mb-0">
+                              <NavLink end to="/liste-utilisateur" className={({ isActive }) =>
+                                "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                              }>
+                                <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                  Liste des Collaborateurs
+                                </span>
+                              </NavLink>
+                            </li>
+                            <li className="mb-1 last:mb-0">
+                              <NavLink end to="/documents-utilisateurs" className={({ isActive }) =>
+                                "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                              }>
+                                <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                  Documents Admin.
+                                </span>
+                              </NavLink>
+                            </li>
+                          </ul>
                         </div>
-                      </a>
-                      <div className="lg:hidden lg:sidebar-expanded:block 2xl:block">
-                        <ul className={`pl-8 mt-1 ${!open && "hidden"}`}>
-                          <li className="mb-1 last:mb-0">
-                            <NavLink end to='/ajout-utilisateur' className={({ isActive }) =>
-                              "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                            }>
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Ajout Collaborateur
+                      </React.Fragment>
+                    );
+                  }}
+                </SidebarLinkGroup>
+                <SidebarLinkGroup>
+                  {(handleClick, open) => {
+                    return (
+                      <React.Fragment>
+                        <a
+                          href="#0"
+                          className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${open ? "" : "hover:text-gray-900 dark:hover:text-white"}`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleClick();
+                            setSidebarExpanded(true);
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <svg
+                                className="w-4 h-4 shrink-0 ml-1 text-gray-400 dark:text-gray-500 icon icon-tabler icons-tabler-outline icon-tabler-calendar-user"
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                              >
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M12 21h-6a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4.5" />
+                                <path d="M16 3v4" />
+                                <path d="M8 3v4" />
+                                <path d="M4 11h16" />
+                                <path d="M19 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                                <path d="M22 22a2 2 0 0 0 -2 -2h-2a2 2 0 0 0 -2 2" />
+                              </svg>
+                              <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                Gestion des Congés
                               </span>
-                            </NavLink>
-                          </li>
-                          <li className="mb-1 last:mb-0">
-                            <NavLink end to="/liste-utilisateur" className={({ isActive }) =>
-                              "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                            }>
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Liste des Collaborateurs
-                              </span>
-                            </NavLink>
-                          </li>
-                          <li className="mb-1 last:mb-0">
-                            <NavLink end to="/documents-utilisateurs" className={({ isActive }) =>
-                              "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                            }>
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Documents Admin.
-                              </span>
-                            </NavLink>
-                          </li>
-                        </ul>
-                      </div>
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup>
-              <SidebarLinkGroup>
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <a
-                        href="#0"
-                        className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${open ? "" : "hover:text-gray-900 dark:hover:text-white"}`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleClick();
-                          setSidebarExpanded(true);
-                        }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <svg
-                              className="w-4 h-4 shrink-0 ml-1 text-gray-400 dark:text-gray-500 icon icon-tabler icons-tabler-outline icon-tabler-calendar-user"
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="24"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            >
-                              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                              <path d="M12 21h-6a2 2 0 0 1 -2 -2v-12a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v4.5" />
-                              <path d="M16 3v4" />
-                              <path d="M8 3v4" />
-                              <path d="M4 11h16" />
-                              <path d="M19 17m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                              <path d="M22 22a2 2 0 0 0 -2 -2h-2a2 2 0 0 0 -2 2" />
-                            </svg>
-                            <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                              Gestion des Congés
-                            </span>
+                            </div>
+                            {/* Icon */}
+                            <div className="flex shrink-0 ml-2">
+                              <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
+                                <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
+                              </svg>
+                            </div>
                           </div>
-                          {/* Icon */}
-                          <div className="flex shrink-0 ml-2">
-                            <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
-                              <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
-                            </svg>
-                          </div>
+                        </a>
+                        <div className="lg:hidden lg:sidebar-expanded:block 2xl:block">
+                          <ul className={`pl-8 mt-1 ${!open && "hidden"}`}>
+                            <li className="mb-1 last:mb-0">
+                              <NavLink end to='/listeconges' className={({ isActive }) =>
+                                "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                              }>
+                                <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                  Listes des demandes
+                                </span>
+                              </NavLink>
+                            </li>
+                            <li className="mb-1 last:mb-0">
+                              <NavLink end to="/etats" className={({ isActive }) =>
+                                "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                              }>
+                                <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                  Etat des congés
+                                </span>
+                              </NavLink>
+                            </li>
+                          </ul>
                         </div>
-                      </a>
-                      <div className="lg:hidden lg:sidebar-expanded:block 2xl:block">
-                        <ul className={`pl-8 mt-1 ${!open && "hidden"}`}>
-                          <li className="mb-1 last:mb-0">
-                            <NavLink end to='/listeconges' className={({ isActive }) =>
-                              "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                            }>
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Listes des demandes
+                      </React.Fragment>
+                    );
+                  }}
+                </SidebarLinkGroup>
+                <SidebarLinkGroup activecondition={pathname.includes("tasks")}>
+                  {(handleClick, open) => {
+                    return (
+                      <React.Fragment>
+                        <a
+                          href="#0"
+                          className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${pathname.includes("tasks") ? "" : "hover:text-gray-900 dark:hover:text-white"
+                            }`}
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleClick();
+                            setSidebarExpanded(true);
+                          }}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center">
+                              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="w-4 h-4 shrink-0 ml-1 text-gray-400 icon icon-tabler icons-tabler-outline icon-tabler-calendar-month">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
+                                <path d="M16 3v4" />
+                                <path d="M8 3v4" />
+                                <path d="M4 11h16" />
+                                <path d="M8 14v4" />
+                                <path d="M12 14v4" />
+                                <path d="M16 14v4" />
+                              </svg>
+                              <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                Feuille de Temps
                               </span>
-                            </NavLink>
-                          </li>
-                          <li className="mb-1 last:mb-0">
-                            <NavLink end to="/etats" className={({ isActive }) =>
-                              "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                            }>
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Etat des congés
-                              </span>
-                            </NavLink>
-                          </li>
-                        </ul>
-                      </div>
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup>
-              <SidebarLinkGroup activecondition={pathname.includes("tasks")}>
-                {(handleClick, open) => {
-                  return (
-                    <React.Fragment>
-                      <a
-                        href="#0"
-                        className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${pathname.includes("tasks") ? "" : "hover:text-gray-900 dark:hover:text-white"
-                          }`}
-                        onClick={(e) => {
-                          e.preventDefault();
-                          handleClick();
-                          setSidebarExpanded(true);
-                        }}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="w-4 h-4 shrink-0 ml-1 text-gray-400 icon icon-tabler icons-tabler-outline icon-tabler-calendar-month">
-                              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                              <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
-                              <path d="M16 3v4" />
-                              <path d="M8 3v4" />
-                              <path d="M4 11h16" />
-                              <path d="M8 14v4" />
-                              <path d="M12 14v4" />
-                              <path d="M16 14v4" />
-                            </svg>
-                            <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                              Feuille de Temps
-                            </span>
+                            </div>
+                            {/* Icon */}
+                            <div className="flex shrink-0 ml-2">
+                              <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
+                                <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
+                              </svg>
+                            </div>
                           </div>
-                          {/* Icon */}
-                          <div className="flex shrink-0 ml-2">
-                            <svg className={`w-3 h-3 shrink-0 ml-1 fill-current text-gray-400 dark:text-gray-500 ${open && "rotate-180"}`} viewBox="0 0 12 12">
-                              <path d="M5.9 11.4L.5 6l1.4-1.4 4 4 4-4L11.3 6z" />
-                            </svg>
-                          </div>
+                        </a>
+                        <div className="lg:hidden lg:sidebar-expanded:block 2xl:block">
+                          <ul className={`pl-8 mt-1 ${!open && "hidden"}`}>
+                            <li className="mb-1 last:mb-0">
+                              <NavLink
+                                end
+                                to='/all-timesheet'
+                                className={({ isActive }) =>
+                                  "block transition duration-150 truncate " + (isActive ? "text-sky-500" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                                }
+                              >
+                                <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                  Liste
+                                </span>
+                              </NavLink>
+                            </li>
+                            <li className="mb-1 last:mb-0">
+                              <NavLink
+                                end
+                                to='/messessions'
+                                className={({ isActive }) =>
+                                  "block transition duration-150 truncate " + (isActive ? "text-sky-500" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                                }
+                              >
+                                <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                  Sessions
+                                </span>
+                              </NavLink>
+                            </li>
+                          </ul>
                         </div>
-                      </a>
-                      <div className="lg:hidden lg:sidebar-expanded:block 2xl:block">
-                        <ul className={`pl-8 mt-1 ${!open && "hidden"}`}>
-                          <li className="mb-1 last:mb-0">
-                            <NavLink
-                              end
-                              to='/list-timesheet'
-                              className={({ isActive }) =>
-                                "block transition duration-150 truncate " + (isActive ? "text-sky-500" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                              }
-                            >
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Liste
-                              </span>
-                            </NavLink>
-                          </li>
-                          <li className="mb-1 last:mb-0">
-                            <NavLink
-                              end
-                              to='/messessions'
-                              className={({ isActive }) =>
-                                "block transition duration-150 truncate " + (isActive ? "text-sky-500" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                              }
-                            >
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Sessions
-                              </span>
-                            </NavLink>
-                          </li>
-                        </ul>
-                      </div>
-                    </React.Fragment>
-                  );
-                }}
-              </SidebarLinkGroup>
-              {/* Key news  */}
-              <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r ${pathname.includes("calendar") && "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"}`}>
-                <NavLink
-                  end
-                  to="https://cruip.com/mosaic/"
-                  className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${pathname.includes("calendar") ? "" : "hover:text-gray-900 dark:hover:text-white"
-                    }`}
-                >
-                  <div className="flex items-center">
-                    <svg
-                      className="w-4 h-4 shrink-0 ml-1 text-gray-400 dark:text-gray-500 icon icon-tabler icons-tabler-outline icon-tabler-user-cog"
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                      <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-                      <path d="M6 21v-2a4 4 0 0 1 4 -4h2.5" />
-                      <path d="M19.001 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                      <path d="M19.001 15.5v1.5" />
-                      <path d="M19.001 21v1.5" />
-                      <path d="M22.032 17.25l-1.299 .75" />
-                      <path d="M17.27 20l-1.3 .75" />
-                      <path d="M15.97 17.25l1.3 .75" />
-                      <path d="M20.733 20l1.3 .75" />
-                    </svg>
+                      </React.Fragment>
+                    );
+                  }}
+                </SidebarLinkGroup>
+                {/* Key news  */}
+                <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r ${pathname.includes("calendar") && "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"}`}>
+                  <NavLink
+                    end
+                    to="https://cruip.com/mosaic/"
+                    className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${pathname.includes("calendar") ? "" : "hover:text-gray-900 dark:hover:text-white"
+                      }`}
+                  >
+                    <div className="flex items-center">
+                      <svg
+                        className="w-4 h-4 shrink-0 ml-1 text-gray-400 dark:text-gray-500 icon icon-tabler icons-tabler-outline icon-tabler-user-cog"
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="24"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+                        <path d="M6 21v-2a4 4 0 0 1 4 -4h2.5" />
+                        <path d="M19.001 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
+                        <path d="M19.001 15.5v1.5" />
+                        <path d="M19.001 21v1.5" />
+                        <path d="M22.032 17.25l-1.299 .75" />
+                        <path d="M17.27 20l-1.3 .75" />
+                        <path d="M15.97 17.25l1.3 .75" />
+                        <path d="M20.733 20l1.3 .75" />
+                      </svg>
 
-                    <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                      Modérateur
-                    </span>
-                  </div>
-                </NavLink>
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        {/* Expand / collapse button */}
-        <div className="pt-3 hidden lg:inline-flex 2xl:hidden justify-end mt-auto">
-          <div className="w-12 pl-4 pr-3 py-2">
-            <button className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400" onClick={() => setSidebarExpanded(!sidebarExpanded)}>
-              <span className="sr-only">Expand / collapse sidebar</span>
-              <svg className="shrink-0 fill-current text-gray-400 dark:text-gray-500 sidebar-expanded:rotate-180" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
-                <path d="M15 16a1 1 0 0 1-1-1V1a1 1 0 1 1 2 0v14a1 1 0 0 1-1 1ZM8.586 7H1a1 1 0 1 0 0 2h7.586l-2.793 2.793a1 1 0 1 0 1.414 1.414l4.5-4.5A.997.997 0 0 0 12 8.01M11.924 7.617a.997.997 0 0 0-.217-.324l-4.5-4.5a1 1 0 0 0-1.414 1.414L8.586 7M12 7.99a.996.996 0 0 0-.076-.373Z" />
-              </svg>
-            </button>
+                      <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                        Modérateur
+                      </span>
+                    </div>
+                  </NavLink>
+                </li>
+              </ul>
+            </div>
+          }
+          {/* Expand / collapse button */}
+          <div className="pt-3 hidden lg:inline-flex 2xl:hidden justify-end mt-auto">
+            <div className="w-12 pl-4 pr-3 py-2">
+              <button className="text-gray-400 hover:text-gray-500 dark:text-gray-500 dark:hover:text-gray-400" onClick={() => setSidebarExpanded(!sidebarExpanded)}>
+                <span className="sr-only">Expand / collapse sidebar</span>
+                <svg className="shrink-0 fill-current text-gray-400 dark:text-gray-500 sidebar-expanded:rotate-180" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16">
+                  <path d="M15 16a1 1 0 0 1-1-1V1a1 1 0 1 1 2 0v14a1 1 0 0 1-1 1ZM8.586 7H1a1 1 0 1 0 0 2h7.586l-2.793 2.793a1 1 0 1 0 1.414 1.414l4.5-4.5A.997.997 0 0 0 12 8.01M11.924 7.617a.997.997 0 0 0-.217-.324l-4.5-4.5a1 1 0 0 0-1.414 1.414L8.586 7M12 7.99a.996.996 0 0 0-.076-.373Z" />
+                </svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>

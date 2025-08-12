@@ -3,44 +3,45 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Post extends Model
 {
+    use SoftDeletes;
     protected $connection = 'intranet_extedim';
     protected $table = "posts";
-
     protected $fillable = [
         'user_id',
-        'content',
         'image',
+        'content',
+        'status',
+        'likes_count',
+        'comment_count',
         'group_id',
-        'type',
+        'deleted_by',
     ];
-
-    public function images()
-    {
-        return $this->hasMany(PostImage::class, 'post_id');
-    }
-    public function videos()
-    {
-        return $this->hasMany(PostVideo::class);
-    }
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id');
-    }
-    public function reactions()
-    {
-        return $this->hasMany(Reaction::class);
-    }
-    public function comments()
-    {
-        return $this->hasMany(Comment::class);
+        return $this->belongsTo(User::class);
     }
 
     public function group()
     {
-        return $this->belongsTo(GroupPost::class, 'group_id');
+        return $this->belongsTo(Group::class);
+    }
+
+    public function deletedBy()
+    {
+        return $this->belongsTo(User::class, 'deleted_by');
+    }
+    public function attachments()
+    {
+        return $this->hasMany(PostAttachment::class);
+    }
+
+    public function scopePublished($query)
+    {
+        return $query->where('status', 'published');
     }
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import TableFeuille from "../../components/Mes Feuilles/TableFeuille";
 import Sessions from "./Sessions";
 import api from "../../components/axios";
+import EditSessions from "./EditSessions";
 
 export default function ListSessions() {
     const header = [
@@ -12,16 +13,29 @@ export default function ListSessions() {
         "Action"
     ]
     const [open, setOpen] = useState(false)
-    const [lists, setLists] = useState([])
-    useEffect(() => {
+    const [lists, setLists] = useState([]) 
+
+    const fetchSession = () => {
         api.get('/timesheet-periods/all')
             .then((response) => {
                 setLists(response.data)
             })
             .catch((error) => {
 
-            })
-    }, []) 
+        })
+    } 
+
+    useEffect(() => {
+        fetchSession()
+    }, [])
+
+    const [openModal, setOpenModal] = useState(false)
+    const [sessionsId, setSessionsId] = useState(null);
+
+    const handleEditClick = (sessionsId) => {
+        setSessionsId(sessionsId)
+        setOpenModal(true);
+    };
     return <div className="sm:flex flex-col gap-5 sm:justify-between sm:items-center mb-8">
         <div className="mb-4 sm:mb-0 flex items-center justify-between w-full">
             <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
@@ -34,13 +48,14 @@ export default function ListSessions() {
         </div>
         <div className="bg-white w-full rounded-lg">
             <h3 className="p-3">
-                Tous les sessions 
+                Tous les sessions
                 <span className="text-gray-400 font-semibold">
                     {lists.length}
                 </span>
             </h3>
-            <TableFeuille header={header} datas={lists} type={'sessions'} />
+            <TableFeuille header={header} datas={lists} type={'sessions'} onEdit={handleEditClick} fetchSession={fetchSession} />
         </div>
         <Sessions open={open} onClose={() => setOpen(false)} />
+        <EditSessions open={openModal} onClose={() => setOpenModal(false)} sessionsId={sessionsId} />
     </div>
 }

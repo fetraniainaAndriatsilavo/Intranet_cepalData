@@ -3,119 +3,274 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
+    InputLabel,
     TextField,
+    FormControl,
+    NativeSelect,
     Button,
     Alert,
+    Autocomplete,
 } from "@mui/material";
-import { useState } from "react";
-import api from "../../components/axios"; 
+import { useContext, useEffect, useState } from "react";
+import { AppContext } from "../../context/AppContext";
+import api from "../../components/axios";
 
-export default function Sessions({ open, onClose }) {
+export default function CreateTimeSheet({ open, onClose }) {
+
+    // //variables 
+    const { user } = useContext(AppContext);
+
+    // retourne les data comme  clients/contract_type/departments/classification/managers 
+    const [clients, setClients] = useState([])
+
+    const clientOptions = clients.map(client => ({
+        ...client,
+        label: client.name // This ensures the Autocomplete displays the name
+    }));
+
     const [formData, setFormData] = useState({
-        periode: "",
-        start_date: "",
-        end_date: "",
+        user_id: user.id ?? null,
+        client: "",
+        projet: "",
+        type: "tache",
+        date: "",
+        nb_hour: "",
+        description: "",
+        ts_period_id: null
     });
-    const [loading, setLoading] = useState(false);
-    const [success, setSuccess] = useState(null);
-    const [error, setError] = useState(null);
+
+    const [error, SetError] = useState(null);
+    const [success, SetSuccess] = useState(null);
+
+    const duration = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8]
 
     const handleChange = (e) => {
-        const { name, value } = e.target;
         setFormData((prev) => ({
             ...prev,
-            [name]: value,
+            [e.target.id]: e.target.value,
         }));
     };
 
-    const handleSubmit = async () => {
-        setLoading(true);
-        setSuccess(null);
-        setError(null);
-        try {
-            const response = await api.post("/timesheet-periods/store", formData);
-            setSuccess(response.data.message);
-            setFormData({ periode: "", start_date: "", end_date: "" });
-            setTimeout(() => {
-                if (onClose) onClose();
-            }, 2000);
-        } catch (err) {
-            console.error(err);
-            setError(err.response?.data?.message || "Erreur inconnue");
-        } finally {
-            setLoading(false);
-        }
+    const [checkedId, setCheckedId] = useState(null);
+
+
+
+    // request
+    useEffect(() => {
+        api
+            .get("/timesheet-periods/active")
+            .then((response) => {
+                const activeSession = response.data.filter((session) => (session.timesheet_period.status == 'active'))
+                const activeSessionId = activeSession[activeSession.length - 1].timesheet_period.id
+
+                setFormData((prev) => ({
+                    ...prev,
+                    ts_period_id: activeSessionId,
+                }));
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }, []);
+
+
+
+
+    useEffect(() => {
+        api.get("/data")
+            .then((response) => {
+                setClients(response.data.clients)
+            })
+            .catch((error) => {
+                alert(error.response.message)
+            })
+    }, []);
+
+    const handleSubmit = () => {
+        api.post('/timesheet/store', formData, {
+            headers: {
+                "Content-Type": "application/json",
+            },
+        })
+            .then((response) => {
+                setFormData({
+                    user_id: user.id ?? null,
+                    client: "",
+                    projet: "",
+                    type: "tache",
+                    date: "",
+                    nb_hour: "",
+                    description: "",
+                    ts_period_id: ''
+                });
+                SetSuccess(response.data.message);
+                SetError(null);
+                setTimeout(() => {
+                    onClose();
+                }, 3000);
+            })
+            .catch((error) => {
+                if (error.response && error.response.status === 422) {
+                    SetError(error.response.data.message);
+                } else {
+                    SetError("Erreur lors de l'enregistrement.");
+                }
+                SetSuccess(null);
+            });
     };
 
+
+    function convertIntoTime(n) {
+        let totalMinutes = Math.round(n * 60);
+
+        let hours = Math.floor(totalMinutes / 60);
+        let minutes = totalMinutes % 60;
+
+        return String(hours).padStart(2, '0') + ":" +
+            String(minutes).padStart(2, '0') + ":00";
+    }
+
+
     return (
-        <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
             <DialogTitle>
                 <div className="flex items-center gap-3">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-                        viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                        strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M4 7a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7z" />
+                    <svg xmlns="http://www.w3.org/2000/svg"
+                        width="24" height="24"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    >
+                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                        <path d="M4 7a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2v-12z" />
                         <path d="M16 3v4" />
                         <path d="M8 3v4" />
                         <path d="M4 11h16" />
+                        <path d="M7 14h.013" />
+                        <path d="M10.01 14h.005" />
+                        <path d="M13.01 14h.005" />
+                        <path d="M16.015 14h.005" />
+                        <path d="M13.015 17h.005" />
+                        <path d="M7.01 17h.005" />
+                        <path d="M10.01 17h.005" />
                     </svg>
-                    <span className="text-xl font-semibold">
-                        Créez une nouvelle session
-                    </span>
+                    <h1 className="text-xl font-semibold">
+                        Création de feuille de temps Journalière
+                    </h1>
                 </div>
             </DialogTitle>
 
-            <DialogContent dividers className="flex flex-col gap-4 mt-2">
-                <TextField
-                    label="Période (YYYY-MM) **"
-                    type="month"
-                    name="periode"
-                    value={formData.periode}
-                    onChange={handleChange}
-                    fullWidth
-                    size="small"
-                />
+            <DialogContent dividers>
+                <div className="flex gap-4 mb-4">
+                    <Autocomplete
+                        fullWidth
+                        disablePortal
+                        options={clientOptions}
+                        getOptionLabel={(option) => option.label}
+                        isOptionEqualToValue={(option, value) => option.code === value.code}
+                        renderInput={(params) => (
+                            <TextField
+                                {...params}
+                                label="Client"
+                                size="small"
+                                fullWidth
+                            />
+                        )}
+                        value={clientOptions.find(c => c.code === formData.client) || null}
+                        onChange={(e, value) =>
+                            setFormData({ ...formData, client: value ? value.code : "" })
+                        }
+                    />
+                    <TextField
+                        id="projet"
+                        label="Projets"
+                        variant="outlined"
+                        value={formData.projet}
+                        onChange={handleChange}
+                        fullWidth
+                        size="small"
+                    />
+                </div>
+
+                <FormControl fullWidth className="mb-4">
+                    <InputLabel variant="standard" htmlFor="type">
+                        Type
+                    </InputLabel>
+                    <NativeSelect
+                        value={formData.type}
+                        onChange={handleChange}
+                        inputProps={{
+                            name: "type",
+                            id: "type",
+                        }}
+                    >
+                        <option value="tache">Tâches</option>
+                        <option value="conges">Congés</option>
+                        <option value="ferie">Fériés</option>
+                        <option value="recuperation">Récupération</option>
+                        <option value="repos medical">Repos Médical</option>
+                    </NativeSelect>
+                </FormControl>
+
+                <div className="flex gap-4 mb-4 mt-4">
+                    <TextField
+                        id="date"
+                        type="date"
+                        label="Date"
+                        InputLabelProps={{ shrink: true }}
+                        variant="outlined"
+                        value={formData.date}
+                        onChange={handleChange}
+                        fullWidth
+                        size="small"
+                    />
+                    <Autocomplete
+                        options={duration}
+                        value={formData.nb_hour || null}
+                        onChange={(event, newValue) => setFormData({ ...formData, nb_hour: convertIntoTime(newValue) })}
+                        getOptionLabel={(option) => String(option)}
+                        renderInput={(params) => <TextField {...params} label="Durée (heure)" />}
+                        isOptionEqualToValue={(option, value) => option === value}
+                        size="small"
+                        fullWidth
+                    />
+                </div>
 
                 <TextField
-                    label="Date de début **"
-                    type="date"
-                    name="start_date"
-                    value={formData.start_date}
-                    onChange={handleChange}
+                    id="description"
+                    type="text"
+                    label="Description"
+                    variant="outlined"
+                    multiline
+                    rows={4}
                     fullWidth
                     size="small"
-                    InputLabelProps={{ shrink: true }}
-                />
-
-                <TextField
-                    label="Date de fin **"
-                    type="date"
-                    name="end_date"
-                    value={formData.end_date}
+                    value={formData.description}
                     onChange={handleChange}
-                    fullWidth
-                    size="small"
-                    InputLabelProps={{ shrink: true }}
+                    className="mb-4"
                 />
 
                 {success && (
-                    <Alert severity="success">{success}</Alert>
+                    <Alert severity="success" sx={{ mt: 2 }}>
+                        {success}
+                    </Alert>
                 )}
                 {error && (
-                    <Alert severity="error">{error}</Alert>
+                    <Alert severity="error" sx={{ mt: 2 }}>
+                        {error}
+                    </Alert>
                 )}
             </DialogContent>
 
-            <DialogActions className="px-4 pb-4">
-                <Button onClick={onClose} color="secondary">
+            <DialogActions>
+                <Button variant="outlined" onClick={onClose}>
                     Annuler
                 </Button>
-                <Button
-                    onClick={handleSubmit}
-                    variant="contained"
-                    disabled={loading}
-                >
-                    {loading ? "Enregistrement..." : "Enregistrer"}
+                <Button variant="contained" onClick={handleSubmit}>
+                    Enregistrer
                 </Button>
             </DialogActions>
         </Dialog>

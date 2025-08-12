@@ -1,14 +1,16 @@
-export default function RowFeuille() {
+import { useContext } from "react"
+import { AppContext } from "../../context/AppContext"
+
+export default function RowFeuille({ data, onEdit}) {  
+    const {user} = useContext(AppContext)
     return <tr
-        className={`bg-white hover:bg-gray-50 odd:bg-white ${data.status === 'refused' ? 'text-red-500' : 'text-gray-500'
-            }`}
-    >
-        <td className="px-6 py-4 font-medium whitespace-nowrap font-semibold"> </td>
-        <td className="px-6 py-4 text-center"> </td>
-        <td className="px-6 py-4 text-center"> </td>
-        <td className="px-6 py-4 text-center"> </td>
+        className={`bg-white hover:bg-gray-50 odd:bg-white`}>
+        <td className="px-6 py-4 font-medium whitespace-nowrap font-semibold"> {data ? user.first_name +" " +user.last_name : '' } </td>
+        <td className="px-6 py-4 text-center"> {data.description} </td>
+        <td className="px-6 py-4 text-center"> {data.clients} </td>
+        <td className="px-6 py-4 text-center">{data.nb_hour} </td>
         <td className="px-6 py-4 flex items-center justify-center gap-2">
-            <button className="text-green-600 hover:underline cursor-pointer">
+            <button className="text-green-600 hover:underline cursor-pointer" onClick={() => onEdit(data.id)}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-gray-500 icon icon-tabler icons-tabler-outline icon-tabler-edit">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                     <path d="M7 7h-1a2 2 0 0 0 -2 2v9a2 2 0 0 0 2 2h9a2 2 0 0 0 2 -2v-1" />

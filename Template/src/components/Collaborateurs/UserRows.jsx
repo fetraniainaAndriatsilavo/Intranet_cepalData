@@ -11,7 +11,6 @@ export default function UserRows({ data, setAllUsers }) {
                         user.id == id ? { ...user, status: newStatus } : user
                     )   
                 ); 
-                // window.location.reload()
             })
             .catch((error) => {
                 console.error("Failed to update status:", error);

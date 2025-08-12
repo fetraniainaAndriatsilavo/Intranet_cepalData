@@ -1,14 +1,26 @@
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import TableFeuille from "../../components/Mes Feuilles/TableFeuille"
+import api from "../../components/axios";
+import { AppContext } from "../../context/AppContext";
 
-export default function TeamTimesheet() {
+export default function TeamTimesheet() { 
+    const {user} = useContext(AppContext) 
     const header = [
         "Identifiant",
-        "Cumul horaires", 
+        "Cumul horaires",
         "Session",
         "Action"
     ]
-    const lists = []
+    const [lists, setLists] = useState([])
+    useEffect(() => {
+        api.get('/timesheet/all')
+            .then((response) => {
+                setLists(response.data)
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+    }, []);
 
     // pagination du tableau
     const [currentPage, setCurrentPage] = useState(1);
@@ -42,11 +54,11 @@ export default function TeamTimesheet() {
         </div>
         <div className="bg-white w-full rounded-lg">
             <div className="bg-white w-full rounded-lg">
-                <h3 className="p-3"> Les personnes ayant soumises leurs feuilles de Temps 
+                <h3 className="p-3"> Les feuilles de temps reçues
                     <span className="text-gray-400 font-semibold"> {lists.length} </span> </h3>
-                <TableFeuille header={header} datas={currentView.length < 1 ? lists.slice(0, userPerPage) : currentView} type={'equipe'}/>
+                <TableFeuille header={header} datas={currentView.length < 1 ? lists.slice(0, userPerPage) : currentView} type={'equipe'} />
             </div>
-        </div> 
+        </div>
         {
             isMiddleOfMonth(d) == true && <div>
                 <button className="px-3 bg-sky-600 py-2 text-white cursor-pointer rounded"> Envoyer </button>
