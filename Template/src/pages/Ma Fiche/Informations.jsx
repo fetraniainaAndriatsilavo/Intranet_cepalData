@@ -52,10 +52,13 @@ export default function Informations() {
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden max-w-6xl mx-auto">
             {/* Cover Image */}
-            <div className="h-52 w-full bg-cover bg-center relative" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1950&q=80')" }}>
+            <div className="h-52 w-full bg-cover bg-center relative" style={{ backgroundImage: "url('/src/images/360_F_467961418_UnS1ZAwAqbvVVMKExxqUNi0MUFTEJI83.jpg')" }}>
                 <div className="absolute left-6 bottom-[-40px]">
                     <Avatar
-                        src="https://i.pravatar.cc/150?img=32"
+                        src={userInformation && userInformation.image == null && userInformation.gender == 'male' ?
+                            "/src/images/utilisateur.png" : userInformation && userInformation.image == null && userInformation.gender == 'female' ?
+                                '/src/images/user0.png' : userInformation && userInformation.image ? userInformation : "/src/images/utilisateur.png"
+                        }
                         alt="Profile"
                         sx={{ width: 96, height: 96, border: '4px solid white' }}
                     />

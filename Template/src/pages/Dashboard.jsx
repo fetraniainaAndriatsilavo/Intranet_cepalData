@@ -31,13 +31,11 @@ import ModifCollaborateurs from './Collaborateur/ModifCollaborateurs';
 import UploadDocument from './Collaborateur/UploadDocument';
 import Createprojet from '../components/Projets/create/Createprojet';
 import Notifications from './Mes Notifications/Notifications';
-import CreateTimeSheet from './Mes Feuilles de Temps/CreateTimesheet';
 import ListTimeSheet from './Mes Feuilles de Temps/ListTimesheet';
-import ModifyTimeSheet from './Mes Feuilles de Temps/ModifyTimesheet';
 import TeamTimesheet from './Mes Feuilles de Temps/TeamTimesheet';
 import AllTimesheet from './Admin Feuille de Temps/AllTimesheet';
-import Sessions from './Admin Feuille de Temps/Sessions';
-import ListSessions from './Admin Feuille de Temps/ListSessions';
+import ListSessions from './Admin Feuille de Temps/ListSessions';import Projets from './Mes Projets/Projets';
+;
 // import Banner from '../partials/Banner';
 
 function Dashboard() {
@@ -114,7 +112,7 @@ function Dashboard() {
                 {/* Card (Income/Expenses) */}
                 <DashboardCard13 />
               </div>
-            </>}
+            </>} 
             {pathname == '/cgu' && <TermsOfUse />}
             {pathname == '/reinit' && <Reinitialisation />}
             {/* Gestion des congés */}
@@ -138,7 +136,8 @@ function Dashboard() {
             {/* notifications */}
             {pathname == '/mesnotifications' && <Notifications />}
             {/* Projets */}
-            {pathname == '/creer-projet' && <Createprojet />}
+            {pathname == '/creer-projet' && <Createprojet />} 
+            {pathname == '/mesprojets' && <Projets/> }
           </div>
         </main>
       </div>

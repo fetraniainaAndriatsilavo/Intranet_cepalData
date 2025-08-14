@@ -26,8 +26,10 @@ export default function Collaborateur() {
         position_id: '',
         class_id: '',
         manager_id: '',
-        start_contract: '',
-        end_contract: ''
+        leaving_date: '',
+        children: [],
+        marriedTo: '',
+        status: 'active'
     });
 
     const [errorFields, setErrorFields] = useState([]);
@@ -61,6 +63,11 @@ export default function Collaborateur() {
     }, []);
 
     const positionOptions = Object.entries(positions).map(([id, label]) => ({
+        id: parseInt(id),
+        label
+    }));
+
+    const departementOptions = Object.entries(department).map(([id, label]) => ({
         id: parseInt(id),
         label
     }));
@@ -138,16 +145,16 @@ export default function Collaborateur() {
             }
         }
     };
-
-
+    // https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1950&q=80
+    // "https://i.pravatar.cc/150?img=32
     return (
         <div className="bg-light min-h-screen p-6 flex justify-center">
             <div className="w-full max-w-6xl">
                 <div className="relative mb-20 rounded shadow overflow-hidden bg-white">
-                    <div className="h-52 w-full bg-cover bg-center relative" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1950&q=80')" }}>
+                    <div className="h-52 w-full bg-cover bg-center relative" style={{ backgroundImage: "url('/src/images/360_F_467961418_UnS1ZAwAqbvVVMKExxqUNi0MUFTEJI83.jpg')" }}>
                         <div className="absolute left-6 bottom-[-40px] flex flex-col items-center">
                             <Avatar
-                                src={profilePhoto || "https://i.pravatar.cc/150?img=32"}
+                                src={profilePhoto || "/src/images/utilisateur.png"}
                                 alt="Profile"
                                 sx={{ width: 96, height: 96, border: '4px solid white' }}
                             />
@@ -260,8 +267,8 @@ export default function Collaborateur() {
                                     type="text"
                                     placeholder="nom du conjoint **"
                                     className={`w-full form-input border rounded px-3 py-2 text-sm ${errorFields.includes("last_name") ? "border-red-500" : ""}`}
-                                    value={form.last_name}
-                                    onChange={(e) => setForm({ ...form, last_name: e.target.value })}
+                                    value={form.marriedTo}
+                                    onChange={(e) => setForm({ ...form, marriedTo: e.target.value })}
                                 />
                             }
                             {
@@ -269,8 +276,8 @@ export default function Collaborateur() {
                                     type="text"
                                     placeholder="nom de l'enfant"
                                     className={`w-full form-input border rounded px-3 py-2 text-sm ${errorFields.includes("last_name") ? "border-red-500" : ""}`}
-                                    value={form.last_name}
-                                    onChange={(e) => setForm({ ...form, last_name: e.target.value })}
+                                    value={form.children}
+                                    onChange={(e) => setForm({ ...form, children: e.target.value })}
                                 />
                             }
                         </div>
@@ -326,22 +333,7 @@ export default function Collaborateur() {
                                     value={form.type}
                                     onChange={(e, value) => setForm({ ...form, type: value })}
                                 />
-                                <div className="p-3 flex items-center justify-center gap-3 ">
-                                    {
-                                        form.type && <TextField label='début du Contrat' size="small" type="date" InputLabelProps={{ shrink: true }} value={form.start_contract}
-                                            onChange={(e) => {
-                                                setForm({ ...form, start_contract: value })
-                                            }} />
 
-                                    }
-                                    {
-                                        form.type && form.type == 'CDD' && <TextField label='fin du Contrat' size="small" type="date" InputLabelProps={{ shrink: true }} value={form.end_contract}
-                                            onChange={(e) => {
-                                                setForm({ ...form, end_contract: value })
-                                            }}
-                                        />
-                                    }
-                                </div>
                                 <TextField
                                     type="date"
                                     label="Date d'embauche"
@@ -351,6 +343,17 @@ export default function Collaborateur() {
                                     value={form.hire_date}
                                     onChange={(e) => setForm({ ...form, hire_date: e.target.value })}
                                 />
+                                {
+                                    form.type && form.type == 'CDD' && <TextField
+                                        type="date"
+                                        label="Date de départ"
+                                        size="small"
+                                        InputLabelProps={{ shrink: true }}
+                                        fullWidth
+                                        value={form.leaving_date}
+                                        onChange={(e) => setForm({ ...form, leaving_date: e.target.value })}
+                                    />
+                                }
                                 <div className="flex flex-row items-center gap-3 w-full">
                                     {/* ID */}
                                     <input
@@ -372,14 +375,14 @@ export default function Collaborateur() {
                                 <div className="w-full flex flex-col">
                                     <Autocomplete
                                         disablePortal
-                                        options={department || []}
+                                        options={departementOptions || []}
                                         className="mb-3"
                                         renderInput={(params) => (
                                             <TextField {...params} label="Département" size="small" fullWidth name="departement" />
                                         )}
-                                        value={department[form.departement_id - 1] || null}
+                                        value={departementOptions[form.departement_id - 1] || null}
                                         onChange={(e, value) => {
-                                            const index = department.indexOf(value);
+                                            const index = departementOptions.indexOf(value);
                                             setForm({
                                                 ...form,
                                                 departement_id: index >= 0 ? index + 1 : '', // 1-based ID

@@ -167,6 +167,8 @@ class PeriodeController extends Controller
 
                     $query = Timesheet::where('ts_period_id', $session->id)
                         ->where('user_id', $userId)
+                        ->where('status', 'approved')
+
                         ->selectRaw('
                         SUM(EXTRACT(EPOCH FROM nb_hour) / 3600) as total_hours,
                         SUM(CASE WHEN type = ? THEN EXTRACT(EPOCH FROM nb_hour) / 3600 ELSE 0 END) as conge,

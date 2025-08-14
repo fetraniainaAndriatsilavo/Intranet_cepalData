@@ -2,25 +2,36 @@ import { useContext, useEffect, useState } from "react";
 import TableFeuille from "../../components/Mes Feuilles/TableFeuille"
 import api from "../../components/axios";
 import { AppContext } from "../../context/AppContext";
+import ViewTimeSheet from "./ViewTimesheet";
+import { Snackbar } from "@mui/material";
 
-export default function TeamTimesheet() { 
-    const {user} = useContext(AppContext) 
+export default function TeamTimesheet() {
+    const { user } = useContext(AppContext)
     const header = [
         "Identifiant",
-        "Cumul horaires",
         "Session",
         "Action"
     ]
+    const [details, setDetails] = useState([])
+    const [open, setOpen] = useState(false)
+    const [message, setMessage] = useState(null)
     const [lists, setLists] = useState([])
-    useEffect(() => {
-        api.get('/timesheet/all')
+
+
+    const fetchTeamTimesheet = (id) => {
+        api.get('managers/' + id + '/timesheets/sent')
             .then((response) => {
                 setLists(response.data)
             })
             .catch((error) => {
                 console.log(error)
             })
-    }, []);
+    }
+
+    useEffect(() => {
+        fetchTeamTimesheet(user.id)
+    }, [user])
+
 
     // pagination du tableau
     const [currentPage, setCurrentPage] = useState(1);
@@ -46,23 +57,36 @@ export default function TeamTimesheet() {
             <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
                 Feuilles de Temps Equipes
             </h1>
-            <button className="px-3 bg-sky-600 py-2 text-white cursor-pointer rounded"
-                onClick={(e) => {
-                    e.preventDefault()
-                    window.location.href = '/creer-feuille'
-                }}> Envoyer </button>
         </div>
         <div className="bg-white w-full rounded-lg">
             <div className="bg-white w-full rounded-lg">
                 <h3 className="p-3"> Les feuilles de temps reçues
                     <span className="text-gray-400 font-semibold"> {lists.length} </span> </h3>
-                <TableFeuille header={header} datas={currentView.length < 1 ? lists.slice(0, userPerPage) : currentView} type={'equipe'} />
+                <TableFeuille
+                    header={header}
+                    datas={currentView.length < 1 ? lists.slice(0, userPerPage) : currentView}
+                    type={'equipe'}
+                    setDetails={setDetails}
+                    setOpen={setOpen}
+                    setMessage={setMessage}
+                />
             </div>
         </div>
         {
             isMiddleOfMonth(d) == true && <div>
                 <button className="px-3 bg-sky-600 py-2 text-white cursor-pointer rounded"> Envoyer </button>
             </div>
+        }
+        <ViewTimeSheet
+            details={details ? details : []}
+            open={open} handleClose={() => { setOpen(false) }} />
+
+        {
+            message && <Snackbar
+                open={open}
+                autoHideDuration={5000}
+                message={message}
+            />
         }
     </div>
 }

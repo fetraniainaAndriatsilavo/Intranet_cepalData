@@ -15,7 +15,7 @@ import { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../context/AppContext";
 import api from "../../components/axios";
 
-export default function CreateTimeSheet({ open, onClose }) {
+export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser }) {
     const { user } = useContext(AppContext);
 
     const [clients, setClients] = useState([]);
@@ -27,7 +27,7 @@ export default function CreateTimeSheet({ open, onClose }) {
         user_id: user?.id ?? null,
         client: "",
         projet: "",
-        type: "tache",
+        type: "Tâche",
         date: "",
         nb_hour: "",
         description: "",
@@ -112,7 +112,8 @@ export default function CreateTimeSheet({ open, onClose }) {
             setError(null);
             setTimeout(() => {
                 onClose();
-            }, 3000);
+            }, 1500); 
+            fetchTimeSheetUser(user.id) 
         } catch (err) {
             if (err.response?.status === 422) {
                 setError(err.response.data.message);
@@ -191,11 +192,12 @@ export default function CreateTimeSheet({ open, onClose }) {
                         onChange={handleChange}
                         inputProps={{ name: "type", id: "type" }}
                     >
-                        <option value="tache">Tâches</option>
-                        <option value="conges">Congés</option>
-                        <option value="ferie">Fériés</option>
-                        <option value="recuperation">Récupération</option>
-                        <option value="repos medical">Repos Médical</option>
+                        <option value="Tâche"> Tâches </option>
+                        <option value="Congé"> Congés </option>
+                        <option value="Jour férié"> Fériés </option>
+                        <option value="Convalescence"> Convalescence </option>
+                        <option value="Repos médical">Repos Médical </option>
+                        <option value="Assistance maternelle"> Assistance maternelle </option>
                     </NativeSelect>
                 </FormControl>
 

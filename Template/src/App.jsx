@@ -54,7 +54,8 @@ function App() {
             <Route path="/etats" element={<Dashboard />} />
 
             {/* Projet */}
-            <Route path="/creer-projet" element={<Dashboard />} />
+            <Route path="/creer-projet" element={<Dashboard />} /> 
+            <Route path='/mesprojets' element={<Dashboard/>} /> 
 
             {/* Mes Feuille de Temps  */}
             <Route path='/list-timesheet' element={<Dashboard />} />

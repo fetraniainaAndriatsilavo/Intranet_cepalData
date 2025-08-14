@@ -36,6 +36,7 @@ export default function ListTimeSheet() {
                 console.error("Error fetching timesheet periods:", error);
             });
     }, []);
+
     const fetchTimeSheetUser = (id) => {
         api.get('/timesheet/' + id + '/user')
             .then((response) => {
@@ -105,23 +106,19 @@ export default function ListTimeSheet() {
         </div>
         {
             isMiddleOfMonth(d) == true && <div>
-                <button className="px-3 bg-sky-600 py-2 text-white cursor-pointer rounded" onClick={(e) => { 
+                <button className="px-3 bg-sky-600 py-2 text-white cursor-pointer rounded" onClick={(e) => {
                     e.preventDefault()
-                    api.put('/timesheet-periods/' + sessionsId + '/update', {
-                        status: 'sent',
-                        updated_by: user.id,
+                    api.post('/timesheets/' + user.id + '/send', {
                     })
                         .then((response) => {
                             console.log(response.data)
-                            setSuccess('Votre Session est fermé')
-                            setTimeout(() => {
-                                setSuccess('')
-                            }, 6000);
+                            setSuccess(response.data.message)
+                            fetchTimeSheetUser(user.id)
                         })
                         .catch((error) => {
                             console.log(error.response.data)
                             setError(error.response.data.message)
-                        })
+                        }) 
                 }}> Terminer la sessions </button>
             </div>
         }
@@ -129,7 +126,8 @@ export default function ListTimeSheet() {
         {/* modal pour créer une feuille de tempss */}
         <CreateTimeSheet
             open={open}
-            onClose={() => setOpen(false)}
+            onClose={() => setOpen(false)} 
+            fetchTimeSheetUser={fetchTimeSheetUser}
         />
 
         {/* modal pour modifier une feuille de tempss */}

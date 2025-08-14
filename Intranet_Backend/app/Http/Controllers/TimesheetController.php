@@ -19,11 +19,100 @@ class TimesheetController extends Controller
         $timesheets = Timesheet::with('timesheetPeriod', 'user', 'client', 'project')->get();
         return response()->json($timesheets);
     }
+    public function getAllSentTimesheets()
+    {
+        $timesheets = Timesheet::with('user:id,name', 'timesheetPeriod')
+            ->where('status', 'sent')
+            ->get();
+
+        return response()->json([
+            'data' => $timesheets
+        ]);
+    }
+
+
+    public function approveTimesheetsForUser(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:intranet_extedim.users,id',
+            'approved_by' => 'required|exists:intranet_extedim.users,id',
+            'ts_period_id' => 'required|exists:intranet_extedim.timesheets_periods,id',
+        ]);
+
+        $userId = $request->input('user_id');
+        $periodId = $request->input('ts_period_id');
+        $approved_by = $request->input('approved_by');
+
+        $updatedCount = Timesheet::where('user_id', $userId)
+            ->where('ts_period_id', $periodId)
+            ->where('status', 'sent')
+            ->update([
+                'status' => 'approved',
+                'approved_by' => $approved_by,
+                'approved_at' => now(),
+            ]);
+
+        return response()->json([
+            'message' => "$updatedCount feuilles de temps ont été approuvées.",
+            'user_id' => $userId,
+            'ts_period_id' => $periodId
+        ], 200);
+    }
+
+
+    public function getTimesheetsForManager($managerId)
+    {
+        $manager = User::findOrFail($managerId);
+
+        $query = Timesheet::with(['user:id,first_name', 'timesheetPeriod'])
+            ->where('status', 'sent');
+
+        if ($manager->role !== 'admin') {
+            $query->whereHas('user', function ($q) use ($managerId) {
+                $q->where('manager_id', $managerId);
+            });
+        }
+
+        $timesheets = $query->get();
+
+        $grouped = $timesheets->groupBy('user_id')->map(function ($items) {
+            return [ 
+                'id'               =>  $items->first()->user->id,
+                'first_name'       => $items->first()->user->first_name,
+                'timesheet_period' => $items->first()->timesheetPeriod,
+                'details'          => $items->values(),
+            ];
+        })->values();
+
+        return response()->json($grouped, 200);
+    }
+
+
+    public function getTimesheetById($id)
+    {
+        try {
+            $timesheet = Timesheet::find($id);
+
+            if (!$timesheet) {
+                return response()->json([
+                    'error' => 'Feuille de temps introuvable'
+                ], 404);
+            }
+
+            return response()->json($timesheet, 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Erreur interne',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function getUserTimesheets($userId)
     {
         $timesheets = Timesheet::with(['client', 'project', 'timesheetPeriod'])
             ->where('user_id', $userId)
+            ->where('status', 'pending')
             ->get();
 
         if ($timesheets->isEmpty()) {
@@ -105,19 +194,7 @@ class TimesheetController extends Controller
 
 
             $entry = Timesheet::create($validated);
-            $user = User::find($validated['user_id']);
 
-            if ($user && $user->manager_id) {
-                $manager = User::find($user->manager_id);
-                if ($manager) {
-                    $manager->notify(new TimesheetCreated($entry));
-                }
-            }
-
-            $admins = User::where('role', 'admin')->get();
-            foreach ($admins as $admin) {
-                $admin->notify(new TimesheetCreated($entry));
-            }
             return response()->json([
                 'data' => $entry,
                 'warning' => $warning,
@@ -134,27 +211,39 @@ class TimesheetController extends Controller
         }
     }
 
-    public function approveTimesheet($id)
+    public function approveAllSentTimesheets()
     {
-        $timesheet = Timesheet::with('user')->find($id);
+        $timesheets = Timesheet::with('user')
+            ->where('status', 'sent')
+            ->get();
 
-        if (!$timesheet) {
+        if ($timesheets->isEmpty()) {
             return response()->json([
-                'message' => 'Feuille de temps non trouvée.'
+                'message' => 'Aucune feuille de temps avec le statut "sent" trouvée.'
             ], 404);
         }
 
-        $timesheet->status = 'approved';
-        $timesheet->approved_at = now();
-        $timesheet->save();
-        if ($timesheet->user) {
-            $timesheet->user->notify(new TimesheetApproved($timesheet));
+        $ids = $timesheets->pluck('id')->toArray();
+
+        Timesheet::whereIn('id', $ids)->update([
+            'status' => 'approved',
+            'approved_at' => now()
+        ]);
+
+        $notifiedUserIds = [];
+
+        foreach ($timesheets as $timesheet) {
+            if ($timesheet->user && !in_array($timesheet->user->id, $notifiedUserIds)) {
+                $timesheet->user->notify(new TimesheetApproved($timesheet));
+                $notifiedUserIds[] = $timesheet->user->id;
+            }
         }
+
         return response()->json([
-            'message' => 'Feuille de temps approuvée avec succès.',
-            'timesheet' => $timesheet
+            'message' => count($ids) . ' feuilles de temps ont été approuvées.'
         ], 200);
     }
+
 
     public function update(Request $request, int $id)
     {
@@ -162,7 +251,7 @@ class TimesheetController extends Controller
 
         $validated = $request->validate([
             'date' => 'sometimes|required|date',
-            'nb_hour' => 'sometimes|required|min:0',
+            'nb_hour' => 'sometimes',
             'client_code' => 'nullable|string',
             'project_id' => 'nullable|integer',
             'type' => 'nullable|string',
@@ -187,23 +276,45 @@ class TimesheetController extends Controller
         return response()->json(['message' => 'Deleted successfully']);
     }
 
-    public function getTimesheetById($id)
+    public function sendPendingForUser($user_id)
     {
-        try {
-            $timesheet = Timesheet::find($id);
+        $affectedRows = DB::table('intranet_extedim.timesheets_details')
+            ->where('user_id', $user_id)
+            ->where('status', 'pending')
+            ->update(['status' => 'sent']);
 
-            if (!$timesheet) {
-                return response()->json([
-                    'error' => 'Feuille de temps introuvable'
-                ], 404);
+        $user = User::find($user_id);
+
+        if ($user) {
+            if ($user->manager_id) {
+                $manager = User::find($user->manager_id);
+                if ($manager) {
+                    $manager->notify(new TimesheetCreated($user, $affectedRows));
+                }
             }
 
-            return response()->json($timesheet, 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'error' => 'Erreur interne',
-                'message' => $e->getMessage()
-            ], 500);
+            $admins = User::where('role', 'admin')->get();
+            foreach ($admins as $admin) {
+                $admin->notify(new TimesheetCreated($user, $affectedRows));
+            }
         }
+
+        return response()->json([
+            'message' => "$affectedRows feuilles de temps ont été changés en 'sent' pour l'utilisateur $user_id."
+        ]);
     }
+
+    // $user = User::find($user_id);
+
+    // if ($user && $user->manager_id) {
+    //     $manager = User::find($user->manager_id);
+    //     if ($manager) {
+    //         $manager->notify(new TimesheetCreated($entry));
+    //     }
+    // }
+
+    // $admins = User::where('role', 'admin')->get();
+    // foreach ($admins as $admin) {
+    //     $admin->notify(new TimesheetCreated($entry));
+    // }
 }
