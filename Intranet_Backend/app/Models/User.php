@@ -111,7 +111,7 @@ class User extends Authenticatable
 
     public function groupPosts()
     {
-        return $this->belongsToMany(GroupPost::class, 'group_post_user', 'user_id', 'group_id')
+        return $this->belongsToMany(GroupPost::class, 'posts_groups_users', 'user_id', 'group_id')
             ->withTimestamps()
             ->withPivot('joined_at', 'role');
     }

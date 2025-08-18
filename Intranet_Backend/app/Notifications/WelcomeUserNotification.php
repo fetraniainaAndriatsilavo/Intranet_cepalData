@@ -28,7 +28,7 @@ class WelcomeUserNotification extends Notification
             ->line('Votre compte a été créé par un responsable sur la plateforme intranet.')
             ->line('Votre mot de passe temporaire est : **' . $this->defaultPassword . '**')
             ->line('Merci de le changer dès maintenant pour des raisons de sécurité.')
-            ->action('Changer mon mot de passe', 'http://localhost:3000/settings')
+            ->action('Changer mon mot de passe', 'http://intranet.ext.local:8080/reinit')
             ->line('Merci de votre collaboration.');
     }
 
@@ -37,7 +37,7 @@ class WelcomeUserNotification extends Notification
         return [
             'title' => 'Bienvenue ' . $notifiable->first_name,
             'message' => 'Votre compte a été créé avec succès. Email: ' . $notifiable->email,
-            'action_url' => 'http://localhost:3000/settings',
+            'action_url' => 'http://intranet.ext.local:8080/reinit',
             'schema' => 'intranet_extedim',
         ];
     }

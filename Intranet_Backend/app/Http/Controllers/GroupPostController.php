@@ -18,12 +18,13 @@ class GroupPostController extends Controller
     {
         try {
             $request->validate([
-                'name' => 'required|string',
+                'name' => 'required|string|unique:intranet_extedim.posts_groups,name',
                 'creator_id' => 'required|exists:intranet_extedim.users,id',
                 'user_ids' => 'required|array|min:1',
                 'user_ids.*' => 'exists:intranet_extedim.users,id',
             ], [
                 'name.required' => 'Le nom du groupe est obligatoire.',
+                'name.unique' => 'Ce nom du groupe existe déjà.',
                 'creator_id.required' => 'Le créateur du groupe est requis.',
                 'user_ids.required' => 'Veuillez sélectionner au moins un utilisateur pour ce groupe.',
                 'user_ids.array' => 'La liste des utilisateurs doit être un tableau.',
@@ -34,11 +35,12 @@ class GroupPostController extends Controller
             $group = GroupPost::create([
                 'name' => $request->name,
                 'created_by' => $request->creator_id,
+                'updated_by' => $request->creator_id,
             ]);
 
             $group->members()->attach($request->creator_id, [
                 'joined_at' => now(),
-                'role' => 'admin',
+                'role' => 'administrator',
             ]);
 
             foreach ($request->user_ids as $userId) {
@@ -63,50 +65,32 @@ class GroupPostController extends Controller
             return response()->json([
                 'erreur' => 'Une erreur est survenue lors de la création du groupe.',
                 'message' => $e->getMessage(),
-                'trace' => $e->getTrace(),
             ], 500);
         }
     }
+
     public function postsByGroup($groupId)
     {
-        try {
-            $group = GroupPost::with(['posts.images', 'posts.user', 'posts.user.userDetail'])->findOrFail($groupId);
+        $allPosts = Post::with('attachments')
+            ->published()
+            ->withTrashed()
+            ->where('group_id', $groupId)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-            $formattedPosts = $group->posts->map(function ($post) {
-                return [
-                    'post_id' => $post->id,
-                    'user_id' => $post->user_id,
-                    'content' => $post->content,
-                    'created_at' => $post->created_at->diffForHumans(),
-                    'user' => [
-                        'name' => $post->user->name,
-                        'profile_image' => optional($post->user->userDetail)->image,
-                    ],
-                    'images' => $post->images->map(function ($image) {
-                        return [
-                            'id' => $image->id,
-                            'url' => $image->url,
-                        ];
-                    }),
-                ];
-            });
-
+        if ($allPosts->isEmpty()) {
             return response()->json([
-                'groupe' => $group->name,
-                'posts' => $formattedPosts
-            ]);
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json([
-                'erreur' => "Groupe introuvable avec l'ID $groupId"
-            ], 404);
-        } catch (\Exception $e) {
-            return response()->json([
-                'erreur' => 'Erreur serveur.',
-                'message' => $e->getMessage()
-            ], 500);
+                'success' => true,
+                'message' => 'Aucune publication disponible.',
+                'posts'   => [],
+            ], 200);
         }
-    }
 
+        return response()->json([
+            'success' => true,
+            'posts'   => $allPosts,
+        ], 200);
+    }
 
     public function getMembers($groupId)
     {
@@ -120,9 +104,10 @@ class GroupPostController extends Controller
             'members' => $group->members->map(function ($user) {
                 return [
                     'id' => $user->id,
-                    'name' => $user->name,
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
                     'email' => $user->email,
-                    'profile_image' => optional($user->userDetail)->image ?? null,
+                    'image' => $user->image,
                     'joined_at' => $user->pivot->joined_at ?? null,
                     'role' => $user->pivot->role ?? 'member',
                 ];
@@ -147,8 +132,10 @@ class GroupPostController extends Controller
 
             return response()->json([
                 'user_id' => $user->id,
-                'name' => $user->name,
-                'groups' => $groups
+                'first_name' => $user->first_name,
+                'last_name' => $user->last_name,
+                'image' => $user->image,
+                'groups' =>  $groups->isEmpty() ? 'Aucun groupe trouvé.' : null
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -158,6 +145,72 @@ class GroupPostController extends Controller
             return response()->json([
                 'message' => 'Erreur serveur.',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function addMembers(Request $request, $groupId)
+    {
+        try {
+            // Validation des user_ids
+            $request->validate([
+                'user_ids' => 'required|array|min:1',
+                'user_ids.*' => 'exists:intranet_extedim.users,id',
+            ], [
+                'user_ids.required' => 'Veuillez fournir une liste d’utilisateurs.',
+                'user_ids.array' => 'La liste des utilisateurs doit être un tableau.',
+                'user_ids.min' => 'Au moins un utilisateur est requis.',
+                'user_ids.*.exists' => 'Un ou plusieurs utilisateurs sont introuvables.'
+            ]);
+
+            $group = GroupPost::findOrFail($groupId);
+
+            $added = [];
+            $alreadyMembers = [];
+
+            foreach ($request->user_ids as $userId) {
+                if ($group->members()->where('user_id', $userId)->exists()) {
+                    $alreadyMembers[] = $userId;
+                } else {
+                    $group->members()->attach($userId, [
+                        'joined_at' => now(),
+                        'role' => 'member',
+                    ]);
+                    $added[] = $userId;
+                }
+            }
+
+            $messageParts = [];
+            if (!empty($added)) {
+                $messageParts[] = "Utilisateurs ajoutés : " . implode(', ', $added);
+            }
+            if (!empty($alreadyMembers)) {
+                $messageParts[] = "Déjà membres : " . implode(', ', $alreadyMembers);
+            }
+
+            return response()->json([
+                'success' => true,
+                'group_id' => $group->id,
+                'added_user_ids' => $added,
+                'already_member_user_ids' => $alreadyMembers,
+                'message' => implode(' | ', $messageParts)
+            ], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Échec de la validation.',
+                'details' => $e->errors(),
+            ], 422);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'error' => "Groupe introuvable avec l'ID $groupId",
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Erreur serveur.',
+                'message' => $e->getMessage()
             ], 500);
         }
     }

@@ -12,32 +12,45 @@ class PostController extends Controller
 {
     public function postAll()
     {
-        $allPosts = Post::with('attachments')->get();
+        $allPosts = Post::query()
+            ->with('attachments')
+            ->withTrashed()
+            ->orderBy('created_at', 'desc')
+            ->get();
 
-        return response()->json([
-            'success' => true,
-            'posts' => $allPosts,
-        ], 200);
+        if ($allPosts->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Aucune publication disponible.',
+                'posts'   => [],
+            ], 200);
+        }
+
+        return response()->json($allPosts->toArray());
     }
+
 
     public function getPublishedPosts()
     {
-        try {
-            $publishedPosts = Post::published()
-                ->with('attachments')
-                ->get();
+        $allPosts = Post::with('attachments')
+            ->published()
+            ->withTrashed()
+            ->where('group_id', null)
+            ->orderBy('created_at', 'desc')
+            ->get();
 
+        if ($allPosts->isEmpty()) {
             return response()->json([
                 'success' => true,
-                'posts' => $publishedPosts,
+                'message' => 'Aucune publication disponible.',
+                'posts'   => [],
             ], 200);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la récupération des posts publiés avec leurs attachements.',
-                'error' => $e->getMessage(),
-            ], 500);
         }
+
+        return response()->json([
+            'success' => true,
+            'posts'   => $allPosts,
+        ], 200);
     }
 
     public function store(Request $request)
@@ -47,7 +60,7 @@ class PostController extends Controller
                 'user_id' => 'required|exists:intranet_extedim.users,id',
                 'status' => 'required|in:deleted,pending,published',
                 'content' => 'nullable|string',
-                'group_id' => 'nullable|exists:intranet_extedim.groups,id',
+                'group_id' => 'nullable|exists:intranet_extedim.posts_groups,id',
                 'attachments.*' => 'nullable|file|max:5120',
             ], [
                 'user_id.required' => 'L\'utilisateur est obligatoire.',

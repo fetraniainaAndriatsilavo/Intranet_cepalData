@@ -88,18 +88,18 @@ Route::get('/timesheet-periods/{id}/timesheets', [PeriodeController::class, 'get
 Route::get('/timesheet-periods/active', [PeriodeController::class, 'getActiveSessionsWithUsersTotals']);
 Route::get(
     '/timesheet-periods/grouped-by-manager/{managerId}',
-    [PeriodeController::class, 'getActiveSessionsGroupedByManager'] 
+    [PeriodeController::class, 'getActiveSessionsGroupedByManager']
 );
 Route::get('/timesheet/{id}', [TimesheetController::class, 'getTimesheetById']);
 Route::get('/timesheet/all', [TimesheetController::class, 'getAll']);
 Route::get('/Alltimesheet/sent', [TimesheetController::class, 'getAllSentTimesheets']);
-Route::get('/managers/{managerId}/timesheets/sent', [TimesheetController::class, 'getTimesheetsForManager']);
+Route::get('/managers/{manager}/timesheets/sent', [TimesheetController::class, 'getTimesheetsForManager']);
 Route::get('/timesheet/{id}/user', [TimesheetController::class, 'getUserTimesheets']);
 Route::post('/timesheets/{user_id}/send', [TimesheetController::class, 'sendPendingForUser']);
 Route::post('/timesheet/store', [TimesheetController::class, 'store']);
 Route::put('/timesheet/{id}/update', [TimesheetController::class, 'update']);
-Route::post('/timesheets/approve', [TimesheetController::class, 'approveTimesheetsForUser']);
 Route::put('timesheets/{id}/approve', [TimesheetController::class, 'approveTimesheet']);
+Route::post('/timesheets/approve', [TimesheetController::class, 'approveTimesheetsForUser']);
 Route::delete('/timesheet/{id}/destroy', [TimesheetController::class, 'destroy']);
 
 
@@ -112,6 +112,15 @@ Route::get('/posts/{post}/getInfo', [PostController::class, 'show']);
 Route::put('/posts/{postId}/update', [PostController::class, 'update']);
 Route::delete('/posts/{postIs}/delete', [PostController::class, 'destroy']);
 
+//groupe publication
+Route::post('/groups/posts', [GroupPostController::class, 'store']);
+Route::get('/groups/{id}/posts', [GroupPostController::class, 'postsByGroup']);
+Route::get('/getMembersGroup/{groupId}', [GroupPostController::class, 'getMembers']);
+Route::get('/users/{userId}/groups', [GroupPostController::class, 'groupsByUser']);
+Route::put('/groups/{groupId}/rename', [GroupPostController::class, 'updateName']);
+Route::post('/groups/{groupId}/add-members', [GroupPostController::class, 'addMembers']);
+Route::delete('/groups/{groupId}/members/{userId}/remove', [GroupPostController::class, 'removeMember']);
+Route::delete('/groups/{groupId}', [GroupPostController::class, 'destroy']);
 
 
 //UserController
@@ -184,13 +193,6 @@ Route::post('/messages', [MessageController::class, 'store']);
 
 Route::post('/messages/{id}/read', [MessageController::class, 'markAsRead']);
 
-Route::prefix('groups')->group(function () {
-    Route::get('/', [GroupController::class, 'index']);
-    Route::post('/', [GroupController::class, 'store']);
-    Route::get('/{id}', [GroupController::class, 'getUserGroups']);
-    Route::post('/{groupId}/add-user', [GroupController::class, 'addUserToGroup']);
-    Route::delete('/remove/{id}', [GroupController::class, 'deleteGroup']);
-});
 
 Route::prefix('group-messages')->controller(GroupMessageController::class)->group(function () {
     Route::get('/getGroup/{groupId}', 'getGroup');
@@ -261,14 +263,7 @@ Route::post('/notifications/{id}/read', [NotificationController::class, 'markErr
 Route::delete('/notification/{notificationId}/delete', [NotificationController::class, 'deleteNotification']);
 
 
-//groupe publication
-Route::post('/groups_posts', [GroupPostController::class, 'store']);
-Route::get('/group_posts/{id}/posts', [GroupPostController::class, 'postsByGroup']);
-Route::get('/getMembersGroup/{groupId}', [GroupPostController::class, 'getMembers']);
-Route::get('/users/{userId}/groups', [GroupPostController::class, 'groupsByUser']);
-Route::put('/groups/{groupId}/rename', [GroupPostController::class, 'updateName']);
-Route::delete('/groups/{groupId}/members/{userId}', [GroupPostController::class, 'removeMember']);
-Route::delete('/groups/{groupId}', [GroupPostController::class, 'destroy']);
+
 
 //event
 Route::post('event/create', [EventController::class, 'store']);

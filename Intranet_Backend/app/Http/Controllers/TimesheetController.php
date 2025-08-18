@@ -30,36 +30,6 @@ class TimesheetController extends Controller
         ]);
     }
 
-
-    public function approveTimesheetsForUser(Request $request)
-    {
-        $request->validate([
-            'user_id' => 'required|exists:intranet_extedim.users,id',
-            'approved_by' => 'required|exists:intranet_extedim.users,id',
-            'ts_period_id' => 'required|exists:intranet_extedim.timesheets_periods,id',
-        ]);
-
-        $userId = $request->input('user_id');
-        $periodId = $request->input('ts_period_id');
-        $approved_by = $request->input('approved_by');
-
-        $updatedCount = Timesheet::where('user_id', $userId)
-            ->where('ts_period_id', $periodId)
-            ->where('status', 'sent')
-            ->update([
-                'status' => 'approved',
-                'approved_by' => $approved_by,
-                'approved_at' => now(),
-            ]);
-
-        return response()->json([
-            'message' => "$updatedCount feuilles de temps ont été approuvées.",
-            'user_id' => $userId,
-            'ts_period_id' => $periodId
-        ], 200);
-    }
-
-
     public function getTimesheetsForManager($managerId)
     {
         $manager = User::findOrFail($managerId);
@@ -76,8 +46,7 @@ class TimesheetController extends Controller
         $timesheets = $query->get();
 
         $grouped = $timesheets->groupBy('user_id')->map(function ($items) {
-            return [ 
-                'id'               =>  $items->first()->user->id,
+            return [
                 'first_name'       => $items->first()->user->first_name,
                 'timesheet_period' => $items->first()->timesheetPeriod,
                 'details'          => $items->values(),
@@ -86,6 +55,27 @@ class TimesheetController extends Controller
 
         return response()->json($grouped, 200);
     }
+
+    // public function getTimesheetsForManager($managerId)
+    // {
+    //     $timesheets = Timesheet::with(['user:id,first_name', 'timesheetPeriod'])
+    //         ->whereHas('user', function ($query) use ($managerId) {
+    //             $query->where('manager_id', $managerId);
+    //         })
+    //         ->where('status', 'sent')
+    //         ->get();
+
+    //     $grouped = $timesheets->groupBy('user_id')->map(function ($items) {
+    //         return [
+    //             'first_name'       => $items->first()->user->first_name,
+    //             'timesheet_period' => $items->first()->timesheetPeriod,
+    //             'details'          => $items->values(),
+    //         ];
+    //     })->values();
+
+    //     return response()->json($grouped, 200);
+    // }
+
 
 
     public function getTimesheetById($id)
@@ -244,6 +234,35 @@ class TimesheetController extends Controller
         ], 200);
     }
 
+    public function approveTimesheetsForUser(Request $request)
+    {
+        $request->validate([
+            'user_id' => 'required|exists:intranet_extedim.users,id',
+            'approved_by' => 'required|exists:intranet_extedim.users,id',
+            'ts_period_id' => 'required|exists:intranet_extedim.timesheets_periods,id',
+        ]);
+
+        $userId = $request->input('user_id');
+        $periodId = $request->input('ts_period_id');
+        $approved_by = $request->input('approved_by');
+
+        $updatedCount = Timesheet::where('user_id', $userId)
+            ->where('ts_period_id', $periodId)
+            ->where('status', 'sent')
+            ->update([
+                'status' => 'approved',
+                'approved_by' => $approved_by,
+                'approved_at' => now(),
+            ]);
+
+        return response()->json([
+            'message' => "$updatedCount feuilles de temps ont été approuvées.",
+            'user_id' => $userId,
+            'ts_period_id' => $periodId
+        ], 200);
+    }
+
+
 
     public function update(Request $request, int $id)
     {
@@ -251,7 +270,7 @@ class TimesheetController extends Controller
 
         $validated = $request->validate([
             'date' => 'sometimes|required|date',
-            'nb_hour' => 'sometimes',
+            'nb_hour' => 'sometimes|required|numeric|min:0',
             'client_code' => 'nullable|string',
             'project_id' => 'nullable|integer',
             'type' => 'nullable|string',

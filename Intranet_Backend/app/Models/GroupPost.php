@@ -11,11 +11,13 @@ class GroupPost extends Model
 
     protected $connection = 'intranet_extedim';
 
-    protected $table = 'groups_posts';
+    protected $table = 'posts_groups';
+
 
     protected $fillable = [
         'name',
         'created_by',
+        'updated_by',
     ];
 
     /**
@@ -29,7 +31,7 @@ class GroupPost extends Model
      */
     public function members()
     {
-        return $this->belongsToMany(User::class, 'group_post_user', 'group_id', 'user_id')
+        return $this->belongsToMany(User::class, 'posts_groups_users', 'group_id', 'user_id')
             ->withTimestamps()
             ->withPivot('joined_at', 'role');
     }

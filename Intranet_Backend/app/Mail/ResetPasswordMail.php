@@ -7,7 +7,11 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class ResetPasswordMail extends Mailable
+class /* `ResetPasswordMail` is a Mailable class in Laravel used for sending an email to a user for
+resetting their password. It accepts the reset password URL and the user information as
+parameters during its construction. The `build` method is used to define the email subject and
+the view that will be rendered when the email is sent. */
+ResetPasswordMail extends Mailable
 {
     use Queueable, SerializesModels;
 

@@ -159,6 +159,7 @@ class PeriodeController extends Controller
 
             foreach ($sessions as $session) {
                 $userIds = Timesheet::where('ts_period_id', $session->id)
+                    ->where('status', 'approved')
                     ->distinct()
                     ->pluck('user_id');
 
@@ -168,7 +169,6 @@ class PeriodeController extends Controller
                     $query = Timesheet::where('ts_period_id', $session->id)
                         ->where('user_id', $userId)
                         ->where('status', 'approved')
-
                         ->selectRaw('
                         SUM(EXTRACT(EPOCH FROM nb_hour) / 3600) as total_hours,
                         SUM(CASE WHEN type = ? THEN EXTRACT(EPOCH FROM nb_hour) / 3600 ELSE 0 END) as conge,
@@ -207,6 +207,7 @@ class PeriodeController extends Controller
             ], 500);
         }
     }
+
 
     public function getActiveSessionsByManager($managerId)
     {
