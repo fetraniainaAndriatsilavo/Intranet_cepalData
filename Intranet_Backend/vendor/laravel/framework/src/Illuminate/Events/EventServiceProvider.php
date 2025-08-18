@@ -12,6 +12,10 @@ class EventServiceProvider extends ServiceProvider
      *
      * @return void
      */
+    protected $observers = [
+        \App\Models\User::class => \App\Observers\UserObserver::class,
+    ];
+
     public function register()
     {
         $this->app->singleton('events', function ($app) {

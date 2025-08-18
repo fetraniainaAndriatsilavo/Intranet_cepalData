@@ -175,7 +175,6 @@ class UserController extends Controller
             ], 500);
         }
     }
-
     public function toggleStatus(Request $request, $id)
     {
 
@@ -193,7 +192,6 @@ class UserController extends Controller
             'user' => $user
         ]);
     }
-
 
     public function getPersonalUser($id)
     {
@@ -231,7 +229,6 @@ class UserController extends Controller
             'notifications' => $user->notifications
         ]);
     }
-
 
     public function changePassword(Request $request, $userId)
     {

@@ -29,7 +29,6 @@ class PostController extends Controller
         return response()->json($allPosts->toArray());
     }
 
-
     public function getPublishedPosts()
     {
         $allPosts = Post::with('attachments')
@@ -51,6 +50,55 @@ class PostController extends Controller
             'success' => true,
             'posts'   => $allPosts,
         ], 200);
+    }
+
+    public function show($postId)
+    {
+        try {
+            $post = Post::with([
+                'attachments',
+                'user',
+            ])
+                ->published()
+                ->withTrashed()
+                ->findOrFail($postId);
+
+            $formattedPost = [
+                'id'         => $post->id,
+                'content'    => $post->content,
+                'status'     => $post->status,
+                'created_at' => $post->created_at?->diffForHumans(),
+                'user'       => [
+                    'id'            => $post->user->id ?? null,
+                    'first_name'          => $post->user->first_name,
+                    'last_name'          => $post->user->last_name,
+                    'profile_image' => $post->user->image ?? null,
+                ],
+
+                'attachments' => $post->attachments->map(function ($att) {
+                    return [
+                        'id'  => $att->id,
+                        'url' => $att->file_path,
+                    ];
+                })->toArray(),
+            ];
+
+            return response()->json([
+                'success' => true,
+                'post'    => $formattedPost,
+            ], 200);
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'error'   => "Publication introuvable avec l'ID $postId",
+            ], 404);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error'   => 'Erreur serveur.',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function store(Request $request)

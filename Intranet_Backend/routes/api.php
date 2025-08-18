@@ -71,6 +71,8 @@ Route::get('/users/{id}/leave-balances', [LeaveRequestController::class, 'getLea
 Route::get('manager/{managerId}/leave-requests', [LeaveRequestController::class, 'getTeamLeaveRequests']);
 Route::get('/all-requests', [LeaveRequestController::class, 'getAllLeaveRequests']);
 Route::put('/leave-requests/{id}/change', [LeaveRequestController::class, 'changeStatus']);
+Route::get('/all/holidays', [LeaveRequestController::class, 'getOgcHolidays']);
+
 
 
 

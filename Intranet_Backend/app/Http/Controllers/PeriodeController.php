@@ -66,17 +66,40 @@ class PeriodeController extends Controller
     public function update(Request $request, int $id)
     {
         $validated = $request->validate([
-            'updated_by' => 'required|exists:intranet_extedim.users,id',
-            'TimesheetPeriod' => 'sometimes|required|string|max:255',
-            'start_date' => 'nullable|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'status' => 'nullable|string',
+            'updated_by'       => 'required|exists:intranet_extedim.users,id',
+            'TimesheetPeriod'  => 'sometimes|string|max:255',
+            'start_date'       => 'nullable|date',
+            'end_date'         => 'nullable|date|after_or_equal:start_date',
+            'status'           => 'nullable|string',
+        ], [
+            'updated_by.required' => 'Le champ "Mis à jour par" est obligatoire.',
+            'updated_by.exists'   => 'L’utilisateur spécifié est introuvable dans la base de données.',
+
+            'TimesheetPeriod.string' => 'La période doit être une chaîne de caractères.',
+            'TimesheetPeriod.max'    => 'La période ne peut pas dépasser :max caractères.',
+
+            'start_date.date' => 'La date de début doit être une date valide.',
+
+            'end_date.date'              => 'La date de fin doit être une date valide.',
+            'end_date.after_or_equal'    => 'La date de fin doit être postérieure ou égale à la date de début.',
+
+            'status.string' => 'Le statut doit être une chaîne de caractères.',
         ]);
+
 
         $timesheetPeriod = TimesheetPeriod::findOrFail($id);
 
-        $validated['updated_by'] = Auth::id();
+        $oldStatus = $timesheetPeriod->status;
+
         $timesheetPeriod->update($validated);
+
+        if ($oldStatus !== 'inactive' && $timesheetPeriod->status === 'inactive') {
+            $managers = User::where('role', 'manager')->get();
+
+            foreach ($managers as $manager) {
+                $manager->notify(new \App\Notifications\TimesheetPeriodClosed());
+            }
+        }
 
         return response()->json($timesheetPeriod);
     }
@@ -207,7 +230,6 @@ class PeriodeController extends Controller
             ], 500);
         }
     }
-
 
     public function getActiveSessionsByManager($managerId)
     {

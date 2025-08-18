@@ -135,7 +135,7 @@ class GroupPostController extends Controller
                 'first_name' => $user->first_name,
                 'last_name' => $user->last_name,
                 'image' => $user->image,
-                'groups' =>  $groups->isEmpty() ? 'Aucun groupe trouvé.' : null
+                'groups' =>  $groups
             ]);
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             return response()->json([
@@ -242,9 +242,10 @@ class GroupPostController extends Controller
     public function updateName(Request $request, $groupId)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|unique:intranet_extedim.posts_groups|max:255',
         ], [
             'name.required' => 'Le nouveau nom du groupe est obligatoire.',
+            'name.unique' => 'Ce nom du groupe existe déjà.',
             'name.string' => 'Le nom doit être une chaîne de caractères.',
             'name.max' => 'Le nom ne doit pas dépasser 255 caractères.',
         ]);
