@@ -1,0 +1,148 @@
+import { useEffect, useState } from "react";
+import {
+    TextField,
+    Autocomplete,
+    Alert,
+} from "@mui/material";
+import api from "../../axios";
+
+export default function Createprojet() {
+    const [form, setForm] = useState({
+        name: "",
+        description: "",
+        start_date: "",
+        end_date: "",
+        project_lead_id: "",
+        client_code: ""
+    });
+    const [error, setError] = useState('')
+    const [success, setSuccess] = useState('')
+    const [loading, setLoading] = useState(null)
+    const [managers, setManagers] = useState([]);
+    const [clients, setClients] = useState([]);
+
+    useEffect(() => {
+        api.get("/data")
+            .then((response) => {
+                setClients(response.data.clients)
+                setManagers(response.data.managers)
+            })
+            .catch((error) => {
+                alert(error.response.message)
+            })
+    }, []);
+
+    const handleChange = (e) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+
+    const Creer = async () => {
+
+        try {
+            const response = await api.post('/projects/store',
+                form
+                , {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                })
+            setSuccess(response.data.message)
+        } catch (error) {
+            setError(error.response.data.message)
+        } finally {
+            setLoading(false)
+        }
+    }
+    return (
+        <div className="sm:flex flex-col gap-5 sm:justify-between sm:items-center mb-8">
+            <div className="mb-4 sm:mb-0">
+                <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
+                    Lancez un nouveau projet
+                </h1>
+            </div>
+
+            <div className="bg-white w-1/2 rounded-lg p-6 flex flex-col gap-4">
+                <TextField
+                    label="Nom du projet **"
+                    name="name"
+                    value={form.name}
+                    onChange={handleChange}
+                    fullWidth
+                    size="small"
+                />
+
+                <TextField
+                    label="Description"
+                    name="description"
+                    value={form.description}
+                    onChange={handleChange}
+                    fullWidth
+                    multiline
+                    rows={3}
+                />
+
+                <Autocomplete
+                    options={managers}
+                    getOptionLabel={(option) => option.first_name}
+                    value={managers.find(m => m.id === form.project_lead_id) || null}
+                    onChange={(e, value) =>
+                        setForm({ ...form, project_lead_id: value?.id || "" })
+                    }
+                    renderInput={(params) => (
+                        <TextField {...params} label="Chef de projet **" size="small" />
+                    )}
+                />
+
+                <TextField
+                    label="Date de début **"
+                    type="date"
+                    name="start_date"
+                    value={form.start_date}
+                    onChange={handleChange}
+                    fullWidth
+                    size="small"
+                    InputLabelProps={{ shrink: true }}
+                />
+
+                <TextField
+                    label="Date de fin **"
+                    type="date"
+                    name="end_date"
+                    value={form.end_date}
+                    onChange={handleChange}
+                    fullWidth
+                    size="small"
+                    InputLabelProps={{ shrink: true }}
+                />
+
+                <Autocomplete
+                    options={clients}
+                    getOptionLabel={(option) => option.name}
+                    value={clients.find(c => c.code === form.client_code) || null}
+                    onChange={(e, value) =>
+                        setForm({ ...form, client_code: value?.code || "" })
+                    }
+                    renderInput={(params) => (
+                        <TextField {...params} label="Client" size="small" />
+                    )}
+                />
+                <div>
+                    {
+                        success && <Alert severity="success">{success}</Alert>
+                    }
+                    {
+                        error && <Alert severity="error"> {error}</Alert>
+                    }
+                </div>
+                <button className="px-3 py-2 bg-sky-600 text-white rounded uppercase cursor-pointer" onClick={(e) => {
+                    e.preventDefault()
+                    setLoading(true)
+                    Creer()
+                }}>
+                    { loading ? 'En cours d\' enregistement' : 'Enregistrer'}
+                </button>
+            </div>
+        </div>
+    );
+}
