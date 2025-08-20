@@ -4,6 +4,7 @@ import { AppContext } from "../../../context/AppContext";
 import dayjs from "dayjs";
 import relativeTime from "dayjs/plugin/relativeTime";
 import "dayjs/locale/fr";
+import { Avatar } from "@mui/material";
 
 dayjs.extend(relativeTime);
 dayjs.locale("fr");
@@ -14,7 +15,10 @@ function PostHeader({ username, id, userID, created_at, fetchPost }) {
 
   return (
     <div className="bg-white mt-3 flex items-center justify-between rounded-t-lg p-1 relative">
-      <div className="p-2 flex items-center justify-center gap-3">
+      <div className="p-2 flex flex-row items-center justify-center gap-3">
+        <div>
+          <Avatar> {username.slice(0, 2).toUpperCase()} </Avatar>
+        </div>
         <div>
           <p>
             <span className="font-semibold text-sky-600 ">@{username}</span>
@@ -26,8 +30,8 @@ function PostHeader({ username, id, userID, created_at, fetchPost }) {
       </div>
 
       {/* More button with relative wrapper */}
-      {userID === user.id && (
-        <div className="mr-3 relative">
+      {(userID === user.id || user.role == 'admin') && (
+        <div className="mr-3 relative  hover:bg-gray-50 hover:rounded-lg flex items-center hover:p-1">
           <button
             className="cursor-pointer"
             onClick={(e) => {
@@ -52,13 +56,13 @@ function PostHeader({ username, id, userID, created_at, fetchPost }) {
               <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
               <path d="M19 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
             </svg>
-          </button>
+          </button> 
 
           {isOpen && (
             <div className="absolute right-10 top-5">
               <PostOption id={id} fetchPost={fetchPost} onClose={() => {
                 setIsOpen(false)
-              }}/>
+              }} />
             </div>
           )}
         </div>

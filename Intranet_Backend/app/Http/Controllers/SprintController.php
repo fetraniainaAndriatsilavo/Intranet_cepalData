@@ -4,36 +4,70 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Sprint;
+use Illuminate\Validation\Rule;
 
 class SprintController extends Controller
 {
-    public function store(Request $request)
+    public function getAllSprint()
+    {
+        $sprints = Sprint::with('taches')->get();
+
+        return response()->json($sprints);
+    }
+
+    public function getSprintById($sprintId)
     {
 
-        $validated = $request->validate([
-            'id_projet' => 'required|exists:intranet_extedim.projects,project_id',
-            'nom_sprint' => 'required|string|max:255',
-            'date_debut' => 'nullable|date',
-            'date_fin' => 'nullable|date',
-            'statut' => 'required',
-        ], [
-            'id_projet.required' => 'Le projet associé est obligatoire.',
-            'id_projet.exists' => 'Le projet spécifié n’existe pas.',
+        $sprint = Sprint::with('taches')
+            ->where('id', $sprintId)
+            ->first();
 
-            'nom_sprint.required' => 'Le nom du sprint est obligatoire.',
-            'nom_sprint.string' => 'Le nom du sprint doit être une chaîne de caractères.',
-            'nom_sprint.max' => 'Le nom du sprint ne doit pas dépasser 255 caractères.',
+        if (!$sprint) {
+            return response()->json([
+                'message' => "Aucun sprint trouvé pour cet ID {$sprintId}."
+            ], 404);
+        }
 
-            'date_debut.date' => 'La date de début doit être une date valide.',
-            'date_fin.date' => 'La date de fin doit être une date valide.',
-            'date_fin.after_or_equal' => 'La date de fin doit être postérieure ou égale à la date de début.',
+        return response()->json([
+            'message' => 'Sprint récupéré avec succès.',
+            'data' => $sprint->toArray(),
+        ], 200);
+    }
 
-            'statut.required' => 'Le statut du sprint est obligatoire.',
-            'statut.in' => 'Le statut doit être : En préparation, En cours ou Terminé.',
-        ]);
-
-
+    public function store(Request $request)
+    {
         try {
+            $validated = $request->validate([
+                'project_id' => 'required|exists:intranet_extedim.projects,id',
+                'title' => 'required|string|max:255|unique:intranet_extedim.sprints, title',
+                'start_date' => 'nullable|date',
+                'due_date' => 'nullable|date|after_or_equal:start_date',
+                'status' => 'required|in:To-Do,In-Progress,Deploy,Review,Done',
+                'updated_by' => 'nullable|exists:intranet_extedim.users,id',
+            ], [
+                'project_id.required' => 'Le projet associé est obligatoire.',
+                'project_id.exists' => 'Le projet spécifié n’existe pas.',
+
+                'title.required' => 'Le nom du sprint est obligatoire.',
+                'title.string' => 'Le nom du sprint doit être une chaîne de caractères.',
+                'title.max' => 'Le nom du sprint ne doit pas dépasser 255 caractères.',
+                'title.unique' => 'Titre déjà utilisé',
+
+                'start_date.date' => 'La date de début doit être une date valide.',
+                'due_date.date' => 'La date de fin doit être une date valide.',
+                'due_date.after_or_equal' => 'La date de fin doit être postérieure ou égale à la date de début.',
+
+                'status.required' => 'Le statut du sprint est obligatoire.',
+                'status.in' => 'Le statut doit être : To-Do, In-Progress, Deploy, Review ou Done.',
+
+                'updated_by.exists' => 'Utilisateur non trouvé',
+            ]);
+
+            $validated = array_merge($validated, [
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
             $sprint = Sprint::create($validated);
 
             if (!$sprint) {
@@ -45,35 +79,22 @@ class SprintController extends Controller
 
             return response()->json([
                 'statut' => 'success',
-                'message' => 'Sprint créée avec succès.',
-                'id_sprint' => $sprint->id_sprint
+                'message' => 'Sprint créé avec succès.',
+                'details' => $sprint
             ], 201);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'statut' => 'error',
+                'type' => 'validation',
+                'errors' => $e->errors(),
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'statut' => 'error',
-                'message' => 'Erreur lors de la création.',
-                'error' => $e->getMessage(),
+                'type' => 'exception',
+                'message' => $e->getMessage(),
             ], 500);
         }
-    }
-
-    public function getSprintById($sprintId)
-    {
-
-        $sprint = Sprint::with('taches')
-            ->where('id_sprint', $sprintId)
-            ->first();
-
-        if (!$sprint) {
-            return response()->json([
-                'message' => "Aucun sprint trouvé pour cet ID {$sprintId}."
-            ], 404);
-        }
-
-        return response()->json([
-            'message' => 'Projet récupéré avec succès.',
-            'data' => $sprint->toArray(),
-        ], 200);
     }
 
     public function updateSprint(Request $request, $id)
@@ -87,26 +108,34 @@ class SprintController extends Controller
             ], 404);
         }
 
-        $validated = $request->validate([
-            'id_projet'   => 'sometimes|exists:intranet_extedim.projects,project_id',
-            'nom_sprint'  => 'sometimes|string|max:255',
-            'date_debut'  => 'nullable|date',
-            'date_fin'    => 'nullable|date|after_or_equal:date_debut',
-            'statut'      => 'sometimes|string',
-        ], [
-            'id_projet.exists' => 'Le projet spécifié n’existe pas.',
-
-            'nom_sprint.string' => 'Le nom du sprint doit être une chaîne de caractères.',
-            'nom_sprint.max' => 'Le nom du sprint ne doit pas dépasser 255 caractères.',
-
-            'date_debut.date' => 'La date de début doit être une date valide.',
-            'date_fin.date' => 'La date de fin doit être une date valide.',
-            'date_fin.after_or_equal' => 'La date de fin doit être postérieure ou égale à la date de début.',
-
-            'statut.string' => 'Le statut doit être une chaîne de caractères.',
-        ]);
-
         try {
+            $validated = $request->validate([
+                'project_id' => 'sometimes|exists:intranet_extedim.projects,id',
+                'title' => [
+                    'sometimes',
+                    'string',
+                    'max:255',
+                    Rule::unique('intranet_extedim.sprints', 'title')->ignore($id),
+                ],
+                'start_date' => 'nullable|date',
+                'due_date' => 'nullable|date|after_or_equal:start_date',
+                'status' => 'sometimes|in:To-Do,In-Progress,Deploy,Review,Done',
+                'updated_by' => 'nullable|exists:intranet_extedim.users,id',
+            ], [
+                'project_id.exists' => 'Le projet spécifié n’existe pas.',
+
+                'title.string' => 'Le nom du sprint doit être une chaîne de caractères.',
+                'title.max' => 'Le nom du sprint ne doit pas dépasser 255 caractères.',
+                'title.unique' => 'Ce titre de sprint est déjà utilisé.',
+
+                'start_date.date' => 'La date de début doit être une date valide.',
+                'due_date.date' => 'La date de fin doit être une date valide.',
+                'due_date.after_or_equal' => 'La date de fin doit être postérieure ou égale à la date de début.',
+
+                'status.in' => 'Le statut doit être : To-Do, In-Progress, Deploy, Review ou Done.',
+                'updated_by.exists' => 'Utilisateur non trouvé.',
+            ]);
+
             $sprint->update($validated);
 
             return response()->json([
@@ -114,11 +143,17 @@ class SprintController extends Controller
                 'message' => 'Sprint mis à jour avec succès.',
                 'sprint' => $sprint,
             ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'statut' => 'error',
+                'type' => 'validation',
+                'errors' => $e->errors(),
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'statut' => 'error',
-                'message' => 'Erreur lors de la mise à jour.',
-                'error' => $e->getMessage(),
+                'type' => 'exception',
+                'message' => $e->getMessage(),
             ], 500);
         }
     }
@@ -151,10 +186,5 @@ class SprintController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-    }
-
-    public function getOneSprintById($id)
-    {
-        return Sprint::where('id_sprint', $id)->first();
     }
 }

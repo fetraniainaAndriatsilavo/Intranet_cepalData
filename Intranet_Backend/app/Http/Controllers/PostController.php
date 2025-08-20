@@ -31,7 +31,7 @@ class PostController extends Controller
 
     public function getPublishedPosts()
     {
-        $allPosts = Post::with('attachments')
+        $allPosts = Post::with('attachments', 'user')
             ->published()
             ->withTrashed()
             ->where('group_id', null)

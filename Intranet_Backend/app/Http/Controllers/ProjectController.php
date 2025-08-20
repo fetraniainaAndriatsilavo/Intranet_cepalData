@@ -13,7 +13,7 @@ class ProjectController extends Controller
     {
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:255',
+                'name' => 'required|string|max:255|unique:intranet_extedim.projects, name',
                 'description' => 'nullable|string',
                 'start_date' => 'required|date',
                 'project_lead_id' => 'required|exists:intranet_extedim.users,id',
@@ -25,6 +25,7 @@ class ProjectController extends Controller
                 'name.required' => 'Le nom du projet est obligatoire.',
                 'name.string' => 'Le nom du projet doit être une chaîne de caractères.',
                 'name.max' => 'Le nom du projet ne peut pas dépasser 255 caractères.',
+                'name.unique' => 'Le nom du projet est déjà utilisé',
 
                 'description.string' => 'La description doit être une chaîne de caractères.',
 

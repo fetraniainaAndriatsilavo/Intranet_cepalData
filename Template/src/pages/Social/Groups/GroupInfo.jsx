@@ -22,6 +22,7 @@ export default function GroupInfo({ GroupId }) {
     }
   };
 
+
   useEffect(() => {
     api
       .get("/getMembersGroup/" + GroupId)
@@ -41,10 +42,10 @@ export default function GroupInfo({ GroupId }) {
 
 
 
-  const leaveGroup = () => {
+  const leaveGroup = (GroupId, id) => {
     api
       .delete(
-        "groups/" + GroupId + "/members/" + user.id
+        "groups/" + GroupId + "/members/" + id + "/remove"
       )
       .then((response) => {
         window.location.href = '/social'
@@ -52,7 +53,20 @@ export default function GroupInfo({ GroupId }) {
       .catch((error) => {
         console.log(error);
       });
-  };
+  }; 
+
+  const deleteGroup = (GroupId) => {
+    api
+      .delete(
+        "groups/" + GroupId
+      )
+      .then((response) => {
+        window.location.href = '/social'
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }
 
 
   return (
@@ -90,7 +104,7 @@ export default function GroupInfo({ GroupId }) {
               onClick={(e) => {
                 if (confirm("Voulez-vous vraiment quitter ce groupe ?")) {
                   e.preventDefault();
-                  leaveGroup();
+                  leaveGroup(GroupId, user.id);
                 }
               }}
             >
@@ -109,7 +123,7 @@ export default function GroupInfo({ GroupId }) {
               onClick={(e) => {
                 if (confirm("Voulez-vous vraiment supprimer ce groupe ?")) {
                   e.preventDefault();
-                  leaveGroup();
+                  deleteGroup(GroupId);
                 }
               }}
             >

@@ -1,15 +1,19 @@
-import React, { useState } from "react";
+import React, { useContext, useState } from "react";
 import {
   TextField,
   Alert,
   InputAdornment,
-  IconButton
+  IconButton,
+  Snackbar
 } from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Logo from "../../images/image005.png";
 import api from '../../components/axios';
+import { AppContext } from "../../context/AppContext";
 
 export default function ConfidentialiteSecurite() {
+  const { user } = useContext(AppContext)
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -54,7 +58,7 @@ export default function ConfidentialiteSecurite() {
     }
 
     try {
-      await api.post("/teste", {
+      await api.post("/change-password/" + user.id, {
         currentPassword,
         newPassword,
         confirmPassword
@@ -62,7 +66,7 @@ export default function ConfidentialiteSecurite() {
       setSuccess("Le mot de passe a été mis à jour avec succès.");
       setTimeout(() => {
         window.location.href = "/accueil";
-      }, 250);
+      }, 3000);
     } catch (err) {
       console.log(err);
       if (err.response?.status === 401) {
@@ -188,6 +192,19 @@ export default function ConfidentialiteSecurite() {
           </div>
         </div>
       </div>
+      {
+        success && <Snackbar
+          autoHideDuration={5000}
+          message={success}
+        />
+      }
+
+      {
+        error && <Snackbar
+          autoHideDuration={5000}
+          message={error}
+        />
+      }
     </div>
   );
 }

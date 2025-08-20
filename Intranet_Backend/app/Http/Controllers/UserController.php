@@ -240,15 +240,15 @@ class UserController extends Controller
             }
 
             $request->validate([
-                'current_password' => 'required|string',
-                'new_password' => 'required|string|min:8',
+                'currentPassword' => 'required|string',
+                'newPassword' => 'required|string|min:8',
             ]);
 
-            if (!Hash::check($request->current_password, $user->password)) {
+            if (!Hash::check($request->currentPassword, $user->password)) {
                 return response()->json(['message' => 'Mot de passe actuel incorrect.'], 403);
             }
 
-            $user->password = Hash::make($request->new_password);
+            $user->password = Hash::make($request->newPassword);
             $user->save();
 
             return response()->json(['message' => 'Mot de passe mis à jour.']);

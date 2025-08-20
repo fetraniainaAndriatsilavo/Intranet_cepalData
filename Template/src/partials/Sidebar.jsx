@@ -422,7 +422,7 @@ function Sidebar({
                     </div>
                     {/* Badge */}
                     <div className="flex shrink-0 ml-2">
-                      <span className="inline-flex items-center justify-center h-5 text-xs font-medium text-white px-2 rounded-sm" style={{ backgroundColor: '#04adf0' }}> 1 </span>
+                      {/* <span className="inline-flex items-center justify-center h-5 text-xs font-medium text-white px-2 rounded-sm" style={{ backgroundColor: '#04adf0' }}> 1 </span> */}
                     </div>
                   </div>
                 </NavLink>
@@ -522,7 +522,7 @@ function Sidebar({
             </ul>
           </div>
           {
-            user && user.role == 'user' && <div>
+            user && user.role == 'admin' && <div>
               <h3 className="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
                 <span className="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">
                   •••
@@ -759,7 +759,7 @@ function Sidebar({
                   }}
                 </SidebarLinkGroup>
                 {/* Key news  */}
-                <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r ${pathname.includes("calendar") && "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"}`}>
+                {/* <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r ${pathname.includes("calendar") && "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"}`}>
                   <NavLink
                     end
                     to="https://cruip.com/mosaic/"
@@ -796,7 +796,7 @@ function Sidebar({
                       </span>
                     </div>
                   </NavLink>
-                </li>
+                </li> */}
               </ul>
             </div>
           }

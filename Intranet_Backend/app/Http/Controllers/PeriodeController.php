@@ -62,7 +62,7 @@ class PeriodeController extends Controller
             ], 500);
         }
     }
-
+    
     public function update(Request $request, int $id)
     {
         $validated = $request->validate([

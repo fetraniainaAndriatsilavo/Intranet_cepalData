@@ -7,31 +7,27 @@ use Illuminate\Database\Eloquent\Model;
 class Sprint extends Model
 {
     protected $connection = 'intranet_extedim';
-    protected $table = 'sprints'; 
-    protected $primaryKey = 'id_sprint'; 
+    protected $table = 'sprints';
 
-    public $timestamps = true; 
+    public $timestamps = true;
     protected $fillable = [
-        'id_sprint',
-        'id_projet',
-        'nom_sprint',
-        'date_debut',
-        'date_fin',
-        'statut',
+        'project_id',
+        'title',
+        'start_date',
+        'due_date',
+        'status',
+        'description',
+        'created_at',
+        'updated_at',
+        'updated_by',
     ];
 
     public function projet()
     {
-        return $this->belongsTo(Project::class, 'id_projet', 'project_id');
+        return $this->belongsTo(Project::class, 'project_id', 'id');
     }
-   public function taches()
+    public function taches()
     {
-        return $this->hasMany(Task::class, 'sprint_id', 'id_sprint');
+        return $this->hasMany(Task::class, 'sprint_id', 'id');
     }
-
-    public function tasks()
-    {
-        return $this->hasMany(Task::class, 'task_id');
-    }
-
-}   
+}

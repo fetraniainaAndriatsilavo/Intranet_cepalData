@@ -23,46 +23,6 @@ use Illuminate\Validation\ValidationException as ValidationValidationException;
 
 class AuthController extends Controller
 {
-
-
-    //CREER UN COMPTE POUR L'USER
-    // public function register(Request $request)
-    // {
-    //     $messages = [
-    //         'name.required' => 'Le nom est requis.',
-    //         'name.max' => 'Le nom ne peut pas dépasser 255 caractères.',
-    //         'email.required' => 'L\'email est requis.',
-    //         'email.email' => 'L\'email doit être une adresse email valide.',
-    //         'email.unique' => 'Cet email est déjà utilisé. Essayez un autre.',
-    //         'password.required' => 'Le mot de passe est requis.',
-    //         'password.confirmed' => 'Les mots de passe ne correspondent pas.',
-    //     ];
-
-    //     $fields = $request->validate([
-    //         "name" => "required|max:255",
-    //         "email" => "required|email|unique:users",
-    //         "password" => "required|confirmed",
-    //         "role" => "required"
-    //     ], $messages);
-
-    //     try {
-    //         $user = User::create([
-    //             'name' => $fields['name'],
-    //             'email' => $fields['email'],
-    //             'password' => bcrypt($fields['password']),
-    //             'role' => $fields['role'], // Ajouter un rôle par défaut
-    //         ]);
-
-    //         return response()->json([
-    //             'user' => $user,
-    //         ], 201);
-    //     } catch (Exception $e) {
-    //         return response()->json([
-    //             'error' => 'Une erreur est survenue lors de l\'inscription.',
-    //             'message' => $e->getMessage(),
-    //         ], 500);
-    //     }
-    // }
     public function register(Request $request)
     {
         $messages = [
@@ -166,25 +126,25 @@ class AuthController extends Controller
             $imagePath = null;
             $imageUrl = null;
 
-            // $user = new User();
-            // $user->first_name = $request->input('first_name');
-            // $user->save();
+            $user = new User();
+            $user->first_name = $request->input('first_name');
+            $user->save();
 
-            // if ($request->hasFile('image')) {
-            //     $file = $request->file('image');
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
 
-            //     $extension = $file->getClientOriginalExtension();
-            //     $filename = 'profile@user' . $user->id . '.' . $extension;
+                $extension = $file->getClientOriginalExtension();
+                $filename = 'profile@user' . $user->id . '.' . $extension;
 
-            //     $directory = 'users/' . $user->id . '/profil';
+                $directory = 'users/' . $user->id . '/profil';
 
-            //     $imagePath = $file->storeAs($directory, $filename, 'sftp');
+                $imagePath = $file->storeAs($directory, $filename, 'sftp');
 
-            //     $imageUrl = 'http://57.128.116.184/intranet/' . $imagePath;
+                $imageUrl = 'http://57.128.116.184/intranet/' . $imagePath;
 
-            //     $user->image = $imageUrl;
-            //     $user->save();
-            // }
+                $user->image = $imageUrl;
+                $user->save();
+            }
 
             $defaultPassword = 'intranet2025';
             $user = User::create([
@@ -309,16 +269,30 @@ class AuthController extends Controller
 
 
     //LOGOUT
+    // public function logout(Request $request)
+    // {
+
+    //     return response()->json([
+    //         'success' => true,
+    //         'message' => 'Déconnexion réussie.',
+    //     ]);
+    // }
+
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        $validated = $request->validate([
+            'user_id' => 'required|exists:intranet_extedim.users,id',
+        ]);
+
+        $user = User::find($validated['user_id']);
+
+        $user->tokens()->delete();
 
         return response()->json([
             'success' => true,
-            'message' => 'Déconnexion réussie.',
+            'message' => 'Tous les tokens de cet utilisateur ont été supprimés.',
         ]);
     }
-
 
 
     public function getUser(Request $request)

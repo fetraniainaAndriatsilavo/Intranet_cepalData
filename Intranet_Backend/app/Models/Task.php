@@ -11,20 +11,26 @@ class Task extends Model
 
     protected $connection = 'intranet_extedim';
 
-    protected $table = 'task_management';
+    protected $table = 'tasks';
 
-    protected $primaryKey = 'task_id';
+
 
     protected $fillable = [
         'title',
         'description',
         'project_id',
-        'type',
-        'parent_id',
-        'status',
+        'task_parent_id',
+        'start_date',
         'due_date',
+        'priority',
         'sprint_id',
+        'status',
         'time',
+        'type',
+        'updated_by',
+        'user_allocated_id',
+        'updated_at',
+        'created_at'
     ];
 
 
@@ -42,13 +48,13 @@ class Task extends Model
         return $this->belongsTo(Project::class, 'project_id');
     }
 
-    public function parentTask()
+    public function sprint()
     {
-        return $this->belongsTo(Task::class, 'parent_task_id');
+        return $this->belongsTo(Sprint::class, 'sprint_id');
     }
 
-    public function subtasks()
+    public function parentTask()
     {
-        return $this->hasMany(Task::class, 'parent_task_id');
+        return $this->belongsTo(Task::class, 'task_parent_id');
     }
 }

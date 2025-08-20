@@ -1,6 +1,6 @@
 import axios from "axios";
 import { useState } from "react";
-import PostEdit from "./PostEdit"
+import PostEdit from "./PostEdit";
 import api from "../../../components/axios";
 
 function PostOption({ id, fetchPost, onClose }) {
@@ -9,16 +9,15 @@ function PostOption({ id, fetchPost, onClose }) {
   const DeletePost = (e) => {
     e.preventDefault();
     api
-      .delete(
-        "/posts/" + id + "/delete",
-        { data : { status: "published" }, headers: { "Content-Type": "application/json" } }
-      )
-      .then(() => { 
-        onClose() 
-        fetchPost() 
+      .delete("/posts/" + id + "/delete", {
+        data: { status: "published" },
+        headers: { "Content-Type": "application/json" },
       })
-      .catch((error) => { 
-      });
+      .then(() => {
+        onClose();
+        fetchPost();
+      })
+      .catch((error) => {});
   };
 
   const toggleEditPost = () => {
@@ -45,7 +44,9 @@ function PostOption({ id, fetchPost, onClose }) {
         </li>
       </ul>
 
-      {isOpen && <PostEdit PostID={id} setIsOpen={setIsOpen} fetchPost={fetchPost} />}
+      {isOpen && (
+        <PostEdit PostID={id} setIsOpen={setIsOpen} fetchPost={fetchPost} />
+      )}
     </div>
   );
 }

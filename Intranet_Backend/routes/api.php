@@ -62,6 +62,21 @@ Route::put('/projects/{id}/update', [ProjectController::class, 'updateProject'])
 Route::delete('/projects/{id}/delete', [ProjectController::class, 'destroy']);
 Route::get('/projects/{id}/getProject', [ProjectController::class, 'getProjectById']);
 
+Route::post('/sprints', [SprintController::class, 'store']);
+Route::get('/sprints/all', [SprintController::class, 'getAllSprint']);
+Route::get('/getSprint/{sprintId}', [SprintController::class, 'getSprintById']);
+Route::put('/sprints/{id}/update', [SprintController::class, 'updateSprint']);
+Route::delete('/sprints/{id}/delete', [SprintController::class, 'destroy']);
+
+Route::post('/tasks', [TaskController::class, 'store']);
+Route::get('/tasks/all', [TaskController::class, 'getAllTask']);
+Route::get('/gettask/{taskId}', [TaskController::class, 'getTaskById']);
+Route::put('/taches/{id}/status', [TaskController::class, 'updateStatus']);
+Route::get('/getTaches/{projectId}', [TaskController::class, 'getByProject']);
+Route::put('/taches/{id}/update', [TaskController::class, 'updateTache']);
+Route::get('/taches/{id}/getTache', [TaskController::class, 'getTacheById']);
+Route::delete('/taches/{id}/delete', [TaskController::class, 'destroy']);
+
 Route::post('/leave-requests', [LeaveRequestController::class, 'store']);
 Route::get(
     '/type/leave',
@@ -155,11 +170,16 @@ Route::post('/forgot-password', function (Request $request) {
     $request->validate(['email' => 'required|email']);
     try {
         $status = Password::sendResetLink($request->only('email'));
-        return response()->json(['message' => __($status)]);
+        return response()->json([
+            'message' => __($status),
+            'email' => $request->email
+        ]);
     } catch (Exception $e) {
         return response()->json(['message' => __($e->getMessage())]);
     }
 });
+
+
 
 Route::post('/reset-password', function (Request $request) {
     $request->validate([
@@ -235,27 +255,6 @@ Route::patch('/conges/ajouter-solde', [LeaveBalanceController::class, 'ajouterSo
 
 
 
-Route::post('/sprints', [SprintController::class, 'store']);
-Route::get('/getSprint/{sprintId}', [SprintController::class, 'getSprintById']);
-Route::put('/sprints/{id}/update', [SprintController::class, 'updateSprint']);
-Route::delete('/sprints/{id}/delete', [SprintController::class, 'destroy']);
-Route::get('/sprints/{id}/getSprint', [SprintController::class, 'getOneSprintById']);
-
-Route::post('/taches', [TaskController::class, 'store']);
-Route::put('/taches/{id}/status', [TaskController::class, 'updateStatus']);
-Route::get('/getTaches/{projectId}', [TaskController::class, 'getByProject']);
-Route::put('/taches/{id}/update', [TaskController::class, 'updateTache']);
-Route::get('/taches/{id}/getTache', [TaskController::class, 'getTacheById']);
-Route::delete('/taches/{id}/delete', [TaskController::class, 'destroy']);
-
-
-
-
-
-
-
-
-
 //notifications
 Route::get('/notifications/{userId}', [NotificationController::class, 'getUserNotifications']);
 Route::post('/notifications/read/{notificationId}', [NotificationController::class, 'markAsRead']);
@@ -277,3 +276,9 @@ Route::post('/change-password/{userId}', [UserController::class, 'changePassword
 
 
 Route::get('/getSoldeUtilisateur', [LeaveBalanceController::class, 'getSoldeAll']);
+
+
+
+Route::get('/me', function (Request $request) {
+    return response()->json($request->user());
+});
