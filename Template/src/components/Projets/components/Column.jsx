@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import Card from './Card';
 import CreateTask from '../create/CreateTask';
+import ViewTask from '../view/ViewTask';
 
-export default function Column({ title, cards, isNote = false, onDrop, onDragStart }) { 
-  const [open, setOpen] = useState(false) 
+export default function Column({ title, cards, isNote = false, onDrop, onDragStart, projectId, fetchTaskProject }) {
+  const [open, setOpen] = useState(false);
+  const [openView, setOpenView] = useState(false);
+
+  const [selectedTask, setSelectedTask] = useState(0);
 
   return (
     <div
@@ -11,11 +15,15 @@ export default function Column({ title, cards, isNote = false, onDrop, onDragSta
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => onDrop(e, title)}
     >
+      {/* Column header */}
       <div className="flex items-center justify-between flex-row p-3 w-full">
         <h3 className="font-semibold text-lg">{title}</h3>
-        <button className="font-bold text-sky-600 cursor-pointer" onClick={() => {
-          setOpen(true)
-        }}>
+        <button
+          className="font-bold text-sky-600 cursor-pointer"
+          onClick={() => {
+            setOpen(true);
+          }}
+        >
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="24"
@@ -34,10 +42,41 @@ export default function Column({ title, cards, isNote = false, onDrop, onDragSta
           </svg>
         </button>
       </div>
+
+      {/* Cards */}
       {cards.map((card, index) => (
-        <Card key={index} data={card} isNote={isNote} onDragStart={onDragStart} />
-      ))}  
-      <CreateTask open={open} onClose={() => { setOpen(false)}} />
+        <Card
+          key={card.id || index}
+          data={card}
+          isNote={isNote}
+          onDragStart={(e) => onDragStart(e, card)} 
+          ViewCard={() => {
+            setSelectedTask(card.id);
+            setOpenView(true);
+          }}
+          projectId={projectId}
+        />
+      ))}
+
+      {/* Modals */}
+      <CreateTask
+        open={open}
+        onClose={() => {
+          setOpen(false);
+        }}
+        projectId={projectId}
+        fetchTaskProject={fetchTaskProject}
+      />
+
+      <ViewTask
+        open={openView}
+        onClose={() => {
+          setOpenView(false);
+        }}
+        id={selectedTask}
+        projectId={projectId}
+        fetchTaskProject={fetchTaskProject}
+      />
     </div>
   );
-}
+} 

@@ -1,9 +1,8 @@
 import { useEffect, useState } from "react";
 import { TextField, Alert, Box, Chip } from "@mui/material";
-import axios from "axios";
 import api from "../../../components/axios";
 
-export default function GroupEdit({ open, onClose, GroupId }) {
+export default function GroupEdit({ open, onClose, GroupId}) {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -20,7 +19,15 @@ export default function GroupEdit({ open, onClose, GroupId }) {
 
   const [allUsers, setAllUsers] = useState([]);
 
+  // Fetch users
+  useEffect(() => {
+    api
+      .get("/getUser/all")
+      .then((res) => setAllUsers(res.data.users))
+      .catch(console.error);
+  }, []);
 
+  // fetch group Information
   useEffect(() => {
     api
       .get("/getMembersGroup/" + GroupId)
@@ -32,6 +39,7 @@ export default function GroupEdit({ open, onClose, GroupId }) {
           name: group.name,
           members: members
         })
+        setSelectedUsers(members)
       })
       .catch((error) => {
         console.log(error);
@@ -45,7 +53,7 @@ export default function GroupEdit({ open, onClose, GroupId }) {
     } else {
       const filtered = allUsers.filter(
         (user) =>
-          user.name.toLowerCase().includes(searchUser.toLowerCase()) &&
+          user.first_name.toLowerCase().includes(searchUser.toLowerCase()) &&
           !selectedUsers.find((u) => u.id === user.id)
       );
       setSuggestions(filtered);
@@ -67,6 +75,8 @@ export default function GroupEdit({ open, onClose, GroupId }) {
 
   if (!open) return null;
 
+
+
   const HandleSubmit = async () => {
     const formData = new FormData();
 
@@ -77,8 +87,8 @@ export default function GroupEdit({ open, onClose, GroupId }) {
     if (!group.name.trim()) {
       setError("Le nom du groupe ne peut pas être vide.");
       return;
-    } 
-    
+    }
+
     formData.append("name", group.name);
     try {
       setLoading(true);
@@ -93,25 +103,26 @@ export default function GroupEdit({ open, onClose, GroupId }) {
           },
         }
       );
-      console.log(response.data);
-      setSuccess(response.data.message);
+      setSuccess(response.data.message); 
+
       setTimeout(() => {
         onClose();
-      }, [3000]);
+      }, [1500]); 
+
+      window.location.reload()
     } catch (err) {
-      setError("Une erreur s’est produite lors de la mise à jour.");
-      console.log(err)
+      setError(err.response.data.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm flex items-center justify-center z-50">
+    <div className="fixed inset-0  bg-opacity-100 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-white p-6 rounded-lg shadow-xl w-[90%] max-w-md">
 
         <div className="flex items-center justify-between flex-row mb-5">
-          <h1 className="text-xl font-bold">Modifier le Groupe</h1>
+          <h1 className="text-xl font-bold"> Modifier le Groupe </h1>
           <button
             className="text-gray-500 hover:text-black"
             onClick={onClose}
@@ -129,7 +140,7 @@ export default function GroupEdit({ open, onClose, GroupId }) {
           variant="outlined"
           className="mb-6"
           value={group.name}
-          onChange={() => {
+          onChange={(e) => {
             setGroup({
               ...group,
               name: e.target.value
@@ -142,7 +153,7 @@ export default function GroupEdit({ open, onClose, GroupId }) {
             {selectedUsers.map((user) => (
               <Chip
                 key={user.id}
-                label={user.name}
+                label={user.first_name}
                 onDelete={() => handleRemoveUser(user.id)}
                 color="primary"
               />
@@ -166,7 +177,7 @@ export default function GroupEdit({ open, onClose, GroupId }) {
                 className="p-2 hover:bg-gray-100 cursor-pointer"
                 onClick={() => handleSelectUser(user)}
               >
-                {user.name}
+                {user.first_name}
               </li>
             ))}
           </ul>

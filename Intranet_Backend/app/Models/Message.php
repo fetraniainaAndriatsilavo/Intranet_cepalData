@@ -25,6 +25,7 @@ class Message extends Model
         'read_at',
         'conversation_id',
         'files_paths',
+        'status',
     ];
 
     /**
@@ -32,8 +33,9 @@ class Message extends Model
      */
     public function sender()
     {
-        return $this->belongsTo(User::class, 'sender_id');
+        return $this->belongsTo(User::class, 'sender_id')->select('id', 'first_name', 'last_name', 'email');
     }
+
 
     /**
      * Le destinataire du message.
@@ -46,14 +48,23 @@ class Message extends Model
     /**
      * La conversation à laquelle appartient le message.
      */
+    // public function conversation()
+    // {
+    //     return $this->belongsTo(Conversation::class);
+    // }
     public function conversation()
     {
-        return $this->belongsTo(Conversation::class);
+        return $this->belongsTo(Conversation::class, 'conversation_id');
     }
+
+    // public function group()
+    // {
+    //     return $this->belongsTo(Group::class);
+    // }
 
     public function group()
     {
-        return $this->belongsTo(Group::class);
+        return $this->belongsTo(Group::class, 'group_id');
     }
 
     public function user()

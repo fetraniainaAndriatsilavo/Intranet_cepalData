@@ -43,7 +43,7 @@ return [
             'sslmode' => 'prefer',
         ],
 
-        'intranet_extedim' => [ // <== Ajout de la connexion pour INTRANET_EXTEDIM
+        'intranet_extedim' => [
             'driver' => 'pgsql',
             'host' => env('DB_HOST_EXT', '192.168.123.165'),
             'port' => env('DB_PORT_EXT', '5432'),
@@ -52,7 +52,7 @@ return [
             'password' => env('DB_PASSWORD_EXT', 'edisys'),
             'charset' => 'utf8',
             'prefix' => '',
-            'schema' => 'intranet_extedim', // <== Utilisation du schéma intranet_extedim
+            'schema' => 'intranet_extedim',
             'sslmode' => 'prefer',
         ],
 

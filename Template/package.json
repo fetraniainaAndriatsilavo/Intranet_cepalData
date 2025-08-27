@@ -27,6 +27,7 @@
     "react-day-picker": "^9.4.1",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.0.2",
+    "react-spinners": "^0.17.0",
     "react-transition-group": "^4.4.5",
     "tailwind-merge": "^2.5.5",
     "xlsx": "^0.18.5"

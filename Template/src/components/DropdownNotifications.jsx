@@ -1,15 +1,40 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
 import Transition from '../utils/Transition';
+import { AppContext } from '../context/AppContext';
+import api from './axios';
 
 function DropdownNotifications({
   align
 }) {
 
+  const { user } = useContext(AppContext)
+  const [allNotifications, setAllNotifications] = useState([])
+
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
   const trigger = useRef(null);
   const dropdown = useRef(null);
+
+
+  const formatDate = (d) => {
+    const mois = [
+      "Jan",
+      "Fév",
+      "Mars",
+      "Avr",
+      "Mai",
+      "Juin",
+      "Juil",
+      "Aout",
+      "Sept",
+      "Oct",
+      "Nov",
+      "Déc"
+    ]
+    const date = new Date(d)
+    return mois[date.getMonth()] + ' ' + date.getDate() + ", " + date.getFullYear()
+  }
 
   // close on click outside
   useEffect(() => {
@@ -32,6 +57,17 @@ function DropdownNotifications({
     return () => document.removeEventListener('keydown', keyHandler);
   });
 
+  const fetchNotifications = (id) => {
+    api.get('/notifications/' + id)
+      .then((response) => {
+        setAllNotifications(response.data)
+      })
+  }
+
+  useEffect(() => {
+    fetchNotifications(user.id)
+  }, [user])
+
   return (
     <div className="relative inline-flex">
       <button
@@ -52,7 +88,7 @@ function DropdownNotifications({
           <path d="M7 0a7 7 0 0 0-7 7c0 1.202.308 2.33.84 3.316l-.789 2.368a1 1 0 0 0 1.265 1.265l2.595-.865a1 1 0 0 0-.632-1.898l-.698.233.3-.9a1 1 0 0 0-.104-.85A4.97 4.97 0 0 1 2 7a5 5 0 0 1 5-5 4.99 4.99 0 0 1 4.093 2.135 1 1 0 1 0 1.638-1.148A6.99 6.99 0 0 0 7 0Z" />
           <path d="M11 6a5 5 0 0 0 0 10c.807 0 1.567-.194 2.24-.533l1.444.482a1 1 0 0 0 1.265-1.265l-.482-1.444A4.962 4.962 0 0 0 16 11a5 5 0 0 0-5-5Zm-3 5a3 3 0 0 1 6 0c0 .588-.171 1.134-.466 1.6a1 1 0 0 0-.115.82 1 1 0 0 0-.82.114A2.973 2.973 0 0 1 11 14a3 3 0 0 1-3-3Z" />
         </svg>
-        <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 border-2 border-gray-100 dark:border-gray-900 rounded-full"></div> 
+        <div className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 border-2 border-gray-100 dark:border-gray-900 rounded-full"></div>
       </button>
 
       <Transition
@@ -72,36 +108,21 @@ function DropdownNotifications({
         >
           <div className="text-xs font-semibold text-gray-400 dark:text-gray-500 uppercase pt-1.5 pb-2 px-4">Notifications</div>
           <ul>
-            <li className="border-b border-gray-200 dark:border-gray-700/60 last:border-0">
-              <Link
-                className="block py-2 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/20"
-                to="#0"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-              >
-                <span className="block text-sm mb-2">📣 <span className="font-medium text-gray-800 dark:text-gray-100">Edit your information in a swipe</span> Sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.</span>
-                <span className="block text-xs font-medium text-gray-400 dark:text-gray-500">Feb 12, 2024</span>
-              </Link>
-            </li>
-            <li className="border-b border-gray-200 dark:border-gray-700/60 last:border-0">
-              <Link
-                className="block py-2 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/20"
-                to="#0"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-              >
-                <span className="block text-sm mb-2">📣 <span className="font-medium text-gray-800 dark:text-gray-100">Edit your information in a swipe</span> Sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.</span>
-                <span className="block text-xs font-medium text-gray-400 dark:text-gray-500">Feb 9, 2024</span>
-              </Link>
-            </li>
-            <li className="border-b border-gray-200 dark:border-gray-700/60 last:border-0">
-              <Link
-                className="block py-2 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/20"
-                to="#0"
-                onClick={() => setDropdownOpen(!dropdownOpen)}
-              >
-                <span className="block text-sm mb-2">🚀<span className="font-medium text-gray-800 dark:text-gray-100">Say goodbye to paper receipts!</span> Sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim.</span>
-                <span className="block text-xs font-medium text-gray-400 dark:text-gray-500">Jan 24, 2024</span>
-              </Link>
-            </li>
+
+            {
+              allNotifications && allNotifications.slice(0, 5).map((notification, index) => {
+                return <li className="border-b border-gray-200 dark:border-gray-700/60 last:border-0" key={index}>
+                  <Link
+                    className="block py-2 px-4 hover:bg-gray-50 dark:hover:bg-gray-700/20"
+                    to="/mesnotifications"
+                    onClick={() => setDropdownOpen(!dropdownOpen)}
+                  >
+                    <span className="block text-sm mb-2">📣 <span className="font-medium text-gray-800 dark:text-gray-100">{notification.data.title ? notification.data.title : ''} </span> {notification.data.message}</span>
+                    <span className="block text-xs font-medium text-gray-400 dark:text-gray-500"> {formatDate(notification.created_at)} </span>
+                  </Link>
+                </li>
+              })
+            }
           </ul>
         </div>
       </Transition>

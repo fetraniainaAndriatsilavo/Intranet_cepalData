@@ -4,7 +4,7 @@ import api from "../../../components/axios";
 import { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../../context/AppContext";
 import CoverPhoto from "../../../images/360_F_467961418_UnS1ZAwAqbvVVMKExxqUNi0MUFTEJI83.jpg";
-export default function GroupInfo({ GroupId }) {
+export default function  GroupInfo({ GroupId}) {
 
   const { user } = useContext(AppContext)
   const [group, setGroup] = useState({
@@ -53,7 +53,7 @@ export default function GroupInfo({ GroupId }) {
       .catch((error) => {
         console.log(error);
       });
-  }; 
+  };
 
   const deleteGroup = (GroupId) => {
     api
@@ -82,14 +82,14 @@ export default function GroupInfo({ GroupId }) {
             </h1>
             <p className="text-gray-600"> {group.members.length}  Membres </p>
           </div>
-          <div className="flex gap-3 items-center flex-row">
+          <div className="flex gap-3 items-center flex-row"> 
             <Button
               variant="outlined"
               color="primary"
               onClick={() => {
                 setOpen(!open)
               }}
-
+              title="Modifier ce groupe"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-pencil cursor-pointer">
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -107,6 +107,7 @@ export default function GroupInfo({ GroupId }) {
                   leaveGroup(GroupId, user.id);
                 }
               }}
+              title="Quitter ce groupe"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-door-exit">
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -126,6 +127,7 @@ export default function GroupInfo({ GroupId }) {
                   deleteGroup(GroupId);
                 }
               }}
+              title="Supprimer ce groupe"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-trash">
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -143,7 +145,7 @@ export default function GroupInfo({ GroupId }) {
         <GroupEdit
           open={open}
           onClose={onClose}
-          GroupId={GroupId}
+          GroupId={GroupId} 
         >
           {" "}
         </GroupEdit>

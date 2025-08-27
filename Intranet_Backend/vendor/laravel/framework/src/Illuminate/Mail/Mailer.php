@@ -2,7 +2,6 @@
 
 namespace Illuminate\Mail;
 
-use App\Events\MessageSent;
 use Closure;
 use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Contracts\Mail\Mailable as MailableContract;
@@ -13,6 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Contracts\Support\Htmlable;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Mail\Events\MessageSending;
+use Illuminate\Mail\Events\MessageSent;
 use Illuminate\Mail\Mailables\Address;
 use Illuminate\Support\HtmlString;
 use Illuminate\Support\Traits\Macroable;

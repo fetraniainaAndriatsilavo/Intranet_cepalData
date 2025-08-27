@@ -36,7 +36,7 @@ class WelcomeUserNotification extends Notification
     {
         return [
             'title' => 'Bienvenue ' . $notifiable->first_name,
-            'message' => 'Votre compte a été créé avec succès. Email: ' . $notifiable->email,
+            'message' => 'Votre compte a été créé avec succès. Email: ' . $notifiable->email . 'Votre mot de    passe temporaire est : **' . $this->defaultPassword . '**',
             'action_url' => 'http://intranet.ext.local:8080/reinit',
             'schema' => 'intranet_extedim',
         ];

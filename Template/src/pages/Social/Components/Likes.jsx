@@ -1,6 +1,5 @@
 import { useContext, useEffect, useState } from "react";
-// import heartFilled from "../../../Icons/svg/heart-like-favorite-svgrepo-com.svg";
-// import heartOutline from "../../../Icons/svg/like-svgrepo-com.svg";
+
 import api from "../../../components/axios";
 import { AppContext } from "../../../context/AppContext";
 
@@ -9,70 +8,50 @@ function LikeButton({ id, like }) {
   const [liked, setLiked] = useState(false);
   const [likes, setLikes] = useState(like || 0);
 
-  // useEffect(() => {
-  //   api
-  //     .get(`/posts/${id}/getReact`)
-  //     .then((response) => {
-  //       const reactions = response.data;
-  //       const userHasReacted = reactions.some(r => r.user_id === user.id);
-  //       setLiked(userHasReacted);
-  //       setLikes(reactions.length);
-  //     })
-  //     .catch((error) => {
-  //       console.log(error);
-  //     });
-  // }, [id, user]);
+  // const [likesCount, setLikesCount] = useState(likes || 0) 
+
+  useEffect(() => {
+    api
+      .get(`/react/${id}/getReactionCount`)
+      .then((response) => {
+        const reactions = response.data;
+        const userHasReacted = reactions.some(r => r.user_id === user.id);
+        setLiked(userHasReacted);
+        setLikes(reactions.length);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, [id, user]);
 
 
   const toggleLike = () => {
-    if (liked == false) {
-      api
-        .post(
-          "/posts/" + id + "/react",
-          {
-            user_id: user.id,
-            type: "like",
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: "application/json",
-            },
-          }
-        )
-        .then((response) => {
-          console.log(response);
-          setLiked(true);
-          setLikes(likes + 1);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    } else {
-      api
-        .post(
-          "/posts/" + id + "/react",
-          {
-            user_id: user.id,
-            type: "dislike",
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              Accept: "application/json",
-            },
-          }
-        )
-        .then((response) => {
-          console.log(response);
-          setLikes(likes - 1);
-          setLiked(false);
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    }
+    const isLike = !liked;
+    const type = isLike ? "like" : "dislike";
+
+    api.post(
+      `/react/${id}`,
+      {
+        user_id: user.id,
+        type,
+      },
+      {
+        headers: {
+          // Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      }
+    )
+      .then((response) => {
+        console.log(response);
+        setLiked(isLike);
+        setLikes((prev) => prev + (isLike ? 1 : -1));
+      })
+      .catch((error) => {
+        console.error(error);
+      });
   };
+
 
   return (
     <button

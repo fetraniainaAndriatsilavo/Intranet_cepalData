@@ -21,8 +21,14 @@ class ErrorController extends Controller
 
         $admins = User::where('role', 'admin')->get();
 
-        Notification::send($admins, new AdminErrorReportNotification($user, $request->errors));
+        $errorsText = collect($request->errors)
+            ->pluck('field')
+            ->implode(', ');
 
-        return response()->json(['message' => 'Signalement envoyé aux administrateurs.']);
+        Notification::send($admins, new AdminErrorReportNotification($user, $errorsText));
+
+        return response()->json([
+            'message' => 'Signalement envoyé aux administrateurs.'
+        ]);
     }
 }

@@ -16,9 +16,10 @@ class TimesheetController extends Controller
 {
     public function getAll()
     {
-        $timesheets = Timesheet::with('timesheetPeriod', 'user', 'client', 'project')->get();
+        $timesheets = Timesheet::with('timesheetPeriod', 'user', 'client', 'project')->where('status', 'active')->get();
         return response()->json($timesheets);
     }
+
     public function getAllSentTimesheets()
     {
         $timesheets = Timesheet::with('user:id,name', 'timesheetPeriod')

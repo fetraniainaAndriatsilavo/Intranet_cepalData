@@ -11,9 +11,12 @@ export default function CreateGroup({ userID, onClose, fetchUserGroup }) {
   const [success, SetSuccess] = useState(false);
   const [error, setError] = useState(null);
 
+
+  const [loading, setLoading] = useState(false)
   const HandleChange = (e) => {
     setGroupeName(e.target.value);
   };
+
   // Fetch users
   useEffect(() => {
     api
@@ -49,9 +52,10 @@ export default function CreateGroup({ userID, onClose, fetchUserGroup }) {
   const checkedUsers = [];
   selectedUsers.map((user) => checkedUsers.push(user.id));
 
+
   const HandleSubmit = async (e) => {
     e.preventDefault();
-
+    setLoading(true)
     const formData = new FormData();
 
     selectedUsers.forEach((user, index) => {
@@ -74,11 +78,10 @@ export default function CreateGroup({ userID, onClose, fetchUserGroup }) {
       console.log(response.data);
       setGroupeName("");
       SetSuccess(true);
-
+      setLoading(false)
       setTimeout(() => {
         onClose()
-      }, [3000]) 
-      
+      }, [3000])
       fetchUserGroup(userID)
     } catch (error) {
       console.error("Error creating post:", error);
@@ -138,7 +141,9 @@ export default function CreateGroup({ userID, onClose, fetchUserGroup }) {
         className="w-full py-2 bg-sky-600 text-white font-semibold rounded hover:bg-sky-700 cursor-pointer"
         onClick={HandleSubmit}
       >
-        Créer
+        {
+          loading == true ? 'Création en cours...' : 'Créer'
+        }
       </button>
 
       {success && (

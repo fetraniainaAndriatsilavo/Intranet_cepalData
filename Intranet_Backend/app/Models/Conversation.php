@@ -11,7 +11,7 @@ class Conversation extends Model
 
     protected $table = 'intranet_extedim.conversations';
 
-
+    protected $timestamp = false;
     protected $fillable = [
         'user_one_id',
         'user_two_id',
@@ -22,8 +22,9 @@ class Conversation extends Model
      */
     public function messages()
     {
-        return $this->hasMany(Message::class);
+        return $this->hasMany(Message::class, 'conversation_id')->orderBy('created_at', 'asc');
     }
+
 
     /**
      * Récupère l'utilisateur 1 (initiateur).

@@ -10,12 +10,12 @@ class AdminErrorReportNotification extends Notification
     use Queueable;
 
     protected $user;
-    protected $errors;
+    protected $errorsText;
 
-    public function __construct($user, $errors)
+    public function __construct($user, string $errorsText)
     {
         $this->user = $user;
-        $this->errors = $errors;
+        $this->errorsText = $errorsText;
     }
 
     public function via($notifiable)
@@ -25,18 +25,11 @@ class AdminErrorReportNotification extends Notification
 
     public function toArray($notifiable)
     {
-        $messages = [];
-
-        foreach ($this->errors as $error) {
-            $field = $error['field'];
-            $messages[] = "{$this->user->name} a signalé une erreur dans le champ \"{$field}\".";
-        }
-
         return [
-            'messages' => $messages,
+            'title' => "Erreur signalé",
+            'message' => "{$this->user->first_name} {$this->user->last_name} a signalé une erreur : {$this->errorsText}",
             'user_id' => $this->user->id,
-            'user_name' => $this->user->name,
-
+            'user_name' => $this->user->first_name,
         ];
     }
 }

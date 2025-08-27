@@ -4,37 +4,36 @@ import api from "../axios";
 export default function SendEmail() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
-  // const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const Soumettre = async (e) => {
     e.preventDefault();
-    // setLoading(true)
-    if (email == "") {
+
+    if (email === "") {
       setError("Veuillez remplir les champs");
-    } else {
-      try {
-        const response = await api.post(
-          "/forgot-password",
-          {
-            email,
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-        console.log("Réponse du serveur:", response.data);
-        setError(null);
-        setTimeout(() => {
-          // setLoading(false)
-          alert("Réussi");
-        }, 500);
-      } catch (err) {
-        console.error("Erreur:", err.response?.data || err.message);
-      }
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const response = await api.post(
+        "/forgot-password",
+        { email },
+        { headers: { "Content-Type": "application/json" } }
+      );
+
+      console.log("Réponse du serveur:", response.data);
+      setError(null);
+      alert("Un e-mail de confirmation vous a été envoyé afin de valider le changement de votre mot de passe.");
+    } catch (err) {
+      console.error("Erreur:", err.response?.data || err.message);
+      setError("Une erreur est survenue.");
+    } finally {
+      setLoading(false);
     }
   };
+
   return (
     <div className="flex flex-col items-center justify-center gap-3 p-2 py-8 w-2/3 rounded-lg bg-white dark:bg-gray-800">
       <div className="flex flex-col items-center justify-center gap-3 mb-5">
@@ -76,7 +75,7 @@ export default function SendEmail() {
           style={{ backgroundColor: "#04adf0" }}
           onClick={Soumettre}
         >
-          Envoyer
+          {loading == true ? 'Envoi...' : 'Envoyer'}
         </button>
       </div>
 

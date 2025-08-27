@@ -104,6 +104,7 @@ class UserController extends Controller
                 'class_id' => 'nullable|integer',
                 'image' => 'nullable|string',
                 'client_code' => 'nullable|string|max:100',
+                'type' => 'nullable|string|max:100',
                 'manager_id' => 'nullable|integer',
                 'leaving_date' => 'nullable|date',
                 'updated_by' => 'nullable|integer',
@@ -175,6 +176,7 @@ class UserController extends Controller
             ], 500);
         }
     }
+
     public function toggleStatus(Request $request, $id)
     {
 
@@ -265,12 +267,13 @@ class UserController extends Controller
     public function GetInfoUser($id)
     {
         try {
-            $user = User::with('position', 'classification', 'client', 'manager', 'documents')->findOrFail($id);
+            $user = User::with('position', 'classification', 'client', 'manager', 'documents', 'contrat')->findOrFail($id);
 
             return response()->json([
                 'user' => [
                     'id' => $user->id,
                     'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
                     'email' => $user->email,
                     'status' => $user->status,
                     'role' => $user->role,
@@ -295,6 +298,7 @@ class UserController extends Controller
                     'position_id' => $user->position ? $user->position->id : null,
                     'classification_id' => $user->classification ? $user->classification->id : null,
                     'client_code' => $user->client ? $user->client->code : null,
+                    'contrat_code' => $user->contrat ? $user->contrat->code : null,
                     'department' => $user->department ? $user->department->id : null,
                     'manager' => $user->manager ? $user->manager->first_name : null,
                     'documents' => $user->documents->map(
@@ -340,7 +344,7 @@ class UserController extends Controller
     public function GetAllUsers()
     {
         try {
-            $users = User::with('position', 'classification', 'client', 'manager', 'documents')->get();
+            $users = User::with('position', 'classification', 'client', 'manager', 'documents', 'contrat')->get();
 
             $formattedUsers = $users->map(function ($user) {
                 return [
@@ -370,6 +374,7 @@ class UserController extends Controller
                     'position_name' => $user->position ? $user->position->name : null,
                     'classification_name' => $user->classification ? $user->classification->categ_name : null,
                     'client_code' => $user->client ? $user->client->name : null,
+                    'contrat_code' => $user->contrat ? $user->contrat->code : null,
                     'department' => $user->department ? $user->department->name : null,
                     'manager' => $user->manager ? $user->manager->first_name : null,
                     'documents' => $user->documents->map(function ($doc) {
@@ -403,5 +408,22 @@ class UserController extends Controller
                 'trace' => $e->getTraceAsString(),
             ], 500);
         }
+    }
+
+    public function updatePublic(Request $request, $id)
+    {
+        $request->validate([
+            'is_public' => 'required|boolean',
+        ]);
+
+        $user = User::findOrFail($id);
+        $user->is_public = $request->is_public;
+        $user->save();
+
+        return response()->json([
+            'id' => $user->id,
+            'is_public' => $user->is_public,
+            'message' => 'Profil public mis à jour avec succès',
+        ]);
     }
 }

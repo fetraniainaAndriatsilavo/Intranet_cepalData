@@ -1,5 +1,6 @@
 import { useState } from "react";
-function Comments({ setIsOpen, comments }) {
+import api from "../../../components/axios";
+function Comments({ setIsOpen, comments, id }) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -23,7 +24,7 @@ function Comments({ setIsOpen, comments }) {
       }
 
       <span className={`${open == false ? "" : "text-sky-500 font-semibold"}`}>
-        {comments || 0}
+        {comments}
       </span>
     </button>
   );

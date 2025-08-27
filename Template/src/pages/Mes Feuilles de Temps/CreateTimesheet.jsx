@@ -15,7 +15,7 @@ import { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../context/AppContext";
 import api from "../../components/axios";
 
-export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser }) {
+export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser, sessions }) {
     const { user } = useContext(AppContext);
 
     const [clients, setClients] = useState([]);
@@ -31,7 +31,7 @@ export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser }) {
         date: "",
         nb_hour: "",
         description: "",
-        ts_period_id: null,
+        ts_period_id: sessions || null,
         updated_by: user?.id ?? null, // Added for consistency
     });
 
@@ -112,8 +112,8 @@ export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser }) {
             setError(null);
             setTimeout(() => {
                 onClose();
-            }, 1500); 
-            fetchTimeSheetUser(user.id) 
+            }, 1500);
+            fetchTimeSheetUser(user.id)
         } catch (err) {
             if (err.response?.status === 422) {
                 setError(err.response.data.message);

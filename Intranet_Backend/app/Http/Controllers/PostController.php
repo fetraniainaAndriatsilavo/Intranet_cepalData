@@ -13,7 +13,12 @@ class PostController extends Controller
     public function postAll()
     {
         $allPosts = Post::query()
-            ->with('attachments')
+            ->with(
+                'attachments',
+                'comments.user',
+                'reactions.user'
+            )
+            ->withCount(['comments', 'reactions'])
             ->withTrashed()
             ->orderBy('created_at', 'desc')
             ->get();

@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 
 class GroupPostController extends Controller
 {
@@ -71,7 +72,7 @@ class GroupPostController extends Controller
 
     public function postsByGroup($groupId)
     {
-        $allPosts = Post::with('attachments')
+        $allPosts = Post::with('attachments', 'user')
             ->published()
             ->withTrashed()
             ->where('group_id', $groupId)
@@ -242,7 +243,16 @@ class GroupPostController extends Controller
     public function updateName(Request $request, $groupId)
     {
         $request->validate([
-            'name' => 'required|string|unique:intranet_extedim.posts_groups|max:255',
+
+            'name' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('intranet_extedim.posts_groups')->ignore($groupId),
+            ],
+
+            'user_ids' => 'nullable|array',
+            'user_ids.*' => 'exists:intranet_extedim.users,id',
         ], [
             'name.required' => 'Le nouveau nom du groupe est obligatoire.',
             'name.unique' => 'Ce nom du groupe existe déjà.',
@@ -254,6 +264,28 @@ class GroupPostController extends Controller
             $group = GroupPost::findOrFail($groupId);
             $group->name = $request->name;
             $group->save();
+            $added = [];
+            $alreadyMembers = [];
+
+            foreach ($request->user_ids as $userId) {
+                if ($group->members()->where('user_id', $userId)->exists()) {
+                    $alreadyMembers[] = $userId;
+                } else {
+                    $group->members()->attach($userId, [
+                        'joined_at' => now(),
+                        'role' => 'member',
+                    ]);
+                    $added[] = $userId;
+                }
+            }
+
+            $messageParts = [];
+            if (!empty($added)) {
+                $messageParts[] = "Utilisateurs ajoutés : " . implode(', ', $added);
+            }
+            if (!empty($alreadyMembers)) {
+                $messageParts[] = "Déjà membres : " . implode(', ', $alreadyMembers);
+            }
 
             return response()->json([
                 'message' => 'Nom du groupe mis à jour avec succès.',
@@ -261,6 +293,9 @@ class GroupPostController extends Controller
                     'id' => $group->id,
                     'name' => $group->name,
                 ],
+                'added_user_ids' => $added,
+                'already_member_user_ids' => $alreadyMembers,
+                'messageParts' => implode(' | ', $messageParts)
             ]);
         } catch (\Exception $e) {
             return response()->json([

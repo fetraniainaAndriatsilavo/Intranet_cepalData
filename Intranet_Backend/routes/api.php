@@ -4,6 +4,7 @@ use App\Http\Controllers\API\GroupController;
 use App\Http\Controllers\API\GroupMessageController;
 use App\Http\Controllers\API\MessageController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ConversationController;
 use App\Http\Controllers\DocumentsAdminController;
 use App\Http\Controllers\ErrorController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\PeriodeController;
 use App\Http\Controllers\PositionController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ReactionController;
 use App\Http\Controllers\ReferenceDataController;
 use App\Http\Controllers\SprintController;
 use App\Http\Controllers\TaskController;
@@ -31,128 +33,23 @@ use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Broadcast;
 
-// Route::middleware('auth:sanctum')->get('/user', [UserController::class, 'getUser']);
-// Route::get(
-//     '/ping',
-//     function () {
-//         return response()->json('ok');
-//     }
-// );
-//AuthController
+
+
+//Autehntification
 Route::post('/register', [AuthController::class, 'register'])->name('register');
-Route::post('/positions', [PositionController::class, 'store']);
-
-
-
-
 Route::post('/v1/auth', [AuthController::class, 'login']);
-
 Route::post('/logout', [AuthController::class, 'logout']);
 
+//Utilisateur
+Route::post('/positions', [PositionController::class, 'store']);
+Route::get('/dashboard/overview/{userId}', [ReferenceDataController::class, 'overview']);
 Route::get('/data', [ReferenceDataController::class, 'getDataUser']);
 Route::get('/user/{id}/info', [UserController::class, 'GetInfoUser']);
 Route::put('/user/{id}/update', [UserController::class, 'update']);
 Route::get('/getUser/all', [UserController::class, 'GetAllUsers']);
-
-Route::post('/projects/store', [ProjectController::class, 'store']);
-Route::put('/projects/{id}/status', [ProjectController::class, 'updateStatus']);
-Route::get('/getProject/{userId}', [ProjectController::class, 'getProjectByUserId']);
-
-Route::put('/projects/{id}/update', [ProjectController::class, 'updateProject']);
-Route::delete('/projects/{id}/delete', [ProjectController::class, 'destroy']);
-Route::get('/projects/{id}/getProject', [ProjectController::class, 'getProjectById']);
-
-Route::post('/sprints', [SprintController::class, 'store']);
-Route::get('/sprints/all', [SprintController::class, 'getAllSprint']);
-Route::get('/getSprint/{sprintId}', [SprintController::class, 'getSprintById']);
-Route::put('/sprints/{id}/update', [SprintController::class, 'updateSprint']);
-Route::delete('/sprints/{id}/delete', [SprintController::class, 'destroy']);
-
-Route::post('/tasks', [TaskController::class, 'store']);
-Route::get('/tasks/all', [TaskController::class, 'getAllTask']);
-Route::get('/gettask/{taskId}', [TaskController::class, 'getTaskById']);
-Route::put('/taches/{id}/status', [TaskController::class, 'updateStatus']);
-Route::get('/getTaches/{projectId}', [TaskController::class, 'getByProject']);
-Route::put('/taches/{id}/update', [TaskController::class, 'updateTache']);
-Route::get('/taches/{id}/getTache', [TaskController::class, 'getTacheById']);
-Route::delete('/taches/{id}/delete', [TaskController::class, 'destroy']);
-
-Route::post('/leave-requests', [LeaveRequestController::class, 'store']);
-Route::get(
-    '/type/leave',
-    [LeaveRequestController::class, 'getAllTypeLeave']
-);
-Route::get('/users/{id}/leave-balances', [LeaveRequestController::class, 'getLeaveBalances']);
-Route::get('manager/{managerId}/leave-requests', [LeaveRequestController::class, 'getTeamLeaveRequests']);
-Route::get('/all-requests', [LeaveRequestController::class, 'getAllLeaveRequests']);
-Route::put('/leave-requests/{id}/change', [LeaveRequestController::class, 'changeStatus']);
-Route::get('/all/holidays', [LeaveRequestController::class, 'getOgcHolidays']);
-
-
-
-
-Route::get('/documents/type', [DocumentsAdminController::class, 'doc_type']);
-Route::post('/documents-admin/upload', [DocumentsAdminController::class, 'upload']);
-Route::get('/documents/user/{userId}', [DocumentsAdminController::class, 'getUserDocuments']);
-Route::put('/document/{id}/changeStatus', [DocumentsAdminController::class, 'changeStatus']);
-
-Route::get('/sessions/{id}', [PeriodeController::class, 'getSessionById']);
-Route::post('/timesheet-periods/store', [PeriodeController::class, 'store']);
-Route::put('/timesheet-periods/{id}/update', [PeriodeController::class, 'update']);
-Route::delete('/timesheet-periods/{id}/destroy', [PeriodeController::class, 'destroy']);
-Route::get('/timesheet-periods/all', [PeriodeController::class, 'getAll']);
-Route::get('/timesheet-periods/{id}/timesheets', [PeriodeController::class, 'getTimesheetsByPeriod']);
-Route::get('/timesheet-periods/active', [PeriodeController::class, 'getActiveSessionsWithUsersTotals']);
-Route::get(
-    '/timesheet-periods/grouped-by-manager/{managerId}',
-    [PeriodeController::class, 'getActiveSessionsGroupedByManager']
-);
-Route::get('/timesheet/{id}', [TimesheetController::class, 'getTimesheetById']);
-Route::get('/timesheet/all', [TimesheetController::class, 'getAll']);
-Route::get('/Alltimesheet/sent', [TimesheetController::class, 'getAllSentTimesheets']);
-Route::get('/managers/{manager}/timesheets/sent', [TimesheetController::class, 'getTimesheetsForManager']);
-Route::get('/timesheet/{id}/user', [TimesheetController::class, 'getUserTimesheets']);
-Route::post('/timesheets/{user_id}/send', [TimesheetController::class, 'sendPendingForUser']);
-Route::post('/timesheet/store', [TimesheetController::class, 'store']);
-Route::put('/timesheet/{id}/update', [TimesheetController::class, 'update']);
-Route::put('timesheets/{id}/approve', [TimesheetController::class, 'approveTimesheet']);
-Route::post('/timesheets/approve', [TimesheetController::class, 'approveTimesheetsForUser']);
-Route::delete('/timesheet/{id}/destroy', [TimesheetController::class, 'destroy']);
-
-
-
-// Route::apiResource('posts', PostController::class);
-Route::post('/posts/store', [PostController::class, 'store']);
-Route::get('/posts/all', [PostController::class, 'postAll']);
-Route::get('/posts/published', [PostController::class, 'getPublishedPosts']);
-Route::get('/posts/{post}/getInfo', [PostController::class, 'show']);
-Route::put('/posts/{postId}/update', [PostController::class, 'update']);
-Route::delete('/posts/{postIs}/delete', [PostController::class, 'destroy']);
-
-//groupe publication
-Route::post('/groups/posts', [GroupPostController::class, 'store']);
-Route::get('/groups/{id}/posts', [GroupPostController::class, 'postsByGroup']);
-Route::get('/getMembersGroup/{groupId}', [GroupPostController::class, 'getMembers']);
-Route::get('/users/{userId}/groups', [GroupPostController::class, 'groupsByUser']);
-Route::put('/groups/{groupId}/rename', [GroupPostController::class, 'updateName']);
-Route::post('/groups/{groupId}/add-members', [GroupPostController::class, 'addMembers']);
-Route::delete('/groups/{groupId}/members/{userId}/remove', [GroupPostController::class, 'removeMember']);
-Route::delete('/groups/{groupId}', [GroupPostController::class, 'destroy']);
-
-
-//UserController
-// Route::get('/notifications', [UserController::class, 'getNotifications']);
-// Route::get('/v1/users', [UserController::class, 'getUser']);
-// Route::get('/v1/user/{id}', [UserController::class, 'getPersonalUser']);
 Route::put('v1/users/{id}', [UserController::class, 'toggleStatus']);
-// Route::get('/all-manager', [UserController::class, 'getAllManagers']);
-
-
-
-Route::get('fliter/{mois_avant}/{mois_apres}/{recherche}');
-
 Route::get('v1/personal/{id}', [UserController::class, 'personal']);
-
+Route::put('/users/{id}/public', [UserController::class, 'updatePublic']);
 Route::get('v1/checkers/{id}', function ($id) {
     $user = User::where('id', $id)->first();
     if (!$user) {
@@ -161,11 +58,8 @@ Route::get('v1/checkers/{id}', function ($id) {
         return response()->json(['role' => $user->role]);
     }
 });
-
 Route::get('v1/modify/{id}', [UserController::class, 'personal']);
-
-
-
+Route::post('/change-password/{userId}', [UserController::class, 'changePassword']);
 Route::post('/forgot-password', function (Request $request) {
     $request->validate(['email' => 'required|email']);
     try {
@@ -206,54 +100,148 @@ Route::get('reset-password/{token}', function ($token) {
     return response()->json(['token' => $token]);
 })->name('password.reset');
 
+//Module Projet
+Route::post('/projects/store', [ProjectController::class, 'store']);
+Route::put('/projects/{id}/status', [ProjectController::class, 'updateStatus']);
+Route::get('/getProject/{userId}', [ProjectController::class, 'getProjectByUserId']);
+Route::put('/projects/{id}/update', [ProjectController::class, 'updateProject']);
+Route::delete('/projects/{id}/delete', [ProjectController::class, 'destroy']);
+Route::get('/projects/{id}/getProject', [ProjectController::class, 'getProjectById']);
+
+//Sprint (Module Projet)
+Route::post('/sprints', [SprintController::class, 'store']);
+Route::get('/sprints/all', [SprintController::class, 'getAllSprint']);
+Route::get('/getSprint/{sprintId}', [SprintController::class, 'getSprintById']);
+Route::put('/sprints/{id}/update', [SprintController::class, 'updateSprint']);
+Route::delete('/sprints/{id}/delete', [SprintController::class, 'destroy']);
+
+//Tache (Module Projet)
+Route::post('/tasks', [TaskController::class, 'store']);
+Route::get('/tasks/all', [TaskController::class, 'getAllTask']);
+Route::get('/gettask/{taskId}', [TaskController::class, 'getTaskById']);
+Route::get('/taches/{id}/getTache', [TaskController::class, 'getTacheById']);
+Route::get('/getTaches/{projectId}', [TaskController::class, 'getByProject']);
+Route::put('/taches/{id}/update', [TaskController::class, 'update']);
+Route::delete('/taches/{id}/delete', [TaskController::class, 'destroy']);
 
 
+//OGC
+Route::post('/leave-requests', [LeaveRequestController::class, 'store']);
+Route::get(
+    '/type/leave',
+    [LeaveRequestController::class, 'getAllTypeLeave']
+);
+Route::get('/users/{id}/leave-balances', [LeaveRequestController::class, 'getLeaveBalances']);
+Route::get('manager/{managerId}/leave-requests', [LeaveRequestController::class, 'getTeamLeaveRequests']);
+Route::get('/all-requests', [LeaveRequestController::class, 'getAllLeaveRequests']);
+Route::put('/leave-requests/{id}/change', [LeaveRequestController::class, 'changeStatus']);
+Route::get('/all/holidays', [LeaveRequestController::class, 'getOgcHolidays']);
+Route::get('manager/{managerId}/userCumul', [LeaveRequestController::class, 'getTeamCumul']);
+Route::patch('/conges/ajouter-solde', [LeaveBalanceController::class, 'ajouterSoldeMensuel']);
 
+//Document Administratif
+Route::get('/documents/type', [DocumentsAdminController::class, 'doc_type']);
+Route::post('/documents-admin/upload', [DocumentsAdminController::class, 'upload']);
+Route::get('/documents/user/{userId}', [DocumentsAdminController::class, 'getUserDocuments']);
+Route::put('/document/{id}/changeStatus', [DocumentsAdminController::class, 'changeStatus']);
+
+
+//Session FT
+Route::get('/sessions/{id}', [PeriodeController::class, 'getSessionById']);
+Route::post('/timesheet-periods/store', [PeriodeController::class, 'store']);
+Route::put('/timesheet-periods/{id}/update', [PeriodeController::class, 'update']);
+Route::delete('/timesheet-periods/{id}/destroy', [PeriodeController::class, 'destroy']);
+Route::get('/timesheet-periods/all', [PeriodeController::class, 'getAll']);
+Route::get('/timesheet-periods/{id}/timesheets', [PeriodeController::class, 'getTimesheetsByPeriod']);
+Route::get('/timesheet-periods/active', [PeriodeController::class, 'getActiveSessionsWithUsersTotals']);
+Route::get(
+    '/timesheet-periods/grouped-by-manager/{managerId}',
+    [PeriodeController::class, 'getActiveSessionsGroupedByManager']
+);
+
+//Feuille de temps
+Route::get('/timesheet/{id}', [TimesheetController::class, 'getTimesheetById']);
+Route::get('/timesheet/all', [TimesheetController::class, 'getAll']);
+Route::get('/Alltimesheet/sent', [TimesheetController::class, 'getAllSentTimesheets']);
+Route::get('/managers/{manager}/timesheets/sent', [TimesheetController::class, 'getTimesheetsForManager']);
+Route::get('/timesheet/{id}/user', [TimesheetController::class, 'getUserTimesheets']);
+Route::post('/timesheets/{user_id}/send', [TimesheetController::class, 'sendPendingForUser']);
+Route::post('/timesheet/store', [TimesheetController::class, 'store']);
+Route::put('/timesheet/{id}/update', [TimesheetController::class, 'update']);
+Route::put('timesheets/{id}/approve', [TimesheetController::class, 'approveTimesheet']);
+Route::post('/timesheets/approve', [TimesheetController::class, 'approveTimesheetsForUser']);
+Route::delete('/timesheet/{id}/destroy', [TimesheetController::class, 'destroy']);
+
+//publication
+Route::post('/posts/store', [PostController::class, 'store']);
+Route::get('/posts/all', [PostController::class, 'postAll']);
+Route::get('/posts/published', [PostController::class, 'getPublishedPosts']);
+Route::get('/posts/{post}/getInfo', [PostController::class, 'show']);
+Route::put('/posts/{postId}/update', [PostController::class, 'update']);
+Route::delete('/posts/{postIs}/delete', [PostController::class, 'destroy']);
+
+//commentaire (publication)
+Route::get('/comments/{post}/all', [CommentController::class, 'index']);
+Route::get('/comments/{comment}/getInfo', [CommentController::class, 'getInfoComment']);
+Route::post('/posts/{post}/comments', [CommentController::class, 'store']);
+Route::put('/comments/{comment}/update', [CommentController::class, 'update']);
+Route::delete('/comments/{comment}/delete', [CommentController::class, 'destroy']);
+
+//reaction (publication)
+Route::get('/react/{postId}/getReactionCount', [ReactionController::class, 'getReaction']);
+Route::post('react/{postId}', [ReactionController::class, 'react']);
+Route::delete('react/{userId}/{postId}', [ReactionController::class, 'removeReaction']);
+
+//groupe publication
+Route::post('/groups/posts', [GroupPostController::class, 'store']);
+Route::get('/groups/{id}/posts', [GroupPostController::class, 'postsByGroup']);
+Route::get('/getMembersGroup/{groupId}', [GroupPostController::class, 'getMembers']);
+Route::get('/users/{userId}/groups', [GroupPostController::class, 'groupsByUser']);
+Route::put('/groups/{groupId}/rename', [GroupPostController::class, 'updateName']);
+Route::post('/groups/{groupId}/add-members', [GroupPostController::class, 'addMembers']);
+Route::delete('/groups/{groupId}/members/{userId}/remove', [GroupPostController::class, 'removeMember']);
+Route::delete('/groups/{groupId}', [GroupPostController::class, 'destroy']);
+
+//Filtre
+Route::get('fliter/{mois_avant}/{mois_apres}/{recherche}');
+
+//Message
 Route::get('/messages/{user1}/{user2}', [MessageController::class, 'getConversation']);
-
 Route::post('/messages', [MessageController::class, 'store']);
-
 Route::post('/messages/{id}/read', [MessageController::class, 'markAsRead']);
-
-
 Route::prefix('group-messages')->controller(GroupMessageController::class)->group(function () {
     Route::get('/getGroup/{groupId}', 'getGroup');
     Route::get('/messages/{groupId}', 'index');
     Route::post('/{groupId}', 'store');
 });
 
-Route::get('/groups/users/{id}', [GroupMessageController::class, 'getGroupUsers']);
-Route::delete('/groups/{groupId}/users/{userId}', [GroupMessageController::class, 'removeUserFromGroup']);
-Route::post('/groups/{groupId}/leave', [GroupMessageController::class, 'leaveGroup']);
+//Groupe Message
+Route::get('/message-groups/{group}/info', [GroupController::class, 'getGroupInfo']);
+Route::get('/message-groups/{group}/members', [GroupController::class, 'getMembers']);
+Route::get('/users/{userId}/message-groups', [GroupController::class, 'getUserGroups']);
+Route::post('/message-groups', [GroupController::class, 'store']);
+Route::post('/message-groups/{group}/add-users', [GroupController::class, 'addUsers']);
+Route::post('/message-groups/{group}/remove-user', [GroupController::class, 'removeUser']);
+Route::post('/message-groups/{group}/leave', [GroupController::class, 'leaveGroup']);
+Route::put('/message-groups/{group}', [GroupController::class, 'update']);
+Route::delete('/message-groups/{group}', [GroupController::class, 'destroy']);
+
 Route::get('/messages/{id}/getMessage/message', [MessageController::class, 'getMessage']);
 Route::delete('/messages/{id}/delete', [MessageController::class, 'destroy']);
 Route::put('/messages/{id}/update', [MessageController::class, 'update']);
 Route::put('/messages/{id}/read', [MessageController::class, 'markAsRead']);
-
-Route::get('/conversations/{user_id}', [ConversationController::class, 'getConversation']);
-
 Route::get('/groups/not/{id}', [GroupMessageController::class, 'getLeftUsers']);
 
+//Conversation
+// Route::get('/conversations/{user_id}', [ConversationController::class, 'getConversation']);
+Route::get('/conversations/{user_id}', [ConversationController::class, 'myConversations']);
+Route::get('/conversations/{conversationId}/getConversation', [ConversationController::class, 'getConversationInfo']);
 
+
+//Auth Pusher
 Route::middleware('auth:api')->post('/pusher/auth', function (Request $request) {
     return Broadcast::auth($request);
 });
-
-
-
-
-Route::get('/ogc-cumul', [OgCumulController::class, 'getAllCumuls']);
-Route::get('/ogc-cumul/{userId}', [OgCumulController::class, 'getCumulByUserId']);
-
-
-Route::get('/insert-approved-requests', [LeaveRequestController::class, 'insertApprovedRequestsIntoOgCumul']);
-
-Route::get('manager/{managerId}/userCumul', [LeaveRequestController::class, 'getTeamCumul']);
-
-
-Route::patch('/conges/ajouter-solde', [LeaveBalanceController::class, 'ajouterSoldeMensuel']);
-
-
 
 //notifications
 Route::get('/notifications/{userId}', [NotificationController::class, 'getUserNotifications']);
@@ -263,22 +251,9 @@ Route::get('/admin/error-reports', [NotificationController::class, 'getAdminErro
 Route::post('/notifications/{id}/read', [NotificationController::class, 'markErrorAsRead']);
 Route::delete('/notification/{notificationId}/delete', [NotificationController::class, 'deleteNotification']);
 
-
-
-
 //event
-Route::post('event/create', [EventController::class, 'store']);
-Route::delete('event/delete/{event_id}', [EventController::class, 'destroy']);
 Route::get('event/get', [EventController::class, 'getEvent']);
-
-
-Route::post('/change-password/{userId}', [UserController::class, 'changePassword']);
-
-
-Route::get('/getSoldeUtilisateur', [LeaveBalanceController::class, 'getSoldeAll']);
-
-
-
-Route::get('/me', function (Request $request) {
-    return response()->json($request->user());
-});
+Route::get('event/{eventId}/info', [EventController::class, 'getEventInfo']);
+Route::post('event/create', [EventController::class, 'store']);
+Route::put('event/update/{event_id}', [EventController::class, 'update']);
+Route::delete('event/delete/{event_id}', [EventController::class, 'destroy']);

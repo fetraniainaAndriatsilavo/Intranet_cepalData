@@ -1,7 +1,8 @@
 import TableHeader from "../Conges/TableHeader";
 import UserRows from "./UserRows";
 
-export default function TableUser({ listHeader, datas, setAllUsers }) {
+export default function TableUser({ listHeader, datas, setAllUsers }) { 
+    
     return <div className="relative overflow-x-auto">
         <table className="w-full text-sm text-center rtl:text-right text-gray-500 ">
             <thead className="text-xs  uppercase bg-gray-50">

@@ -1,9 +1,8 @@
 import { useState } from "react";
-import { TextField, Alert } from "@mui/material";
-import Calendar from "../../../Icons/icones/events.png";
-import axios from "axios";
+import { TextField, Alert, Dialog } from "@mui/material";
+import api from "../../../components/axios";
 
-export default function CreateEvent() {
+export default function CreateEvent({ fecthEvent, open, onClose }) {
   const [formData, setFormData] = useState({
     title: "",
     date: "",
@@ -25,8 +24,8 @@ export default function CreateEvent() {
     setError(null);
 
     try {
-      const response = await axios.post(
-        "http://127.0.0.1:8000/api/event/create",
+      const response = await api.post(
+        "event/create",
         formData,
         {
           headers: {
@@ -39,6 +38,8 @@ export default function CreateEvent() {
         setSuccess(null)
       }, [5000])
       setFormData({ title: "", date: "", time: "", description: "" });
+      onClose()
+      fecthEvent()
     } catch (err) {
       console.error(err);
       setError(error.data.message);
@@ -49,66 +50,79 @@ export default function CreateEvent() {
   };
 
   return (
-    <div className="rounded bg-white w-full gap-4 p-5">
-      <div className="flex flex-row items-center p-1">
-        <img src={Calendar} className="w-8 h-8" alt="Events" />
-        <h1 className="font-bold text-xl ml-2">Nouvel Evènement</h1>
+    <Dialog open={open} fullWidth>
+      <div className="rounded bg-white w-full gap-4 p-5">
+        <div className="title-group flex flex-row mb-3 mt-2 items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-calendar-event">
+            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+            <path d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" />
+            <path d="M16 3l0 4" />
+            <path d="M8 3l0 4" />
+            <path d="M4 11l16 0" />
+            <path d="M8 15h2v2h-2z" />
+          </svg>
+          <h1 className="font-bold mx-5 text-xl"> Nouvel Evènement </h1>
+        </div>
+
+        <div className="mb-3 mt-3">
+          <TextField
+            id="title"
+            label="Nom de l'Evenement "
+            variant="outlined"
+            fullWidth
+            value={formData.title}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="flex flex-row mb-3 mt-3 gap-4">
+          <TextField
+            id="date"
+            label="Date"
+            type="datetime-local"
+            variant="outlined"
+            value={formData.date}
+            onChange={handleChange}
+            InputLabelProps={{ shrink: true }}
+          />
+        </div>
+
+        <div className="mb-3 mt-3">
+          <TextField
+            id="description"
+            label="Description"
+            variant="outlined"
+            fullWidth
+            value={formData.description}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="flex mt-3 w-full gap-3">
+          <button className="p-2 bg-gray-50 text-sky-700 font-bold text-center cursor-pointer rounded w-1/3 border border-sky-700"
+            onClick={onClose}>
+            FERMER
+          </button>
+          <button
+            className="p-2 bg-blue-500 text-white font-bold text-center cursor-pointer rounded hover:bg-blue-600 w-2/3"
+            onClick={handleSubmit}
+          >
+            CREER
+          </button>
+        </div>
+
+        {success && (
+          <Alert severity="success" className="mt-3">
+            {success}
+          </Alert>
+        )}
+
+        {error && (
+          <Alert severity="error" className="mt-3">
+            {error}
+          </Alert>
+        )}
       </div>
-
-      <div className="mb-3 mt-3">
-        <TextField
-          id="title"
-          label="Nom de l'Evenement "
-          variant="outlined"
-          fullWidth
-          value={formData.title}
-          onChange={handleChange}
-        />
-      </div>
-
-      <div className="flex flex-row mb-3 mt-3 gap-4">
-        <TextField
-          id="date"
-          label="Date"
-          type="datetime-local"
-          variant="outlined"
-          value={formData.date}
-          onChange={handleChange}
-          InputLabelProps={{ shrink: true }}
-        />
-      </div>
-
-      <div className="mb-3 mt-3">
-        <TextField
-          id="description"
-          label="Description"
-          variant="outlined"
-          fullWidth
-          value={formData.description}
-          onChange={handleChange}
-        />
-      </div>
-
-      <div className="flex items-center justify-center mt-3">
-        <button
-          className="p-3 bg-blue-500 text-white font-bold text-center cursor-pointer rounded hover:bg-blue-600 w-full"
-          onClick={handleSubmit}
-        >
-          Créer
-        </button>
-      </div>
-
-      {success && (
-        <Alert severity="success" className="mt-3">
-          {success}
-        </Alert>
-      )}
-
-      {error && (
-        <Alert severity="error" className="mt-3">
-          {error}
-        </Alert>
-      )}
-    </div>
+    </Dialog>
   );
 }

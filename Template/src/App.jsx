@@ -62,7 +62,12 @@ function App() {
             {/* Social News  */}
             <Route path="/social" element={<Dashboard />} />
             <Route path="/social/groups/:id" element={<Dashboard />} />
+            <Route path="/calendar" element={<Dashboard />} />
 
+
+            {/*  Discussions  */}
+            <Route path="/messagerie" element={<Dashboard />} /> 
+            
             {/* Mes Notifications */}
             <Route path="/mesnotifications" element={<Dashboard />} />
             {/* Fallback route for authenticated users */}

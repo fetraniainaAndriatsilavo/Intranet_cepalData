@@ -18,12 +18,13 @@ export default function ListTimeSheet() {
 
     const [lists, setLists] = useState([])
     const [error, setError] = useState('')
-    const [success, setSuccess] = useState('')
-    const [sessionsId, setSessions] = useState()
-
+    const [success, setSuccess] = useState('') 
+    const [sessions, setSessions] = useState()
+    const [listSession, setListSession] = useState([])
     useEffect(() => {
         api.get("/timesheet-periods/all")
-            .then((response) => {
+            .then((response) => { 
+                setListSession(response.data)
                 const activeSessions = response.data.filter(
                     (session) => session.status === "active"
                 );
@@ -87,10 +88,12 @@ export default function ListTimeSheet() {
             <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
                 Vos Feuilles de Temps
             </h1>
-            <button className="px-3 bg-sky-600 py-2 text-white cursor-pointer rounded-lg"
-                onClick={() => {
-                    setOpen(true)
-                }}> + Ajouter </button>
+            {
+                sessions && listSession && listSession.length > 0 && <button className="px-3 bg-sky-600 py-2 text-white cursor-pointer rounded-lg"
+                    onClick={() => {
+                        setOpen(true)
+                    }}> + Ajouter </button>
+            }
         </div>
         <div className="bg-white w-full rounded-lg">
             <h3 className="p-3"> Liste des feuilles de temps durant la session
@@ -118,7 +121,7 @@ export default function ListTimeSheet() {
                         .catch((error) => {
                             console.log(error.response.data)
                             setError(error.response.data.message)
-                        }) 
+                        })
                 }}> Terminer la sessions </button>
             </div>
         }
@@ -126,8 +129,9 @@ export default function ListTimeSheet() {
         {/* modal pour créer une feuille de tempss */}
         <CreateTimeSheet
             open={open}
-            onClose={() => setOpen(false)} 
-            fetchTimeSheetUser={fetchTimeSheetUser}
+            onClose={() => setOpen(false)}
+            fetchTimeSheetUser={fetchTimeSheetUser} 
+            sessions={sessions}
         />
 
         {/* modal pour modifier une feuille de tempss */}

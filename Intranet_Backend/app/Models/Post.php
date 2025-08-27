@@ -10,6 +10,8 @@ class Post extends Model
     use SoftDeletes;
     protected $connection = 'intranet_extedim';
     protected $table = "posts";
+    protected $primaryKey = 'id';
+    public $incrementing = true;
     protected $fillable = [
         'user_id',
         'image',
@@ -43,5 +45,15 @@ class Post extends Model
     public function scopePublished($query)
     {
         return $query->where('status', 'published');
+    }
+
+    public function reactions()
+    {
+        return $this->hasMany(Reaction::class);
+    }
+
+    public function comments()
+    {
+        return $this->hasMany(Comment::class);
     }
 }

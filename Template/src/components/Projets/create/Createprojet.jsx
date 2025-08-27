@@ -12,8 +12,10 @@ export default function Createprojet() {
         description: "",
         start_date: "",
         end_date: "",
-        project_lead_id: "",
-        client_code: ""
+        // project_lead_id: "",
+        client_code: "",
+        type: '',
+        status: ''
     });
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
@@ -48,6 +50,7 @@ export default function Createprojet() {
                     }
                 })
             setSuccess(response.data.message)
+            window.location.href = '/mesprojets'
         } catch (error) {
             setError(error.response.data.message)
         } finally {
@@ -82,7 +85,27 @@ export default function Createprojet() {
                     rows={3}
                 />
 
+                <TextField
+                    label="Type du projet"
+                    name="type"
+                    value={form.type}
+                    onChange={handleChange}
+                    fullWidth
+                    size="small"
+                />
+
                 <Autocomplete
+                    options={['To-Do', 'Review', 'In-Progress', 'Deploy', 'Done']}
+                    value={form.status || null}
+                    onChange={(e, value) =>
+                        setForm({ ...form, status: value || "" })
+                    }
+                    renderInput={(params) => (
+                        <TextField {...params} label="Status**" size="small" />
+                    )}
+                />
+
+                {/* <Autocomplete
                     options={managers}
                     getOptionLabel={(option) => option.first_name}
                     value={managers.find(m => m.id === form.project_lead_id) || null}
@@ -92,7 +115,7 @@ export default function Createprojet() {
                     renderInput={(params) => (
                         <TextField {...params} label="Chef de projet **" size="small" />
                     )}
-                />
+                /> */}
 
                 <TextField
                     label="Date de début **"
@@ -105,7 +128,7 @@ export default function Createprojet() {
                     InputLabelProps={{ shrink: true }}
                 />
 
-                <TextField
+                {/* <TextField
                     label="Date de fin **"
                     type="date"
                     name="end_date"
@@ -114,7 +137,7 @@ export default function Createprojet() {
                     fullWidth
                     size="small"
                     InputLabelProps={{ shrink: true }}
-                />
+                /> */}
 
                 <Autocomplete
                     options={clients}
@@ -124,7 +147,7 @@ export default function Createprojet() {
                         setForm({ ...form, client_code: value?.code || "" })
                     }
                     renderInput={(params) => (
-                        <TextField {...params} label="Client" size="small" />
+                        <TextField {...params} label="Clients **" size="small" />
                     )}
                 />
                 <div>
@@ -140,7 +163,7 @@ export default function Createprojet() {
                     setLoading(true)
                     Creer()
                 }}>
-                    { loading ? 'En cours d\' enregistement' : 'Enregistrer'}
+                    {loading ? 'En cours d\' enregistement' : 'Enregistrer'}
                 </button>
             </div>
         </div>

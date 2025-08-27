@@ -13,7 +13,7 @@ class ProjectController extends Controller
     {
         try {
             $validated = $request->validate([
-                'name' => 'required|string|max:255|unique:intranet_extedim.projects, name',
+                'name' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'start_date' => 'required|date',
                 'project_lead_id' => 'required|exists:intranet_extedim.users,id',

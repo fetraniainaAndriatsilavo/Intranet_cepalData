@@ -7,13 +7,14 @@ import { AppContext } from "../context/AppContext";
 import { Avatar } from "@mui/material";
 import api from "./axios";
 
-function DropdownProfile({ align }) {
+function DropdownProfile({ align, setLoading }) {
   const { user, token } = useContext(AppContext);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [error, setError] = useState("");
 
   const trigger = useRef(null);
   const dropdown = useRef(null);
+
 
   // close on click outside
   useEffect(() => {
@@ -60,11 +61,11 @@ function DropdownProfile({ align }) {
   }
 
   const Deconnecter = async () => {
+    setLoading(true)
     if (!token) {
       setError("Aucun token trouvé");
       return;
     }
-
     try {
       await api.post(
         "/logout",
@@ -76,7 +77,7 @@ function DropdownProfile({ align }) {
           },
         }
       );
-
+      setLoading(false)
       localStorage.removeItem("token");
       window.location.href = "/";
     } catch (error) {
@@ -117,9 +118,8 @@ function DropdownProfile({ align }) {
       </button>
 
       <Transition
-        className={`origin-top-right z-10 absolute top-full min-w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 py-1.5 rounded-lg shadow-lg overflow-hidden mt-1 ${
-          align === "right" ? "right-0" : "left-0"
-        }`}
+        className={`origin-top-right z-10 absolute top-full min-w-44 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700/60 py-1.5 rounded-lg shadow-lg overflow-hidden mt-1 ${align === "right" ? "right-0" : "left-0"
+          }`}
         show={dropdownOpen}
         enter="transition ease-out duration-200 transform"
         enterStart="opacity-0 -translate-y-2"

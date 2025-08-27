@@ -1,4 +1,4 @@
-import { Avatar, Button } from "@mui/material";
+import { Alert, AlertTitle, Avatar, Button } from "@mui/material";
 import { CheckCircle } from '@mui/icons-material';
 import { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../context/AppContext";
@@ -15,6 +15,37 @@ export default function Informations() {
     const [positions, setPositions] = useState([])
     const [classification, setClassification] = useState([])
     const [managers, setManagers] = useState([])
+
+
+    // report 
+    const [report, setReport] = useState('')
+    const [success, setSuccess] = useState('')
+    const [error, setError] = useState('')
+    const [loading, setLoading] = useState(false)
+
+    const SubmitReport = async () => {
+        setLoading(true)
+        api.post('/report-error', {
+            errors: [{
+                field: report
+            }], user_id: user.id
+        }, {
+            headers: {
+                "Content-Type": 'application/json'
+            }
+        })
+            .then((response) => {
+                setSuccess('Votre signalement a bien été transmis à l’équipe administrative.')
+                window.location.reload()
+            })
+            .catch((error) => {
+                setError(error.response.data.message)
+            })
+            .finally(() => {
+                setLoading(false)
+            })
+    }
+
 
     useEffect(() => {
         api.get("/data")
@@ -49,6 +80,7 @@ export default function Informations() {
                 console.log(error)
             })
     }, [user])
+
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden max-w-6xl mx-auto">
             {/* Cover Image */}
@@ -73,7 +105,7 @@ export default function Informations() {
                 <p className="text-sm text-gray-500">
                     {departmentId}
                 </p>
-                <p className="text-sm text-gray-400">New York, USA</p>
+                <p className="text-md text-gray-400"> {userInformation.address ? userInformation.address + ", Madagascar" : 'Addresse'}</p>
             </div>
 
             {/* Infos */}
@@ -92,7 +124,7 @@ export default function Informations() {
                                 <path d="M6 12l3 0" />
                                 <path d="M6 15l2 0" />
                             </svg>
-                            <span> XX / XX /XXXX </span>
+                            <span> {userInformation.birth_date ? userInformation.birth_date : ' XX / XX /XXXX'} </span>
                         </div>
 
                         {/*birth place*/}
@@ -101,7 +133,7 @@ export default function Informations() {
                                 <path d="M9 11a3 3 0 1 0 6 0a3 3 0 0 0 -6 0" />
                                 <path d="M17.657 16.657l-4.243 4.243a2 2 0 0 1 -2.827 0l-4.244 -4.243a8 8 0 1 1 11.314 0z" />
                             </svg>
-                            <span> XXXXX--XXXX </span>
+                            <span> {userInformation.birth_place ? userInformation.birth_place : 'XXXXX--XXXX'}  </span>
                         </div>
 
                         {/*phone number */}
@@ -110,7 +142,7 @@ export default function Informations() {
                                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                 <path d="M5 4h4l2 5l-2.5 1.5a11 11 0 0 0 5 5l1.5 -2.5l5 2v4a2 2 0 0 1 -2 2a16 16 0 0 1 -15 -15a2 2 0 0 1 2 -2" />
                             </svg>
-                            <span> (+261) 34 XX XXX XX </span>
+                            <span>  {userInformation.phone_number ? userInformation.phone_number : '(+261) 34 XX XXX XX'}</span>
                         </div>
 
                         {/* email  */}
@@ -119,7 +151,16 @@ export default function Informations() {
                                 <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
                                 <path d="M16 12v1.5a2.5 2.5 0 0 0 5 0v-1.5a9 9 0 1 0 -5.5 8.28" />
                             </svg>
-                            <span> {userInformation.email} </span>
+                            <span> {userInformation.email ? userInformation.email : '............@xxxx.com'} </span>
+                        </div> 
+                        
+                        {/* Situation Marital   */}
+                        <div className="flex flex-row gap-2 items-center mb-3">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon icon-tabler icons-tabler-filled icon-tabler-heart">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M6.979 3.074a6 6 0 0 1 4.988 1.425l.037 .033l.034 -.03a6 6 0 0 1 4.733 -1.44l.246 .036a6 6 0 0 1 3.364 10.008l-.18 .185l-.048 .041l-7.45 7.379a1 1 0 0 1 -1.313 .082l-.094 -.082l-7.493 -7.422a6 6 0 0 1 3.176 -10.215z" />
+                            </svg>
+                            <span> {userInformation.marital_status ? userInformation.marital_status : 'xxxxxx'} </span>
                         </div>
                     </div>
 
@@ -155,7 +196,7 @@ export default function Informations() {
                                 <path d="M9 7h4" />
                                 <path d="M9 11h4" /><path d="M18.42 12.61a2.1 2.1 0 0 1 2.97 2.97l-6.39 6.42h-3v-3z" />
                             </svg>
-                            <span> XXX  </span>
+                            <span> {userInformation.type ? userInformation.type : 'XXX (type de Contrats) '}  </span>
                         </div>
 
                         {/* Catégorie */}
@@ -185,7 +226,7 @@ export default function Informations() {
                                 <path d="M15 8l2 0" /><path d="M15 12l2 0" />
                                 <path d="M7 16l10 0" />
                             </svg>
-                            <span> XXXX  </span>
+                            <span> {userInformation.employee_number ? userInformation.employee_number : 'XXXX '}  </span>
                         </div>
 
                         {/* Cnaps */}
@@ -195,41 +236,97 @@ export default function Informations() {
                                 <path d="M15 17h5" />
                                 <path d="M17.5 10m-2.5 0a2.5 3 0 1 0 5 0a2.5 3 0 1 0 -5 0" />
                             </svg>
-                            <span> XXXXXXXXXXX </span>
+                            <span> {userInformation.cnaps_number ? userInformation.cnaps_number : 'XXXXXXXXXXX '} </span>
                         </div>
                         {/* Date d'embauche */}
                         <div className="flex flex-row gap-2 items-center mb-3">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" class="icon icon-tabler icons-tabler-filled icon-tabler-calendar-event"><path stroke="none" d="M0 0h24v24H0z" fill="none" /><path d="M16 2a1 1 0 0 1 .993 .883l.007 .117v1h1a3 3 0 0 1 2.995 2.824l.005 .176v12a3 3 0 0 1 -2.824 2.995l-.176 .005h-12a3 3 0 0 1 -2.995 -2.824l-.005 -.176v-12a3 3 0 0 1 2.824 -2.995l.176 -.005h1v-1a1 1 0 0 1 1.993 -.117l.007 .117v1h6v-1a1 1 0 0 1 1 -1m3 7h-14v9.625c0 .705 .386 1.286 .883 1.366l.117 .009h12c.513 0 .936 -.53 .993 -1.215l.007 -.16z" />
                                 <path d="M8 14h2v2h-2z" />
                             </svg>
-                            <span> XX / XX / XXXX </span>
+                            <span> {userInformation.hire_date ? userInformation.hire_date : 'XX / XX / XXXX (Date d\'embauche)'}  </span>
                         </div>
                     </div>
                 </div>
             </div>
 
+
+            <div className="px-6 pb-6 flex flex-col gap-3">
+                <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    Signaler un problème
+                </h3>
+
+                <form className="flex flex-col gap-3">
+                    {/* <label htmlFor="report" className="text-sm font-medium text-gray-700">
+                        Décrivez vos problèmes
+                    </label> */}
+                    <textarea
+                        id="report"
+                        name="report"
+                        rows={3}
+                        className="rounded-lg bg-gray-50 focus:bg-gray-100 border border-gray-300 p-2"
+                        placeholder="Décrivez vos problèmes ici ..."
+                        value={report}
+                        onChange={(e) => {
+                            setReport(e.target.value)
+                        }}
+                        required
+                    ></textarea>
+
+                    <button
+                        type="submit"
+                        className="px-4 py-2 bg-red-600 hover:bg-red-700 
+                 text-white font-medium rounded-lg cursor-pointer w-fit"
+                        onClick={(e) => {
+                            e.preventDefault()
+                            SubmitReport()
+                        }}
+                        aria-live="polite"
+                    >
+                        {
+                            loading == true ? 'Envoi du signalement en cours...' : 'Signaler'
+                        }
+                    </button>
+                    <div>
+                        {
+                            success && <Alert severity="success">
+                                <AlertTitle> Succès </AlertTitle>
+                                {success}
+                            </Alert>
+                        }
+
+                        {
+                            error && <Alert severity="error">
+                                <AlertTitle> Erreur </AlertTitle>
+                                {error}
+                            </Alert>
+                        }
+                    </div>
+                </form>
+            </div>
+
+
             {/*  Mes Documents Administratifs */}
-            <div className="px-6 pb-6">
+            {/* <div className="px-6 pb-6">
                 <h2 className="text-lg font-semibold text-gray-800 mb-4">  Mes Documents Administratifs </h2>
-                <div className="grid md:grid-row-1 gap-4">
-                    {/* Resume Télécharger Section */}
-                    <div className="px-6 pb-6">
-                        <div className="flex flex-col md:flex-row gap-4">
-                            {/* Resume Card */}
-                            <div className="flex items-center justify-between border rounded-lg p-4 bg-white shadow-sm w-full md:w-1/2">
+                <div className="grid md:grid-row-1 gap-4"> */}
+            {/* Resume Télécharger Section */}
+            {/* <div className="px-6 pb-6">
+                        <div className="flex flex-col md:flex-row gap-4"> */}
+            {/* Resume Card */}
+            {/* <div className="flex items-center justify-between border rounded-lg p-4 bg-white shadow-sm w-full md:w-1/2">
                                 <div className="flex items-center gap-3">
                                     <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="Resume" className="h-10 w-10" />
                                     <div>
                                         <p className="font-medium text-gray-800">Resume.pdf</p>
                                         <p className="text-sm text-gray-500">Updated 2 months ago</p>
                                     </div>
-                                </div>
-                                <a
+                                </div> */}
+            {/* <a
                                     href="/documents/resume.pdf" // Replace with your actual file path
                                     download
                                     className="text-blue-600 hover:underline text-sm font-medium"
-                                >
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-circle-arrow-down">
+                                > */}
+            {/* <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-circle-arrow-down">
                                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                                         <path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" />
                                         <path d="M8 12l4 4" />
@@ -237,10 +334,10 @@ export default function Informations() {
                                         <path d="M16 12l-4 4" />
                                     </svg>
                                 </a>
-                            </div>
+                            </div> */}
 
-                            {/* National ID Card */}
-                            <div className="flex items-center justify-between border rounded-lg p-4 bg-white shadow-sm w-full md:w-1/2">
+            {/* National ID Card */}
+            {/* <div className="flex items-center justify-between border rounded-lg p-4 bg-white shadow-sm w-full md:w-1/2">
                                 <div className="flex items-center gap-3">
                                     <img src="https://cdn-icons-png.flaticon.com/512/942/942748.png" alt="ID Card" className="h-10 w-10" />
                                     <div>
@@ -261,28 +358,28 @@ export default function Informations() {
                                         <path d="M16 12l-4 4" />
                                     </svg>
                                 </a>
-                            </div>
+                            </div> */}
 
-                        </div>
+            {/* </div>
                     </div>
                 </div>
-            </div>
+            </div> */}
 
             {/*  Mes Rémunérations */}
-            <div className="px-6 pb-6">
+            {/* <div className="px-6 pb-6">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4"> Mes Rémunérations </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"> */}
 
-                    {/* Fiche Janvier */}
-                    <div className="flex justify-between items-center p-4 border rounded-lg bg-gray-50 shadow-sm">
+            {/* Fiche Janvier */}
+            {/* <div className="flex justify-between items-center p-4 border rounded-lg bg-gray-50 shadow-sm">
                         <div className="flex items-center gap-3">
                             <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="PDF" className="h-8 w-8" />
                             <div>
                                 <p className="text-sm font-medium text-gray-800">Fiche de paie</p>
                                 <p className="text-xs text-gray-500"> Avril 2025 </p>
                             </div>
-                        </div>
-                        <a
+                        </div> */}
+            {/* <a
                             href="/documents/paye_janvier.pdf"
                             download
                             className="text-blue-600 text-sm hover:underline"
@@ -295,10 +392,10 @@ export default function Informations() {
                                 <path d="M16 12l-4 4" />
                             </svg>
                         </a>
-                    </div>
+                    </div> */}
 
-                    {/* Fiche Février */}
-                    <div className="flex justify-between items-center p-4 border rounded-lg bg-gray-50 shadow-sm">
+            {/* Fiche Février */}
+            {/* <div className="flex justify-between items-center p-4 border rounded-lg bg-gray-50 shadow-sm">
                         <div className="flex items-center gap-3">
                             <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="PDF" className="h-8 w-8" />
                             <div>
@@ -319,10 +416,10 @@ export default function Informations() {
                                 <path d="M16 12l-4 4" />
                             </svg>
                         </a>
-                    </div>
+                    </div> */}
 
-                    {/* Fiche Mars (exemple avec badge "Nouveau") */}
-                    <div className="flex justify-between items-center p-4 border rounded-lg bg-gray-50 shadow-sm">
+            {/* Fiche Mars (exemple avec badge "Nouveau") */}
+            {/* <div className="flex justify-between items-center p-4 border rounded-lg bg-gray-50 shadow-sm">
                         <div className="flex items-center gap-3">
                             <img src="https://cdn-icons-png.flaticon.com/512/337/337946.png" alt="PDF" className="h-8 w-8" />
                             <div>
@@ -345,11 +442,10 @@ export default function Informations() {
                                 <path d="M16 12l-4 4" />
                             </svg>
                         </a>
-                    </div>
+                    </div> */}
 
-                </div>
-            </div>
-
+            {/* </div>
+            </div> */}
         </div >
     );
 }

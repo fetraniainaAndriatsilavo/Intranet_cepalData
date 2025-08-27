@@ -26,7 +26,7 @@ class LeaveRequestCreated extends Notification
             ->greeting('Bonjour ' . $notifiable->first_name)
             ->line('Une nouvelle demande de congé a été soumise par ' . $this->leaveRequest->user->first_name . '.')
             ->line('Période : ' . $this->leaveRequest->start_date . ' au ' . $this->leaveRequest->end_date)
-            ->action('Voir la demande', url('/leave-requests/' . $this->leaveRequest->id))
+            ->line('Veuillez voir la demande de votre équipe')
             ->line('Merci de votre attention.');
     }
     public function toDatabase($notifiable)

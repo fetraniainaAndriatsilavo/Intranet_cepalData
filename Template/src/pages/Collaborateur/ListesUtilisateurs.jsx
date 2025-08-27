@@ -53,7 +53,7 @@ export default function ListesUtilisateurs() {
             email.includes(searchUsers.toLowerCase()) ||
             role.includes(searchUsers.toLowerCase())
         );
-    });
+    }); 
 
     // pagination pour filtered users
     const lastFilteredPageIndex = Math.ceil(filteredUsers.length / userPerPage);

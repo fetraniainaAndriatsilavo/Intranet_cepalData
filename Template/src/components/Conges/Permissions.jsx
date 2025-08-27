@@ -16,6 +16,7 @@ export default function Permissions({ radioValue }) {
   const [user_id, setUser_id] = useState(user.id);
   const [commentaire, setCommentaire] = useState('')
 
+  const [loading, setLoading] = useState(false)
 
   const [success, setSuccess] = useState('');
   const [error, setError] = useState('');
@@ -101,7 +102,9 @@ export default function Permissions({ radioValue }) {
   }, [radioValue, congeType, permissionType, autres]);
 
 
+  
   const handleSubmit = async (e) => {
+    setLoading(true)
     e.preventDefault();
     if (new Date(start_date) > new Date(end_date)) {
       alert("La date que vous aviez saisi est invalide !");
@@ -133,7 +136,10 @@ export default function Permissions({ radioValue }) {
         setCommentaire('');
         setSuccess('Demande envoyée avec succès')
       } catch (error) {
-        console.error("Error submitting form:", error);
+        console.error("Error submitting form:", error); 
+        setError(error.response.data.message)
+      } finally {
+        setLoading(false)
       }
     }
   };
@@ -260,10 +266,10 @@ export default function Permissions({ radioValue }) {
 
         </div>
 
-        {/* <div className="mt-3">
+        <div className="mt-3">
           <span> Nombre de Jours : </span>{" "}
           <span className="font-semibold"> {number_day} </span>
-        </div> */}
+        </div>
 
         <div className="mt-4 mb-4 flex flex-col ">
           <label htmlFor="reason" className="mb-2">
@@ -282,7 +288,7 @@ export default function Permissions({ radioValue }) {
 
         <div className="mt-2 mb-2">
           {
-            success && <Alert severity="success">T {success}</Alert>
+            success && <Alert severity="success">{success}</Alert>
           }
           {
             error && <Alert severity="error">{error}</Alert>
@@ -294,7 +300,7 @@ export default function Permissions({ radioValue }) {
             type="submit"
             className="p-3 text-white text-lg rounded-lg bg-sky-500 hover:bg-sky-600 cursor-pointer"
           >
-            Envoyer
+            {loading == true ? 'Envoi en cours...' : 'Envoyer'}
           </button>
         </div>
       </form>

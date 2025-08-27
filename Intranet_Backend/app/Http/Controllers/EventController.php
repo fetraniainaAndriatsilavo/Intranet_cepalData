@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -10,6 +11,24 @@ use Exception;
 
 class EventController extends Controller
 {
+    public function getEvent()
+    {
+        Event::where('date', '<', now())->delete();
+        $events = Event::where('date', '>', now())->orderBy('date', 'asc')->take(3)->get();
+
+        return response()->json([
+            'evenements' => $events
+        ]);
+    }
+
+    public function getEventInfo($eventId)
+    {
+        $event = Event::where('id', $eventId)->first();
+        return response()->json([
+            'evenements' => $event
+        ]);
+    }
+
     public function store(Request $request)
     {
         try {
@@ -48,14 +67,44 @@ class EventController extends Controller
         }
     }
 
-    public function getEvent()
+    public function update(Request $request, $id)
     {
-        Event::where('date', '<', now())->delete();
-        $events = Event::where('date', '>', now())->orderBy('date', 'asc')->take(3)->get();
+        try {
+            $validated = $request->validate([
+                'title' => 'sometimes|required|string|max:255',
+                'description' => 'sometimes|required|string',
+                'date' => 'sometimes|required|date',
+            ]);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'Erreur de validation',
+                'errors' => $e->errors()
+            ], 422);
+        }
 
-        return response()->json([
-            'evenements' => $events
-        ]);
+        try {
+            $event = Event::findOrFail($id);
+
+            $event->update($validated);
+
+            return response()->json([
+                'message' => 'Événement mis à jour avec succès',
+                'evenement' => $event
+            ], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Événement non trouvé'
+            ], 404);
+        } catch (Exception $e) {
+            Log::error('Erreur lors de la mise à jour de l\'événement : ' . $e->getMessage(), [
+                'stack' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'message' => 'Erreur serveur lors de la mise à jour de l\'événement',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     public function destroy($id)

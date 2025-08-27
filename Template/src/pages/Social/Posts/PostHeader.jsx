@@ -21,7 +21,7 @@ function PostHeader({ username, id, userID, created_at, fetchPost }) {
         </div>
         <div>
           <p>
-            <span className="font-semibold text-sky-600 ">@{username}</span>
+            <span className="font-semibold text-sky-600 hover:cursor-pointer hover:underline">@{username}</span>
           </p>
           <span className="text-gray-300 text-sm">
             {dayjs(created_at).fromNow()}

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API;
 
 use App\Models\Group;
+use App\Models\MessageGroup;
+use App\Models\MessageGroupUser;
 use App\Models\User;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -13,172 +15,259 @@ use Illuminate\Validation\ValidationException;
 
 class GroupController extends Controller
 {
-    // public function store(Request $request)
-    // {
-    //     try {
-    //         $request->validate([
-    //             'name' => 'required|string',
-    //             'user_ids' => 'required|array|min:1',
-    //         ], [
-    //             'name.required' => 'Le nom du groupe est obligatoire.',
-    //             'name.string' => 'Le nom du groupe doit être une chaîne de caractères.',
-    //             'user_ids.required' => 'Veuillez sélectionner au moins un utilisateur pour ce groupe.',
-    //             'user_ids.array' => 'La liste des utilisateurs doit être un tableau.',
-    //             'user_ids.min' => 'Le groupe doit contenir au moins un utilisateur.',
-    //         ]);
-
-    //         $group = Group::create(['name' => $request->name]);
-    //         $group->users()->attach($request->user_ids);
-
-    //         return response()->json([
-    //             'message' => 'Groupe créé avec succès.',
-    //             'group' => $group->load('users')
-    //         ], 201);
-    //     } catch (ValidationException $e) {
-    //         return response()->json([
-    //             'erreur' => 'Échec de la validation des données.',
-    //             'détails' => $e->errors(),
-    //         ], 422);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'erreur' => 'Une erreur est survenue lors de la création du groupe.',
-    //             'message' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-    public function store(Request $request)
+    public function getGroupInfo($groupId)
     {
         try {
-            // Validation
-            $request->validate([
-                'name' => 'required|string',
-                'user_ids' => 'required|array|min:1|exists:intranet_extedim.users,id',
-            ], [
-                'name.required' => 'Le nom du groupe est obligatoire.',
-                'name.string' => 'Le nom du groupe doit être une chaîne de caractères.',
-                'user_ids.required' => 'Veuillez sélectionner au moins un utilisateur pour ce groupe.',
-                'user_ids.array' => 'La liste des utilisateurs doit être un tableau.',
-                'user_ids.min' => 'Le groupe doit contenir au moins un utilisateur.',
-            ]);
-
-            // Créer le groupe
-            $group = Group::create(['name' => $request->name]);
-
-            // Ajouter l'utilisateur qui crée comme admin par défaut
-            $creatorId = $request->creator_id; // ici on prend l'ID de l'utilisateur qui crée
-
-            // Vérifier le nombre d'admins existants dans le groupe
-            $adminCount = $group->users()->wherePivot('is_admin', true)->count();
-            if ($adminCount >= 2) {
-                return response()->json([
-                    'message' => 'Le nombre maximum d\'admins est atteint pour ce groupe.',
-                ], 400);
-            }
-
-            // Ajouter l'utilisateur créateur comme admin
-            $group->users()->attach($creatorId, ['is_admin' => true]);
-
-            // Ajouter les autres utilisateurs
-            foreach ($request->user_ids as $userId) {
-                if ($userId != $creatorId) {
-                    // Vérifier à nouveau avant d'ajouter un autre admin
-                    $adminCount = $group->users()->wherePivot('is_admin', true)->count();
-                    if ($adminCount >= 2) {
-                        break; // Si le nombre d'admins est déjà 2, on arrête d'ajouter des admins
-                    }
-                    $group->users()->attach($userId, ['is_admin' => false]);
-                }
-            }
+            $group = MessageGroup::with(['users' => function ($q) {
+                $q->select('users.id', 'users.first_name', 'users.last_name', 'users.email');
+            }])->findOrFail($groupId);
 
             return response()->json([
-                'message' => 'Groupe créé avec succès.',
-                'group' => $group->load('users'),
-            ], 201);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'erreur' => 'Échec de la validation des données.',
-                'détails' => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'erreur' => 'Une erreur est survenue lors de la création du groupe.',
-                'message' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    public function addUserToGroup(Request $request, $groupId)
-    {
-        try {
-            // Validation des données
-            $request->validate([
-                'user_id' => 'required|exists:intranet_extedim.users,id',
-                'is_admin' => 'nullable|boolean', 
-            ], [
-                'user_id.required' => 'L\'ID de l\'utilisateur est obligatoire.',
-                'user_id.exists' => 'L\'utilisateur n\'existe pas.',
-                'is_admin.boolean' => 'Le statut admin doit être vrai ou faux.',
-            ]);
-
-            // Récupérer le groupe
-            $group = Group::findOrFail($groupId);
-
-            // Vérifier combien d'admins il y a déjà
-            $adminCount = $group->users()->wherePivot('is_admin', true)->count();
-
-            // Si l'utilisateur est admin, vérifier que la limite de 2 admins n'est pas dépassée
-            if ($request->is_admin && $adminCount >= 2) {
-                return response()->json([
-                    'message' => 'Le nombre maximum d\'admins est atteint pour ce groupe.',
-                ], 400);
-            }
-
-            // Ajouter l'utilisateur au groupe
-            $group->users()->attach($request->user_id, ['is_admin' => $request->is_admin ?? false]);
-
-            return response()->json([
-                'message' => 'Utilisateur ajouté au groupe avec succès.',
-                'group' => $group->load('users'),
+                'success' => true,
+                'group' => [
+                    'id' => $group->id,
+                    'name' => $group->name,
+                    'updated_at' => $group->updated_at,
+                    'updated_by' => $group->updated_by,
+                    'members' => $group->users->map(function ($user) {
+                        return [
+                            'id' => $user->id,
+                            'first_name' => $user->first_name,
+                            'last_name' => $user->last_name,
+                            'email' => $user->email,
+                            'is_admin' => (bool) $user->pivot->is_admin, // pivot dispo direct ici
+                        ];
+                    })
+                ]
             ], 200);
         } catch (\Exception $e) {
             return response()->json([
-                'erreur' => 'Une erreur est survenue.',
-                'message' => $e->getMessage(),
+                'success' => false,
+                'message' => 'Erreur lors de la récupération du groupe',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
-
-    public function index()
+    public function getMembers($groupId)
     {
         try {
-            $groups = Group::with('users')->get();
-            return response()->json($groups);
+            $group = MessageGroup::with(['users' => function ($query) {
+                $query->select('users.id', 'users.first_name', 'users.last_name', 'users.email');
+            }])->findOrFail($groupId);
+
+            return response()->json([
+                'success' => true,
+                'group' => [
+                    'id' => $group->id,
+                    'name' => $group->name,
+                    'members' => $group->users->map(function ($user) {
+                        return [
+                            'id' => $user->id,
+                            'first_name' => $user->first_name,
+                            'last_name' => $user->last_name,
+                            'email' => $user->email,
+                            'is_admin' => $user->pivot->is_admin
+                        ];
+                    })
+                ]
+            ]);
         } catch (\Exception $e) {
             return response()->json([
-                'erreur' => 'Impossible de récupérer les groupes.',
-                'message' => $e->getMessage()
+                'success' => false,
+                'message' => 'Erreur serveur',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
 
-    public function getUserGroups($id)
+    public function getUserGroups($userId)
     {
-        $user = User::with('groups')->findOrFail($id);
+        try {
+            $user = User::findOrFail($userId);
+
+            $groups = $user->messageGroups()->with(['users' => function ($q) {
+                $q->select('users.id', 'users.first_name', 'users.last_name', 'users.email');
+            }])->get();
+
+            return response()->json([
+                'success' => true,
+                'user' => [
+                    'id' => $user->id,
+                    'name' => $user->first_name . ' ' . $user->last_name,
+                    'groups' => $groups->map(function ($group) {
+                        return [
+                            'id' => $group->id,
+                            'name' => $group->name,
+                            'members' => $group->users->map(function ($user) {
+                                return [
+                                    'id' => $user->id,
+                                    'first_name' => $user->first_name,
+                                    'last_name' => $user->last_name,
+                                    'email' => $user->email,
+                                    'is_admin' => $user->pivot->is_admin
+                                ];
+                            })
+                        ];
+                    })
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération des groupes',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'users' => 'required|array|min:1',
+            'users.*' => 'integer|exists:intranet_extedim.users,id',
+            'admin_id' => 'required|integer|exists:intranet_extedim.users,id',
+        ]);
+
+        FacadesDB::beginTransaction();
+
+        try {
+            $group = MessageGroup::create([
+                'name' => $request->name,
+                'updated_by' => $request->admin_id,
+            ]);
+
+            $users = $request->users;
+            if (!in_array($request->admin_id, $users)) {
+                $users[] = $request->admin_id;
+            }
+
+            foreach ($users as $userId) {
+                MessageGroupUser::create([
+                    'group_id' => $group->id,
+                    'user_id' => $userId,
+                    'is_admin' => $userId == $request->admin_id ? 1 : 0,
+                ]);
+            }
+
+            FacadesDB::commit();
+
+            return response()->json([
+                'success' => true,
+                'group' => $group->load('users')
+            ], 201);
+        } catch (\Exception $e) {
+            FacadesDB::rollBack();
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la création du groupe',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function addUsers(Request $request, $groupId)
+    {
+        $request->validate([
+            'users' => 'required|array|min:1',
+            'users.*' => 'integer|exists:intranet_extedim.users,id',
+        ]);
+
+        $group = MessageGroup::findOrFail($groupId);
+
+        $userData = [];
+        foreach ($request->users as $userId) {
+            $userData[$userId] = ['is_admin' => 0];
+        }
+
+        $group->users()->syncWithoutDetaching($userData);
 
         return response()->json([
-            'groups' => $user->groups
+            'success' => true,
+            'message' => 'Utilisateurs ajoutés au groupe',
+            'group' => $group->load('users')
         ]);
-    } 
-
-    public function deleteGroup($id)
+    }
+    public function removeUser(Request $request, $groupId)
     {
-        $deleted = FacadesDB::table('groups')->where('group_id', $id)->delete();
+        $request->validate([
+            'user_id' => 'required|integer|exists:intranet_extedim.users,id',
+        ]);
 
-        if ($deleted) {
-            return response()->json(['message' => 'Group deleted successfully.']);
-        } else {
-            return response()->json(['message' => 'Group not found or already deleted.'], 404);
+        $group = MessageGroup::findOrFail($groupId);
+
+        $group->users()->detach($request->user_id);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Utilisateur retiré du groupe',
+            'group' => $group->load('users')
+        ]);
+    }
+
+    public function leaveGroup(Request $request, $groupId)
+    {
+        $userId = $request->user_id;
+
+        $group = MessageGroup::findOrFail($groupId);
+
+        if (!$group->users()->where('user_id', $userId)->exists()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Vous n\'êtes pas membre de ce groupe'
+            ], 403);
         }
+
+        $group->users()->detach($userId);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Vous avez quitté le groupe',
+            'group' => $group->load('users')
+        ]);
+    }
+
+    public function update(Request $request, $groupId)
+    {
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'updated_by' => 'required|integer|exists:intranet_extedim.users,id',
+        ]);
+
+        try {
+            $group = MessageGroup::findOrFail($groupId);
+
+            $group->update([
+                'name' => $request->name,
+                'updated_by' => $request->updated_by,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Nom du groupe mis à jour avec succès',
+                'group' => $group
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la mise à jour du groupe',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function destroy($groupId)
+    {
+        $group = MessageGroup::findOrFail($groupId);
+
+        $group->users()->detach();
+
+        $group->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Groupe supprimé avec succès'
+        ]);
     }
 }

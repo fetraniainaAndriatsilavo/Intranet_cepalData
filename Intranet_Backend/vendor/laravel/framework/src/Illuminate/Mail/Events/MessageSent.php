@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Events;
+namespace Illuminate\Mail\Events;
 
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;

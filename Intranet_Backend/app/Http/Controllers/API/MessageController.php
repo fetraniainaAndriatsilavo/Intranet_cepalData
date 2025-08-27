@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Events\MessageDeleted;
 use App\Events\MessageRead;
 use App\Events\ChatMessageSent;
+use App\Events\UserMessageSent;
 use App\Events\MessageUpdated;
 use App\Http\Controllers\Controller;
 use App\Models\Message;
@@ -34,61 +35,61 @@ class MessageController extends Controller
 
     //     return response()->json($messages);
     // } 
-    public function getConversation($user1, $user2)
-    {
-        try {
-            $userOne = min($user1, $user2);
-            $userTwo = max($user1, $user2);
+    // public function getConversation($user1, $user2)
+    // {
+    //     try {
+    //         $userOne = min($user1, $user2);
+    //         $userTwo = max($user1, $user2);
 
-            $conversation = Conversation::where('user_one_id', $userOne)
-                ->where('user_two_id', $userTwo)
-                ->first();
+    //         $conversation = Conversation::where('user_one_id', $userOne)
+    //             ->where('user_two_id', $userTwo)
+    //             ->first();
 
-            if (!$conversation) {
-                return response()->json([
-                    'status' => 'success',
-                    'messages' => [],
-                    'conversation_id' => null
-                ]);
-            }
-            $messages = Message::withTrashed()->with('files')
-                ->where('conversation_id', $conversation->id)
-                ->orderBy('created_at', 'asc')
-                ->get();
+    //         if (!$conversation) {
+    //             return response()->json([
+    //                 'status' => 'success',
+    //                 'messages' => [],
+    //                 'conversation_id' => null
+    //             ]);
+    //         }
+    //         $messages = Message::withTrashed()->with('files')
+    //             ->where('conversation_id', $conversation->id)
+    //             ->orderBy('created_at', 'asc')
+    //             ->get();
 
-            $result = $messages->map(function ($msg) {
-                return [
-                    'id' => $msg->id,
-                    'sender_id' => $msg->sender_id,
-                    'receiver_id' => $msg->receiver_id,
-                    'content' => $msg->trashed() ? 'Message indisponible' : $msg->content,
-                    'read_at' => $msg->read_at,
-                    'created_at' => $msg->created_at,
-                    'deleted' => $msg->trashed(),
-                    'files' => $msg->trashed() ? [] : $msg->files->map(function ($file) {
-                        return [
-                            'path' => $file->path,
-                            'original_name' => $file->original_name,
-                            'mime_type' => $file->mime_type,
-                        ];
-                    }),
-                ];
-            });
+    //         $result = $messages->map(function ($msg) {
+    //             return [
+    //                 'id' => $msg->id,
+    //                 'sender_id' => $msg->sender_id,
+    //                 'receiver_id' => $msg->receiver_id,
+    //                 'content' => $msg->trashed() ? 'Message indisponible' : $msg->content,
+    //                 'read_at' => $msg->read_at,
+    //                 'created_at' => $msg->created_at,
+    //                 'deleted' => $msg->trashed(),
+    //                 'files' => $msg->trashed() ? [] : $msg->files->map(function ($file) {
+    //                     return [
+    //                         'path' => $file->path,
+    //                         'original_name' => $file->original_name,
+    //                         'mime_type' => $file->mime_type,
+    //                     ];
+    //                 }),
+    //             ];
+    //         });
 
 
-            return response()->json([
-                'status' => 'success',
-                'messages' => $result,
-                'conversation_id' => $conversation->id
-            ]);
-        } catch (Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Erreur lors de la récupération des messages.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'messages' => $result,
+    //             'conversation_id' => $conversation->id
+    //         ]);
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Erreur lors de la récupération des messages.',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
 
     public function index(Request $request)
@@ -109,82 +110,217 @@ class MessageController extends Controller
 
         return response()->json($messages);
     }
-
     public function store(Request $request)
     {
         try {
-            $validator = Validator::make($request->all(), [
-                'sender_id' => 'required|integer|min:1|different:receiver_id',
-                'receiver_id' => 'required|integer|min:1',
-                'content' => 'nullable|string|max:5000',
-                // 'files.*' => 'nullable|file|max:10240|mimes:jpg,jpeg,png,gif,pdf,doc,docx,mp4,mp3',
+            $data = $request->validate([
+                'sender_id' => 'required|exists:intranet_extedim.users,id',
+                'receiver_id' => 'nullable|exists:intranet_extedim.users,id',
+                'content' => 'required|string',
+                'conversation_id' => 'nullable|exists:intranet_extedim.conversations,id',
+                'group_id' => 'nullable|exists:intranet_extedim.messages_groups,id',
+                'status' => 'required|string'
             ]);
 
-            if ($validator->fails()) {
+            if (!empty($data['receiver_id']) && empty($data['conversation_id']) && empty($data['group_id'])) {
+
+                $conversation = Conversation::where(function ($q) use ($data) {
+                    $q->where('user_one_id', $data['sender_id'])
+                        ->where('user_two_id', $data['receiver_id']);
+                })
+                    ->orWhere(function ($q) use ($data) {
+                        $q->where('user_one_id', $data['receiver_id'])
+                            ->where('user_two_id', $data['sender_id']);
+                    })
+                    ->first();
+
+                if (!$conversation) {
+                    $conversation = Conversation::create([
+                        'user_one_id' => $data['sender_id'],
+                        'user_two_id' => $data['receiver_id'],
+                    ]);
+                }
+
+                $data['conversation_id'] = $conversation->id;
+            }
+
+            if (empty($data['conversation_id']) && empty($data['group_id'])) {
                 return response()->json([
-                    'error' => 'Échec de la validation',
-                    'details' => $validator->errors()
+                    'success' => false,
+                    'message' => 'Aucune conversation ou groupe spécifié.',
+                    'debug' => $data
                 ], 422);
             }
 
-            $sender = User::find($request->sender_id);
-            $receiver = User::find($request->receiver_id);
-            if (!$sender || !$receiver) {
-                return response()->json(['error' => 'Expéditeur ou destinataire introuvable'], 404);
-            }
-
-            $user1 = min($sender->id, $receiver->id);
-            $user2 = max($sender->id, $receiver->id);
-            $conversation = Conversation::firstOrCreate([
-                'user_one_id' => $user1,
-                'user_two_id' => $user2,
-            ]);
-
             $message = Message::create([
-                'sender_id' => $sender->id,
-                'receiver_id' => $receiver->id,
-                'content' => $request->content,
-                'conversation_id' => $conversation->id,
+                'sender_id' => $data['sender_id'],
+                'content' => $data['content'],
+                'conversation_id' => $data['conversation_id'] ?? null,
+                'group_id' => $data['group_id'] ?? null,
+                'is_read' => false,
+                'status' => $data['status']
             ]);
 
-            // if ($request->hasFile('files')) {
-            //     foreach ($request->file('files') as $file) {
-            //         $filename = uniqid() . '_' . $file->getClientOriginalName();
-            //         $directory = 'images/files';
-            //         $storedPath = $file->storeAs($directory, $filename, 'sftp');
+            broadcast(new UserMessageSent($message))->toOthers();
 
-            //         if (!$storedPath) {
-            //             throw new Exception("Échec du téléchargement de l’image : " . $filename);
-            //         }
-
-            //        File::create([
-            //             'message_id' => $message->id,
-            //             'path' => $storedPath,
-            //             'original_name' => $file->getClientOriginalName(),
-            //             'mime_type' => $file->getClientMimeType(),
-            //         ]);
-            //     }
-            // }
-
-            broadcast(new ChatMessageSent($message, $receiver->id, $sender->id));
+            $messageWithUser = $message->load('sender:id,first_name,last_name,email');
 
             return response()->json([
-                'message' => 'Message envoyé avec succès',
-                'data' => $message->load('files')
+                'success' => true,
+                'message' => $messageWithUser
             ], 201);
-        } catch (QueryException $e) {
-            return response()->json([
-                'error' => 'Erreur lors de l\'insertion dans la base de données',
-                'details' => $e->getMessage()
-            ], 500);
         } catch (Exception $e) {
             return response()->json([
-                'error' => 'Erreur inattendue',
-                'details' => $e->getMessage()
+                'success' => false,
+                'message' => 'Erreur interne lors de l’envoi du message',
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
             ], 500);
         }
     }
 
+
+    // public function store(Request $request)
+    // {
+    //     try {
+    //         $data = $request->validate([
+    //             'sender_id'       => 'required|exists:users,id',
+    //             'content'         => 'required|string',
+    //             'conversation_id' => 'nullable|exists:conversations,id',
+    //             'group_id'        => 'nullable|exists:groups,id',
+    //         ]);
+
+    //         if (empty($data['conversation_id']) && empty($data['group_id'])) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'error'   => 'Aucune conversation ou groupe spécifié.',
+    //                 'debug'   => $data,
+    //             ], 422);
+    //         }
+
+    //         $message = Message::create([
+    //             'sender_id'       => $data['sender_id'],
+    //             'content'         => $data['content'],
+    //             'conversation_id' => $data['conversation_id'] ?? null,
+    //             'group_id'        => $data['group_id'] ?? null,
+    //             'is_read'         => false,
+    //             'status'          => 'active',
+    //         ]);
+
+    //         if (!$message) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'error'   => 'Impossible de créer le message en base.',
+    //                 'debug'   => $data,
+    //             ], 500);
+    //         }
+
+    //         try {
+    //             broadcast(new MessageSent($message))->toOthers();
+    //         } catch (Exception $e) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'error'   => 'Échec du broadcast.',
+    //                 'debug'   => [
+    //                     'message_id' => $message->id,
+    //                     'exception'  => $e->getMessage(),
+    //                     'trace'      => $e->getTraceAsString(),
+    //                 ],
+    //             ], 500);
+    //         }
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => $message,
+    //         ], 201);
+    //     } catch (\Illuminate\Validation\ValidationException $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'error'   => 'Erreur de validation.',
+    //             'details' => $e->errors(),
+    //             'input'   => $request->all(),
+    //         ], 422);
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'error'   => 'Erreur interne.',
+    //             'debug'   => [
+    //                 'exception' => $e->getMessage(),
+    //                 'trace'     => $e->getTraceAsString(),
+    //             ],
+    //             'input' => $request->all(),
+    //         ], 500);
+    //     }
+    // }
+
+
+    // public function store(Request $request)
+    // {
+    //     try {
+    //         $data = $request->validate([
+    //             'sender_id' => 'required|exists:users,id',
+    //             'receiver_id' => 'nullable|exists:users,id',
+    //             'content'   => 'required|string',
+    //             'conversation_id' => 'nullable|exists:conversations,id',
+    //             'group_id'  => 'nullable|exists:groups,id',
+    //             'status' => 'required'
+    //         ]);
+
+    //         if (!empty($data['receiver_id']) && empty($data['conversation_id']) && empty($data['group_id'])) {
+
+    //             $conversation = Conversation::where(function ($q) use ($data) {
+    //                 $q->where('user_one_id', $data['sender_id'])
+    //                     ->where('user_two_id', $data['receiver_id']);
+    //             })
+    //                 ->orWhere(function ($q) use ($data) {
+    //                     $q->where('user_one_id', $data['receiver_id'])
+    //                         ->where('user_two_id', $data['sender_id']);
+    //                 })
+    //                 ->first();
+
+    //             if (!$conversation) {
+    //                 $conversation = Conversation::create([
+    //                     'user_one_id' => $data['sender_id'],
+    //                     'user_two_id' => $data['receiver_id'],
+    //                 ]);
+    //             }
+
+    //             $data['conversation_id'] = $conversation->id;
+    //         }
+
+    //         if (empty($data['conversation_id']) && empty($data['group_id'])) {
+    //             return response()->json([
+    //                 'success' => false,
+    //                 'error'   => 'Aucune conversation, groupe ou receiver_id spécifié.',
+    //                 'debug'   => $data,
+    //             ], 422);
+    //         }
+
+    //         $message = Message::create([
+    //             'sender_id'       => $data['sender_id'],
+    //             'content'         => $data['content'],
+    //             'conversation_id' => $data['conversation_id'] ?? null,
+    //             'group_id'        => $data['group_id'] ?? null,
+    //             'is_read'         => false,
+    //             'status'          => $data['status'],
+    //         ]);
+
+    //         broadcast(new UserMessageSent($message))->toOthers();
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => $message,
+    //         ], 201);
+    //     } catch (Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'error'   => 'Erreur interne',
+    //             'debug'   => $e->getMessage(),
+    //             'trace'   => $e->getTraceAsString(),
+    //         ], 500);
+    //     }
+    // }
 
     public function getMessage($id)
     {

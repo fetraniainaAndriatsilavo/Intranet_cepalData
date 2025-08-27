@@ -1,31 +1,31 @@
 import { useContext, useEffect, useState } from "react";
-import axios from "axios";
-import { AppContext } from "../../../Context/AppContext";
+import api from "../../../components/axios";
+import { AppContext } from "../../../context/AppContext";
 
-export default function EditComment({ id, commentId, setIsOpen }) {
+export default function EditComment({ id, commentId, setIsOpen, fetchComments }) {
   const [content, setContent] = useState("");
-  const { user } = useContext(AppContext); 
+  const { user } = useContext(AppContext)
 
-    useEffect(()=> {
-        axios.get('http://127.0.0.1:8000/api/comments/'+ commentId +'/getOneComment')
-        .then((response) => { 
-            setContent(response.data.content)
-        }) 
-        .catch((error) => {  
-            console.log(error)
-        }) 
-    }, [commentId])  
+  useEffect(() => {
+    api.get('/comments/' + commentId + '/getInfo')
+      .then((response) => {
+        setContent(response.data.content)
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+  }, [commentId])
 
 
   const Edit = (e) => {
     e.preventDefault();
-    axios
+    api
       .put(
-        "http://127.0.0.1:8000/api/comments/" + commentId + "/modify",
+        "/comments/" + commentId + "/update",
         {
           content: content,
           user_id: user.id,
-          post_id:id, 
+          post_id: id,
         },
         {
           headers: {
@@ -36,14 +36,15 @@ export default function EditComment({ id, commentId, setIsOpen }) {
       .then((response) => {
         console.log(response);
         setContent("");
-        alert('Commentaire modifiée ! ')
         setIsOpen(false)
+
+        fetchComments(id)
       })
       .catch((error) => {
         console.error(error);
       });
   };
-  const close = ( ) => { 
+  const close = () => {
     setIsOpen(false)
   }
   return (
@@ -62,13 +63,13 @@ export default function EditComment({ id, commentId, setIsOpen }) {
           onChange={(e) => setContent(e.target.value)}
         ></textarea>
 
-        <div className="flex justify-end"> 
-            <button
+        <div className="flex justify-end">
+          <button
             className="bg-gray-100 hover:bg-gray-100 text-gray-700 px-4 py-2 rounded-lg mx-2 cursor-pointer"
             onClick={close}
           >
-            Annuler 
-          </button> 
+            Annuler
+          </button>
 
           <button
             className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg cursor-pointer"

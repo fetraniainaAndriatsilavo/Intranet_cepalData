@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Modal,
   Box,
@@ -8,15 +8,23 @@ import {
   Autocomplete,
   TextareaAutosize,
 } from '@mui/material';
+import api from '../../axios';
 
-export default function CreateTask({ open, onClose }) {
+export default function CreateTask({ open, onClose, projectId, fetchTaskProject }) {
   const [task, setTask] = useState({
     title: '',
+    sprint_id: '',
+    project_id: projectId || 0,
     type: 'Task',
     status: 'To-Do',
-    assigned_to: '',
+    user_allocated_id: '',
     description: '',
+    due_date: '',
+    priority: 'Medium'
   });
+
+  const [allUsers, setAllUsers] = useState([]);
+  const [loading, setLoading] = useState(false)
 
   const handleChange = (field) => (e) => {
     setTask((prev) => ({
@@ -25,13 +33,42 @@ export default function CreateTask({ open, onClose }) {
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    if (!task.title.trim()) return;
 
-    // You can pass task to onCreate here if needed
-    console.log('Task created:', task);
-    onClose();
+  useEffect(() => {
+    if (projectId) {
+      setTask(prev => ({ ...prev, project_id: projectId }));
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    api.get('/getUser/all')
+      .then((response) => {
+        setAllUsers(response.data.users);
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  }, []);
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true)
+    if (!task.title.trim()) {
+      alert("Veuillez entrer un titre de tâche");
+      return;
+    }
+    try {
+      const response = await api.post("/tasks", task, {
+        headers: { "Content-Type": "application/json" },
+      });
+      setLoading(false)
+      onClose();
+      fetchTaskProject(projectId)
+    } catch (error) {
+      console.error("Erreur lors de la création de la tâche:", error);
+      alert("Impossible de créer la tâche");
+    }
   };
 
   return (
@@ -75,14 +112,27 @@ export default function CreateTask({ open, onClose }) {
 
             <Autocomplete
               disablePortal
-              options={['Jean', 'Marie', 'Lova']}
-              value={task.assigned_to}
-              onInputChange={(event, newValue) =>
-                setTask((prev) => ({ ...prev, assigned_to: newValue }))
+              options={allUsers || []}
+              getOptionLabel={(option) => option.first_name || ""}
+              value={allUsers.find((u) => u.id === task.user_allocated_id) || null}
+              onChange={(event, newValue) =>
+                setTask((prev) => ({ ...prev, user_allocated_id: newValue ? newValue.id : null }))
               }
               renderInput={(params) => <TextField {...params} label="Personne assignée" />}
               size="small"
               className="mt-3"
+            />
+
+
+            <TextField
+              label="fin de la Tâches"
+              type='date'
+              InputLabelProps={{ shrink: true }}
+              fullWidth
+              margin="normal"
+              value={task.due_date}
+              onChange={handleChange('due_date')}
+              size="small"
             />
 
             <div className="mt-3 mb-3 flex flex-col">
@@ -93,10 +143,10 @@ export default function CreateTask({ open, onClose }) {
                 value={task.type}
                 onChange={handleChange('type')}
               >
-                <option value="Stories">Stories</option>
+                <option value="Story">Stories</option>
                 <option value="Task">Tâches</option>
                 <option value="Bug">Bug</option>
-                <option value="Sub-Task">Sous-tâches</option>
+                <option value="Sub_Task">Sous-tâches</option>
               </select>
             </div>
 
@@ -109,9 +159,10 @@ export default function CreateTask({ open, onClose }) {
                 onChange={handleChange('status')}
               >
                 <option value="To-Do">To-Do</option>
-                <option value="In Progress">In Progress</option>
-                <option value="Reviewing">Reviewing</option>
-                <option value="Completed">Completed</option>
+                <option value="In-Progress">In Progress</option>
+                <option value="Review">Reviewing</option>
+                <option value="Deploy"> Deploy </option>
+                <option value="Done">Done</option>
               </select>
             </div>
 
@@ -125,11 +176,26 @@ export default function CreateTask({ open, onClose }) {
             />
 
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Button onClick={onClose} sx={{ mr: 1 }} variant="outlined">
+              <Button onClick={() => {
+                setTask({
+                  title: '',
+                  sprint_id: '',
+                  project_id: '',
+                  type: 'Task',
+                  status: 'To-Do',
+                  user_allocated_id: '',
+                  description: '',
+                  due_date: '',
+                  priority: 'Medium'
+                })
+                onClose()
+              }} sx={{ mr: 1 }} variant="outlined">
                 Retour
               </Button>
               <Button type="submit" variant="contained" color="primary">
-                Créez
+                {
+                  loading == true ? 'Création...' : 'Créer'
+                }
               </Button>
             </Box>
           </form>

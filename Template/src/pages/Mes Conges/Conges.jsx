@@ -31,6 +31,5 @@ export default function Conges() {
             <Type lists={menus} setRadioValue={setRadioValue} />
             <Permissions radioValue={radioValue} />
         </div>
-
     </div>
 }

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, CSSProperties } from 'react';
 
 import Sidebar from '../partials/Sidebar';
 import Header from '../partials/Header';
@@ -34,14 +34,22 @@ import Notifications from './Mes Notifications/Notifications';
 import ListTimeSheet from './Mes Feuilles de Temps/ListTimesheet';
 import TeamTimesheet from './Mes Feuilles de Temps/TeamTimesheet';
 import AllTimesheet from './Admin Feuille de Temps/AllTimesheet';
-import ListSessions from './Admin Feuille de Temps/ListSessions';import Projets from './Mes Projets/Projets';
+import ListSessions from './Admin Feuille de Temps/ListSessions'; import Projets from './Mes Projets/Projets';
 import Social from './Social/Social';
 import Group from './Social/Groups/Group';
+import ListEvent from './Social/Events/ListEvent';
+import MessagesPage from './Messagerie/MessagePage';
 ;
+
+import { PulseLoader } from "react-spinners";
 // import Banner from '../partials/Banner';
 
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const [loading, setLoading] = useState(false)
+  const color = '#fffff';
+
   const location = useLocation()
   const { pathname } = location
   return (
@@ -54,7 +62,7 @@ function Dashboard() {
       <div className="relative flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
 
         {/*  Site header */}
-        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} />
+        <Header sidebarOpen={sidebarOpen} setSidebarOpen={setSidebarOpen} setLoading={setLoading} />
 
         <main className="grow">
           <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
@@ -114,7 +122,7 @@ function Dashboard() {
                 {/* Card (Income/Expenses) */}
                 <DashboardCard13 />
               </div>
-            </>} 
+            </>}
             {pathname == '/cgu' && <TermsOfUse />}
             {pathname == '/reinit' && <Reinitialisation />}
             {/* Gestion des congés */}
@@ -126,7 +134,6 @@ function Dashboard() {
             {pathname == '/ajout-utilisateur' && <Collaborateur />}
             {pathname == '/liste-utilisateur' && <ListesUtilisateurs />}
             {pathname == '/mesinformations' && <Informations />}
-            {/* {pathname == '/modif-utilisateur/:id' && <ModifCollaborateurs />} */}
             {matchPath('/modif-utilisateur/:id', pathname) && <ModifCollaborateurs />}
             {pathname == '/documents-utilisateurs' && <UploadDocument />}
 
@@ -138,13 +145,30 @@ function Dashboard() {
             {/* notifications */}
             {pathname == '/mesnotifications' && <Notifications />}
             {/* Projets */}
-            {pathname == '/creer-projet' && <Createprojet />} 
-            {pathname == '/mesprojets' && <Projets/> } 
+            {pathname == '/creer-projet' && <Createprojet />}
+            {pathname == '/mesprojets' && <Projets />}
 
 
-            {/* Social News */} 
-            {pathname == '/social' && <Social/>} 
+            {/* Social News */}
+            {pathname == '/social' && <Social />}
             {matchPath('/social/groups/:id', pathname) && <Group />}
+            {pathname == '/calendar' && <ListEvent />}
+
+            {/* Messagerie  */}
+            {pathname == '/messagerie' && <MessagesPage />}
+
+
+            {loading && (
+              <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+                <PulseLoader
+                  color="#ffffff"
+                  size={15}
+                  aria-label="Loading Spinner"
+                  data-testid="loader"
+                />
+              </div>
+            )}
+
           </div>
         </main>
       </div>

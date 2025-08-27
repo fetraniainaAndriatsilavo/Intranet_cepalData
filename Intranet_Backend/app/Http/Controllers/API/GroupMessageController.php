@@ -67,7 +67,6 @@ class GroupMessageController extends Controller
         }
     }
 
-
     public function getGroup($groupId)
     {
         try {
@@ -99,7 +98,6 @@ class GroupMessageController extends Controller
             ], 500);
         }
     }
-
 
     public function store(Request $request, $groupId)
     {

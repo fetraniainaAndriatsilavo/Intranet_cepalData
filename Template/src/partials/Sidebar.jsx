@@ -96,11 +96,11 @@ function Sidebar({
             </h3>
             <ul className="mt-3">
               {/* Dashboard */}
-              <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r ${pathname.includes("calendar") && "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"}`}>
+              <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r ${pathname.includes("accueil") && "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"}`}>
                 <NavLink
                   end
                   to="/accueil"
-                  className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${pathname.includes("calendar") ? "" : "hover:text-gray-900 dark:hover:text-white"
+                  className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${pathname.includes("accueil") ? "" : "hover:text-gray-900 dark:hover:text-white"
                     }`}
                 >
                   <div className="flex items-center">
@@ -219,7 +219,7 @@ function Sidebar({
                             </li>
                           }
                           {
-                            user && user.role == 'user' && <li className="mb-1 last:mb-0">
+                            user && user.role != 'user' && <li className="mb-1 last:mb-0">
                               <NavLink
                                 end
                                 to='/mesvalidations'
@@ -273,19 +273,22 @@ function Sidebar({
                       </a>
                       <div className="lg:hidden lg:sidebar-expanded:block 2xl:block">
                         <ul className={`pl-8 mt-1 ${!open && "hidden"}`}>
-                          <li className="mb-1 last:mb-0">
-                            <NavLink
-                              end
-                              to='/creer-projet'
-                              className={({ isActive }) =>
-                                "block transition duration-150 truncate " + (isActive ? "text-sky-500" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                              }
-                            >
-                              <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                + Nouveau Projet
-                              </span>
-                            </NavLink>
-                          </li>
+                          {
+                            user && user.role != 'user' && <li className="mb-1 last:mb-0">
+                              <NavLink
+                                end
+                                to='/creer-projet'
+                                className={({ isActive }) =>
+                                  "block transition duration-150 truncate " + (isActive ? "text-sky-500" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                                }
+                              >
+                                <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                  + Nouveau Projet
+                                </span>
+                              </NavLink>
+                            </li>
+                          }
+
                           <li className="mb-1 last:mb-0">
                             <NavLink
                               end
@@ -378,25 +381,25 @@ function Sidebar({
               <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r ${pathname.includes("messages") && "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"}`}>
                 <NavLink
                   end
-                  to="https://cruip.com/mosaic/"
+                  to="/messagerie"
                   className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${pathname.includes("messages") ? "" : "hover:text-gray-900 dark:hover:text-white"
                     }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="grow flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className=" text-gray-400 icon icon-tabler icons-tabler-outline icon-tabler-brand-messenger">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className=" text-gray-400 icon icon-tabler icons-tabler-outline icon-tabler-brand-messenger">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                         <path d="M3 20l1.3 -3.9a9 8 0 1 1 3.4 2.9l-4.7 1" />
                         <path d="M8 13l3 -2l2 2l3 -2" />
                       </svg>
-                      <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                      <span className="text-sm font-medium ml-2 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
                         Discussions
                       </span>
                     </div>
                     {/* Badge */}
-                    <div className="flex shrink-0 ml-2">
-                      <span className="inline-flex items-center justify-center h-5 text-xs font-medium text-white px-2 rounded-sm" style={{ backgroundColor: '#04adf0' }}>4</span>
-                    </div>
+                    {/* <div className="flex shrink-0 ml-2">
+                      <span className="inline-flex items-center justify-center h-5 text-xs font-medium text-white px-2 rounded-sm" style={{ backgroundColor: '#04adf0' }}> 4</span>
+                    </div> */}
                   </div>
                 </NavLink>
               </li>
@@ -409,14 +412,14 @@ function Sidebar({
                 >
                   <div className="flex items-center justify-between">
                     <div className="grow flex items-center">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-gray-400  icon icon-tabler icons-tabler-outline icon-tabler-news">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-gray-400  icon icon-tabler icons-tabler-outline icon-tabler-news">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                         <path d="M16 6h3a1 1 0 0 1 1 1v11a2 2 0 0 1 -4 0v-13a1 1 0 0 0 -1 -1h-10a1 1 0 0 0 -1 1v12a3 3 0 0 0 3 3h11" />
                         <path d="M8 8l4 0" />
                         <path d="M8 12l4 0" />
                         <path d="M8 16l4 0" />
                       </svg>
-                      <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                      <span className="text-sm font-medium ml-2 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
                         Social News
                       </span>
                     </div>
@@ -521,8 +524,9 @@ function Sidebar({
               </SidebarLinkGroup>
             </ul>
           </div>
+          {/* user.role == 'user' && */}
           {
-            user && user.role == 'admin' && <div>
+            user && <div>
               <h3 className="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
                 <span className="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">
                   •••
@@ -598,15 +602,18 @@ function Sidebar({
                                 </span>
                               </NavLink>
                             </li>
-                            <li className="mb-1 last:mb-0">
-                              <NavLink end to="/documents-utilisateurs" className={({ isActive }) =>
-                                "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                              }>
-                                <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                  Documents Admin.
-                                </span>
-                              </NavLink>
-                            </li>
+                            {
+                              user.id == 1 && <li className="mb-1 last:mb-0">
+                                <NavLink end to="/documents-utilisateurs" className={({ isActive }) =>
+                                  "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                                }>
+                                  <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                    Documents Admin.
+                                  </span>
+                                </NavLink>
+                              </li>
+                            }
+
                           </ul>
                         </div>
                       </React.Fragment>
@@ -667,7 +674,7 @@ function Sidebar({
                                 "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
                               }>
                                 <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                  Listes des demandes
+                                  Historiques des demandes
                                 </span>
                               </NavLink>
                             </li>
@@ -759,10 +766,10 @@ function Sidebar({
                   }}
                 </SidebarLinkGroup>
                 {/* Key news  */}
-                {/* <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r ${pathname.includes("calendar") && "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"}`}>
+                <li className={`pl-4 pr-3 py-2 rounded-lg mb-0.5 last:mb-0 bg-linear-to-r ${pathname.includes("calendar") && "from-violet-500/[0.12] dark:from-violet-500/[0.24] to-violet-500/[0.04]"}`}>
                   <NavLink
                     end
-                    to="https://cruip.com/mosaic/"
+                    to="/calendar"
                     className={`block text-gray-800 dark:text-gray-100 truncate transition duration-150 ${pathname.includes("calendar") ? "" : "hover:text-gray-900 dark:hover:text-white"
                       }`}
                   >
@@ -796,7 +803,7 @@ function Sidebar({
                       </span>
                     </div>
                   </NavLink>
-                </li> */}
+                </li>
               </ul>
             </div>
           }

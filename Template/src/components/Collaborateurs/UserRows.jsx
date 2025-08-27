@@ -47,7 +47,7 @@ export default function UserRows({ data, setAllUsers }) {
             </button>
             <button onClick={(e) => { 
                 const action = data.status === "active" ? "archiver" : "restaurer";
-                if (confirm(`Voulez-vous archiver ${action} cet utilisateur?`)) {
+                if (confirm(`Voulez-vous ${action} cet utilisateur?`)) {
                     e.preventDefault()
                     toggleArchive(data.id, data.status);
                 }

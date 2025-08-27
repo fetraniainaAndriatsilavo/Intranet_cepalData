@@ -106,7 +106,7 @@ class AuthController extends Controller
                 'phone_number' => 'nullable|string|max:20',
                 'address' => 'nullable|string',
                 'class_id' => 'nullable|integer',
-                'image' => 'nullable|string',
+                'image' => 'nullable',
                 'client_code' => 'nullable|string|max:100',
                 'manager_id' => 'nullable|integer',
                 'leaving_date' => 'nullable|date',
@@ -121,32 +121,12 @@ class AuthController extends Controller
                 'ogc_perm_bal' => 'nullable|numeric',
                 'ogc_perm_bal_date' => 'nullable|date',
                 'ogc_othr_bal' => 'nullable|numeric',
+                'type' => 'required|exists:intranet_extedim.contracts_type,code',
 
             ], $messages);
-            $imagePath = null;
-            $imageUrl = null;
-
-            $user = new User();
-            $user->first_name = $request->input('first_name');
-            $user->save();
-
-            if ($request->hasFile('image')) {
-                $file = $request->file('image');
-
-                $extension = $file->getClientOriginalExtension();
-                $filename = 'profile@user' . $user->id . '.' . $extension;
-
-                $directory = 'users/' . $user->id . '/profil';
-
-                $imagePath = $file->storeAs($directory, $filename, 'sftp');
-
-                $imageUrl = 'http://57.128.116.184/intranet/' . $imagePath;
-
-                $user->image = $imageUrl;
-                $user->save();
-            }
-
             $defaultPassword = 'intranet2025';
+
+            // Création du user
             $user = User::create([
                 'email' => $fields['email'],
                 'password' => bcrypt($defaultPassword),
@@ -164,7 +144,6 @@ class AuthController extends Controller
                 'phone_number' => $fields['phone_number'] ?? null,
                 'address' => $fields['address'] ?? null,
                 'class_id' => $fields['class_id'] ?? null,
-                'image' => $imagePath,
                 'client_code' => $fields['client_code'] ?? null,
                 'manager_id' => $fields['manager_id'] ?? null,
                 'leaving_date' => $fields['leaving_date'] ?? null,
@@ -179,13 +158,31 @@ class AuthController extends Controller
                 'ogc_perm_bal' => $fields['ogc_perm_bal'] ?? null,
                 'ogc_perm_bal_date' => $fields['ogc_perm_bal_date'] ?? null,
                 'ogc_othr_bal' => $fields['ogc_othr_bal'] ?? null,
-
+                'contrat_code' => $fields['type'] ?? null,
             ]);
-            // Mail::to($user->email)->send(new WelcomeUserMail($user, $defaultPassword));
+
+            // Gestion de l'image si fournie
+            $imageUrl = null;
+            if ($request->hasFile('image')) {
+                $file = $request->file('image');
+                $extension = $file->getClientOriginalExtension();
+                $filename = 'profile@user' . $user->id . '.' . $extension;
+
+                $directory = 'users/' . $user->id . '/profil';
+                $imagePath = $file->storeAs($directory, $filename, 'sftp');
+
+                $imageUrl = 'http://57.128.116.184/intranet/' . $imagePath;
+
+                $user->image = $imageUrl;
+                $user->save();
+            }
+
+            // Notification
             $user->notify(new WelcomeUserNotification($defaultPassword));
 
             return response()->json([
                 'user' => $user,
+                'type contrat' => $user->load('contrat'),
                 'image_url' => $imageUrl,
             ], 201);
         } catch (ValidationException $ve) {
@@ -200,14 +197,6 @@ class AuthController extends Controller
             ], 500);
         }
     }
-
-
-
-
-
-
-
-    //LOGIN
 
     public function login(Request $request)
     {
@@ -265,19 +254,6 @@ class AuthController extends Controller
         }
     }
 
-
-
-
-    //LOGOUT
-    // public function logout(Request $request)
-    // {
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Déconnexion réussie.',
-    //     ]);
-    // }
-
     public function logout(Request $request)
     {
         $validated = $request->validate([
@@ -291,14 +267,6 @@ class AuthController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Tous les tokens de cet utilisateur ont été supprimés.',
-        ]);
-    }
-
-
-    public function getUser(Request $request)
-    {
-        return response()->json([
-            'user' => Auth::user()
         ]);
     }
 }

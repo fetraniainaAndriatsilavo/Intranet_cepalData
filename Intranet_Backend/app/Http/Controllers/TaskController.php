@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\TaskAssigned;
 use Illuminate\Http\Request;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Validation\Rule;
 
 
@@ -19,27 +21,52 @@ class TaskController extends Controller
     public function getTaskById($taskId)
     {
 
-        $sprint = Task::with('taches')
-            ->where('id', $taskId)
-            ->first();
+        $sprint = Task::where('id', $taskId)->first();
 
         if (!$sprint) {
             return response()->json([
-                'message' => "Aucun sprint trouvé pour cet ID {$taskId}."
+                'message' => "Aucun tache trouvé pour cet ID {$taskId}."
             ], 404);
         }
 
         return response()->json([
-            'message' => 'Sprint récupéré avec succès.',
+            'message' => 'Tache récupéré avec succès.',
             'data' => $sprint->toArray(),
         ], 200);
+    }
+
+    public function getByProject($projectId)
+    {
+        try {
+            $tasks = Task::where('project_id', $projectId)->with('assignedUser')->get();
+
+            if ($tasks->isEmpty()) {
+                return response()->json([
+                    'status' => 'empty',
+                    'message' => 'Aucune tâche trouvée pour ce projet.',
+                    'tasks' => []
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Tâches récupérées avec succès.',
+                'tasks' => $tasks
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Une erreur est survenue lors de la récupération des tâches.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)
     {
         try {
             $validated = $request->validate([
-                'title' => 'required|string|max:255|unique:intranet_extedim.tasks,title',
+                'title' => 'required|string|max:255',
                 'description' => 'nullable|string',
                 'project_id' => 'nullable|exists:intranet_extedim.projects,id',
                 'type' => 'required|in:Task,Sub_Task,Story,Bug',
@@ -92,17 +119,28 @@ class TaskController extends Controller
 
             $task = Task::create($validated);
 
+            $notifMessage = null;
+
+            if ($task && $task->user_allocated_id) {
+                $user = User::find($task->user_allocated_id);
+                if ($user) {
+                    $user->notify(new TaskAssigned($task));
+                    $notifMessage = "Email envoyé à {$user->email}";
+                }
+            }
+
             if (!$task) {
                 return response()->json([
                     'statut' => 'error',
-                    'message' => 'La création de la tache a échoué.',
+                    'message' => 'La création de la tâche a échoué.',
                 ], 500);
             }
 
             return response()->json([
                 'statut' => 'success',
-                'message' => 'Tache créé avec succès.',
-                'details' => $task
+                'message' => 'Tâche créée avec succès.',
+                'details' => $task,
+                'notification' => $notifMessage ?? "Aucune notification envoyée"
             ], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
@@ -119,7 +157,7 @@ class TaskController extends Controller
         }
     }
 
-    public function updateTask(Request $request, $id)
+    public function update(Request $request, $id)
     {
         $task = Task::find($id);
 
@@ -131,7 +169,6 @@ class TaskController extends Controller
         }
 
         try {
-            // Validation avec messages personnalisés
             $validated = $request->validate([
                 'title' => [
                     'sometimes',
@@ -203,32 +240,6 @@ class TaskController extends Controller
         }
     }
 
-    public function getByProject($projectId)
-    {
-        try {
-            $tasks = Task::where('project_id', $projectId)->get();
-
-            if ($tasks->isEmpty()) {
-                return response()->json([
-                    'status' => 'empty',
-                    'message' => 'Aucune tâche trouvée pour ce projet.',
-                    'tasks' => []
-                ]);
-            }
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Tâches récupérées avec succès.',
-                'tasks' => $tasks
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Une erreur est survenue lors de la récupération des tâches.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
 
     public function destroy($id)
     {

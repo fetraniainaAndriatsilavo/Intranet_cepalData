@@ -40,19 +40,4 @@ class LeaveBalanceController extends Controller
             ], 500);
         }
     }
-
-    public function getSoldeAll()
-    { {
-            $data = OgCumul::with(['user.userDetail'])->get()->map(function ($item) {
-                return [
-                    'leave_days' => $item->leave_days,
-                    'permission_days' => $item->permission_days,
-                    'other_days' => $item->other_days,
-                    'user_name' => $item->user->name ?? null,
-                    'dossier' => $item->user->userDetail->dossier ?? null,
-                ];
-            });
-            return response()->json($data);
-        }
-    }
 }

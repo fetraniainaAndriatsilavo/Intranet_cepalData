@@ -65,4 +65,61 @@ class ConversationController extends Controller
             ], 500);
         }
     }
+
+    public function myConversations($userId)
+    {
+
+        $conversations = Conversation::where('user_one_id', $userId)
+            ->orWhere('user_two_id', $userId)
+            ->with(['userOne', 'userTwo'])
+            ->orderBy('updated_at', 'desc')
+            ->get();
+
+        return response()->json($conversations);
+    }
+
+    public function getConversationInfo($conversationId)
+    {
+        try {
+            $conversation = Conversation::with([
+                'messages.sender',
+                'userOne:id,first_name,last_name,email',
+                'userTwo:id,first_name,last_name,email'
+            ])->find($conversationId);
+
+            if (!$conversation) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Conversation non trouvée'
+                ], 404);
+            }
+
+            return response()->json([
+                'success' => true,
+                'conversation' => [
+                    'id' => $conversation->id,
+                    'user_one' => $conversation->userOne,
+                    'user_two' => $conversation->userTwo,
+                    'messages' => $conversation->messages->map(function ($msg) {
+                        return [
+                            'id' => $msg->id,
+                            'content' => $msg->content,
+                            'status' => $msg->status,
+                            'is_read' => $msg->is_read,
+                            'created_at' => $msg->created_at,
+                            'sender' => $msg->sender,
+                        ];
+                    })
+                ]
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de la récupération de la conversation',
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ], 500);
+        }
+    }
 }

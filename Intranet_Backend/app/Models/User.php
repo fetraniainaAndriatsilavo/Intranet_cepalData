@@ -55,6 +55,8 @@ class User extends Authenticatable
         'ogc_perm_bal',
         'ogc_perm_bal_date',
         'ogc_othr_bal',
+        'public',
+        'contrat_code',
     ];
 
 
@@ -141,6 +143,12 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Client::class, 'client_code', 'code');
     }
+
+    public function contrat()
+    {
+        return $this->belongsTo(Contrat::class, 'contrat_code', 'code');
+    }
+
     public function position()
     {
         return $this->belongsTo(Position::class);
@@ -149,5 +157,11 @@ class User extends Authenticatable
     public function documents()
     {
         return $this->hasMany(DocumentAdmin::class, 'user_id');
+    }
+
+    public function messageGroups()
+    {
+        return $this->belongsToMany(MessageGroup::class, 'intranet_extedim.messages_groups_users', 'user_id', 'group_id')
+            ->withPivot('is_admin');
     }
 }

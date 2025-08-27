@@ -4,9 +4,9 @@ import { useEffect, useState } from "react";
 
 export default function Collaborateur() {
     const [profilePhoto, setProfilePhoto] = useState(null);
-
+    const [loading, setLoading] = useState(false)
     const [form, setForm] = useState({
-        image: profilePhoto ? profilePhoto : '',
+        image: '',
         first_name: "",
         last_name: "",
         email: "",
@@ -36,7 +36,13 @@ export default function Collaborateur() {
 
     const handleProfileUpload = (e) => {
         const file = e.target.files[0];
-        if (file) setProfilePhoto(URL.createObjectURL(file));
+        if (file) {
+            setProfilePhoto(URL.createObjectURL(file));
+            setForm((prev) => ({
+                ...prev,
+                image: file
+            }));
+        }
     };
 
     // retourne les data comme  clients/contract_type/departments/classification/managers 
@@ -84,9 +90,10 @@ export default function Collaborateur() {
 
     // soumettre la création d'utilisateur 
     const [error, setError] = useState('')
+
     const Enregistrer = async (e) => {
         e.preventDefault();
-
+        setLoading(true)
         const requiredFields = [
             "first_name",
             "last_name",
@@ -142,11 +149,11 @@ export default function Collaborateur() {
 
             } catch (error) {
                 setError(error.response.data.message)
+            } finally {
+                setLoading(false)
             }
         }
     };
-    // https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1950&q=80
-    // "https://i.pravatar.cc/150?img=32
     return (
         <div className="bg-light min-h-screen p-6 flex justify-center">
             <div className="w-full max-w-6xl">
@@ -163,7 +170,7 @@ export default function Collaborateur() {
                     <div className="pt-16 px-6 pb-6">
                         <label className="uppercase mt-2 bg-white text-sm px-4 py-2 rounded shadow cursor-pointer hover:bg-gray-100 border-2 border-sky-600 text-sky-600 hover:border-none hover:bg-sky-600 hover:text-white">
                             Ajouter
-                            <input type="file" accept="image/*" className="hidden" onChange={handleProfileUpload} />
+                            <input type="file" accept="image/*" name="image" id="image" className="hidden" onChange={handleProfileUpload} />
                         </label>
                     </div>
                 </div>
@@ -450,7 +457,7 @@ export default function Collaborateur() {
                                 Effacer
                             </button>
                             <button className="px-3 py-2 bg-sky-600 text-white rounded uppercase cursor-pointer" onClick={Enregistrer}>
-                                Enregistrer
+                                {loading == true ? 'Enregistrement en cours...' : 'Enregistrer'}
                             </button>
                         </div>
                     </div>

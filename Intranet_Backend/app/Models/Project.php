@@ -29,7 +29,7 @@ class Project extends Model
 
     public function sprints()
     {
-        return $this->hasMany(Sprint::class, 'id_projet', 'project_id');
+        return $this->hasMany(Sprint::class, 'project_id', 'project_id');
     }
     public function tasks()
     {
