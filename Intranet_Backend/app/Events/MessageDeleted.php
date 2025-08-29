@@ -24,11 +24,28 @@ class MessageDeleted implements ShouldBroadcast
 
     public function broadcastOn(): array
     {
-        return [
-            new Channel('chat.' . $this->message->sender_id),
-            new Channel('chat.' . $this->message->receiver_id),
-        ];
+        $channels = [];
+
+        if (!empty($this->message->sender_id)) {
+            $channels[] = new Channel('chat.' . $this->message->sender_id);
+        }
+
+        if (!empty($this->message->conversation_id)) {
+            $channels[] = new Channel('conversation.' . $this->message->conversation_id);
+        }
+
+        if (!empty($this->message->group_id)) {
+            $channels[] = new Channel('group.' . $this->message->group_id);
+        }
+
+        if (empty($channels)) {
+            $channels[] = new Channel('chat.global');
+        }
+
+        return $channels;
     }
+
+
 
 
     public function broadcastWith(): array
@@ -36,7 +53,7 @@ class MessageDeleted implements ShouldBroadcast
         return [
             'id' => $this->message->id,
             'sender_id' => $this->message->sender_id,
-            'receiver_id' => $this->message->receiver_id,
+            'conversation_id' => $this->message->conversation_id,
             'deleted' => true,
         ];
     }

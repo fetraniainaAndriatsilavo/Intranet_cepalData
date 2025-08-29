@@ -1,10 +1,10 @@
 import React from 'react';
 
-function DashboardCard07() {
+function DashboardCard07({ title }) {
   return (
     <div className="col-span-full xl:col-span-8 bg-white dark:bg-gray-800 shadow-xs rounded-xl">
       <header className="px-5 py-4 border-b border-gray-100 dark:border-gray-700/60">
-        <h2 className="font-semibold text-gray-800 dark:text-gray-100">Top Channels</h2>
+        <h2 className="font-semibold text-gray-800 dark:text-gray-100">{title}</h2>
       </header>
       <div className="p-3">
         {/* Table */}
@@ -14,19 +14,19 @@ function DashboardCard07() {
             <thead className="text-xs uppercase text-gray-400 dark:text-gray-500 bg-gray-50 dark:bg-gray-700/50 rounded-xs">
               <tr>
                 <th className="p-2">
-                  <div className="font-semibold text-left">Source</div>
+                  <div className="font-semibold text-left"> Profil </div>
                 </th>
                 <th className="p-2">
-                  <div className="font-semibold text-center">Visitors</div>
+                  <div className="font-semibold text-center">Nom du Tâches </div>
                 </th>
                 <th className="p-2">
-                  <div className="font-semibold text-center">Revenues</div>
+                  <div className="font-semibold text-center"> Status </div>
                 </th>
                 <th className="p-2">
-                  <div className="font-semibold text-center">Sales</div>
+                  <div className="font-semibold text-center"> Type </div>
                 </th>
                 <th className="p-2">
-                  <div className="font-semibold text-center">Conversion</div>
+                  <div className="font-semibold text-center"> Date </div>
                 </th>
               </tr>
             </thead>

@@ -15,4 +15,9 @@ class MessageGroup extends Model
         return $this->belongsToMany(User::class, 'intranet_extedim.messages_groups_users', 'group_id', 'user_id')
             ->withPivot('is_admin');
     }
+
+    public function messages()
+    {
+        return $this->hasMany(Message::class, 'group_id', 'id');
+    }
 }

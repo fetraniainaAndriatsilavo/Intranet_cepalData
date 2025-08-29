@@ -1,47 +1,81 @@
 import EmojiPicker from "emoji-picker-react";
-import { useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useRef, useState } from "react";
 import api from "../../axios";
+import { AppContext } from "../../../context/AppContext";
 
-export default function GroupInput({ setMessages, groupId }) {
+export default function GroupInput({ groupId, messageId, setMessageId }) {
+    const { user } = useContext(AppContext)
     const [sending, setSending] = useState(false);
     const [input, setInput] = useState("");
     const [picture, setPicture] = useState([]); // <-- track uploaded files
     const emojiButtonRef = useRef(null);
     const [isShown, setIsShown] = useState(false);
 
+    const [send, setSend] = useState(false)
+
+    // donne les informations d'une message
+    const fetchMessageInfo = (id) => {
+        api.get('/messages/' + id + '/getMessage/message')
+            .then((response) => {
+                setInput(response.data.content)
+            })
+    }
+
+    // envoie d'une message
     const handleSend = () => {
         setSending(true)
         if (!input.trim() && picture.length === 0) return;
-
-
         setInput("");
         setPicture([]);
-
-        api.post('/group-messages/' + groupId, {
-
+        api.post('/messages', {
+            content: input,
+            sender_id: user.id,
+            group_id: groupId,
+            status: 'active'
         }, {
             headers: {
                 "Content-Type": 'application/json'
             }
         })
-            .then(() => { 
-                
-        setMessages((prev) => [
-            ...prev,
-            {
-                id: prev.length + 1,
-                sender: "You",
-                text: input,
-                time: "Now",
-                type: "sent",
-                attachments: picture,
-            },
-        ]);
+            .then((response) => {
+                setMessages((prev) => [...prev, response.data]);
             })
             .finally(() => {
                 setSending(false)
             })
     };
+
+
+    // update d'une message
+    const UpdateMessage = (id) => {
+        setSending(true)
+        if (!input.trim() && picture.length === 0) return;
+        setInput("");
+        setPicture([]);
+
+        api.put('/messages/' + id + '/update', {
+            content: input,
+        }, {
+            headers: {
+                "Content-Type": 'application/json'
+            }
+        })
+            .then(() => {
+                setMessageId(null)
+            })
+            .finally(() => {
+                setSending(false)
+            })
+    }
+
+
+    // transmission de l'information du message 
+    useEffect(() => {
+        if (messageId) {
+            fetchMessageInfo(messageId)
+        }
+    }, [messageId])
+
 
     // Close emoji picker when clicking outside
     useEffect(() => {
@@ -170,47 +204,73 @@ export default function GroupInput({ setMessages, groupId }) {
                 />
 
                 {/* Send Button */}
-                <button
-                    onClick={handleSend}
-                    className="ml-3 bg-sky-600 text-white rounded-full p-2 hover:bg-sky-700 cursor-pointer flex items-center justify-center"
-                >
-                    {sending ? (
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="icon icon-tabler icons-tabler-outline icon-tabler-send"
-                        >
+                {
+                    input && <button
+                        onClick={() => {
+                            if (messageId) {
+                                UpdateMessage(messageId)
+                            } else {
+                                handleSend()
+                            }
+                        }
+                        }
+
+                        onMouseOver={() => {
+                            setSend(true)
+                        }}
+
+                        onMouseOut={() => {
+                            setSend(false)
+                        }}
+
+                        className="ml-3 bg-sky-600 text-white rounded-full p-2 hover:bg-sky-700 cursor-pointer flex items-center justify-center"
+                    >
+                        {(send && sending == false) ? (
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="24"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="icon icon-tabler icons-tabler-outline icon-tabler-send"
+                            >
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M10 14l11 -11" />
+                                <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
+                            </svg>
+                        ) : (!send && sending == true) ? <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-progress">
                             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M10 14l11 -11" />
-                            <path d="M21 3l-6.5 18a.55 .55 0 0 1 -1 0l-3.5 -7l-7 -3.5a.55 .55 0 0 1 0 -1l18 -6.5" />
-                        </svg>
-                    ) : (
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="24"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="icon icon-tabler icons-tabler-outline icon-tabler-send-2"
-                        >
-                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <path d="M4.698 4.034l16.302 7.966l-16.302 7.966a.503 .503 0 0 1 -.546 -.124a.555 .555 0 0 1 -.12 -.568l2.468 -7.274l-2.468 -7.274a.555 .555 0 0 1 .12 -.568a.503 .503 0 0 1 .546 -.124z" />
-                            <path d="M6.5 12h14.5" />
-                        </svg>
-                    )}
-                </button>
+                            <path d="M10 20.777a8.942 8.942 0 0 1 -2.48 -.969" />
+                            <path d="M14 3.223a9.003 9.003 0 0 1 0 17.554" />
+                            <path d="M4.579 17.093a8.961 8.961 0 0 1 -1.227 -2.592" />
+                            <path d="M3.124 10.5c.16 -.95 .468 -1.85 .9 -2.675l.169 -.305" />
+                            <path d="M6.907 4.579a8.954 8.954 0 0 1 3.093 -1.356" />
+                        </svg> :
+                            (
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="24"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="icon icon-tabler icons-tabler-outline icon-tabler-send-2"
+                                >
+                                    <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                    <path d="M4.698 4.034l16.302 7.966l-16.302 7.966a.503 .503 0 0 1 -.546 -.124a.555 .555 0 0 1 -.12 -.568l2.468 -7.274l-2.468 -7.274a.555 .555 0 0 1 .12 -.568a.503 .503 0 0 1 .546 -.124z" />
+                                    <path d="M6.5 12h14.5" />
+                                </svg>
+                            )}
+                    </button>
+                }
             </div>
-        </div>
+        </div >
     );
 }

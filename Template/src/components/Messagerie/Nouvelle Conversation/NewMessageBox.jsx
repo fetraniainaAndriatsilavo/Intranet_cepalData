@@ -1,10 +1,10 @@
 import { Avatar } from "@mui/material";
 import { useContext, useState } from "react";
-import { AppContext } from "../../context/AppContext";
-import api from "../axios";
+import { AppContext } from "../../../context/AppContext";
+import api from "../../axios";
 
-export default function MessageBox({ msg }) {
-    const { user } = useContext(AppContext);
+export default function NewMessageBox({ msg }) {
+    const { user } = useContext(AppContext)
     const deleted = false;
     const [isShown, setIsShown] = useState(false)
 

@@ -11,43 +11,60 @@ use App\Http\Controllers\Controller;
 use Illuminate\Container\Attributes\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB as FacadesDB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
 class GroupController extends Controller
 {
-    public function getGroupInfo($groupId)
+    public function getGroupInfo($group_id)
     {
         try {
-            $group = MessageGroup::with(['users' => function ($q) {
-                $q->select('users.id', 'users.first_name', 'users.last_name', 'users.email');
-            }])->findOrFail($groupId);
+            $group = MessageGroup::with([
+                'users:id,first_name',
+                'messages' => function ($query) {
+                    $query->orderBy('created_at', 'desc');
+                },
+                'messages.sender:id,first_name'
+            ])->find($group_id);
+
+            if (!$group) {
+                return response()->json([
+                    'status' => 'empty',
+                    'message' => 'Aucun groupe trouvé.'
+                ], 404);
+            }
+
+            $result = $group->messages->map(function ($msg) {
+                return [
+                    'message_id' => $msg->id,
+                    'content' => $msg->content,
+                    'sender_id' => $msg->sender_id,
+                    'sender_name' => $msg->sender?->name,
+                    'is_read' => $msg->read_at,
+                    'created_at' => $msg->created_at,
+                ];
+            });
 
             return response()->json([
-                'success' => true,
+                'status' => 'success',
                 'group' => [
                     'id' => $group->id,
                     'name' => $group->name,
-                    'updated_at' => $group->updated_at,
-                    'updated_by' => $group->updated_by,
-                    'members' => $group->users->map(function ($user) {
-                        return [
-                            'id' => $user->id,
-                            'first_name' => $user->first_name,
-                            'last_name' => $user->last_name,
-                            'email' => $user->email,
-                            'is_admin' => (bool) $user->pivot->is_admin, // pivot dispo direct ici
-                        ];
-                    })
-                ]
+                    'members' => $group->users
+                ],
+                'messages' => $result
             ], 200);
         } catch (\Exception $e) {
+            Log::error('Erreur récupération messages groupe : ' . $e->getMessage());
+
             return response()->json([
-                'success' => false,
-                'message' => 'Erreur lors de la récupération du groupe',
+                'status' => 'error',
+                'message' => 'Erreur serveur.',
                 'error' => $e->getMessage()
             ], 500);
         }
     }
+
 
     public function getMembers($groupId)
     {

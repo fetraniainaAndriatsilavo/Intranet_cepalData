@@ -3,7 +3,34 @@ import { useState } from "react";
 import GroupOption from "../Groupes/GroupOption";
 
 export default function GroupHeader({ groupId, group, setOpenEdit }) {
+
+
+    const colorName = group.name || ''
+
     const [anchorEl, setAnchorEl] = useState(null);
+
+    function stringToColor(string) {
+        let hash = 0;
+        let i;
+        for (i = 0; i < string.length; i += 1) {
+            hash = string.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        let color = '#';
+        for (i = 0; i < 3; i += 1) {
+            const value = (hash >> (i * 8)) & 0xff;
+            color += `00${value.toString(16)}`.slice(-2);
+        }
+        return color;
+    }
+
+    function stringAvatar(name) {
+        return {
+            sx: {
+                bgcolor: stringToColor(name),
+            },
+            children: `${name.split(' ')[0][0]}`,
+        };
+    }
 
     const handleClick = (event) => {
         setAnchorEl(event.currentTarget); // save the button element
@@ -14,7 +41,8 @@ export default function GroupHeader({ groupId, group, setOpenEdit }) {
     };
     return <div className="border-b p-4 flex items-center gap-2 justify-between bg-white dark:bg-gray-800">
         <div className="flex items-center gap-2 ">
-            <Avatar> {group.name ? group.name.charAt(0, 1).toUpperCase() : 'Nom'.charAt(0, 1).toUpperCase()} </Avatar>
+            <Avatar {...stringAvatar(colorName)} />
+            {/* <Avatar> {group.name ? group.name.charAt(0, 1).toUpperCase() : 'Nom'.charAt(0, 1).toUpperCase()} </Avatar> */}
             <h2 className="font-bold text-lg">{group.name || 'Nom du Groupe '}  </h2>
         </div>
         <div>

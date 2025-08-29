@@ -223,11 +223,13 @@ export default function Collaborateur() {
                                 value={form.address}
                                 onChange={(e) => setForm({ ...form, address: e.target.value })}
                             />
-                            <input
+                            <TextField
                                 type="date"
-                                placeholder="Date de Naissance"
-                                className="form-input border rounded px-3 py-2 col-span-2 text-sm"
-                                value={form.birth_date}
+                                label="Date de Naissance"
+                                size="small"
+                                InputLabelProps={{ shrink: true }}
+                                fullWidth
+                                value={form.hire_date}
                                 onChange={(e) => setForm({ ...form, birth_date: e.target.value })}
                             />
                             <input

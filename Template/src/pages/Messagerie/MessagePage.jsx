@@ -7,10 +7,9 @@ import Welcome from "../../components/Messagerie/Welcome";
 import CreateChatGroup from "../../components/Messagerie/Groupes/CreateChatGroup";
 import GroupChat from "../../components/Messagerie/GroupeLayout/GroupChat";
 import EditChatGroup from "../../components/Messagerie/Groupes/EditChatGroup";
+import NewChat from "../../components/Messagerie/Nouvelle Conversation/NewChat";
 
 export default function MessagesPage() {
-    const [messages, setMessages] = useState([]);
-
     const [sidebar, setSidebar] = useState("Utilisateurs");
 
     const [open, setOpen] = useState(false)
@@ -18,6 +17,9 @@ export default function MessagesPage() {
 
     const [selectedConversation, setSelectedConversation] = useState(null)
     const [selectedGroupChat, setSelectedGroupChat] = useState(null)
+    const [selectedNewConversation, setSelectedNewConversation] = useState(null)
+
+
     const fetchGroupConversation = (id) => {
         api.get('/users/' + id + '/message-groups')
             .then((response) => {
@@ -64,20 +66,29 @@ export default function MessagesPage() {
                             Groupes
                         </span>
                     </div>
-                    {sidebar === "Utilisateurs" ? <SidebarUtilisateur setSelectedGroupChat={setSelectedGroupChat} setSelectedConversation={setSelectedConversation} />
-                        : <SidebarGroupes setSelectedGroupChat={setSelectedGroupChat} setSelectedConversation={setSelectedConversation} />}
+                    {sidebar === "Utilisateurs" ? <SidebarUtilisateur setSelectedGroupChat={setSelectedGroupChat}
+                        setSelectedConversation={setSelectedConversation}
+                        setSelectedNewConversation={setSelectedNewConversation} />
+
+                        : <SidebarGroupes setSelectedGroupChat={setSelectedGroupChat}
+                            setSelectedConversation={setSelectedConversation}
+                            setSelectedNewConversation={setSelectedNewConversation} />}
                 </div>
             </aside>
             {/* Chat Window */}
             {
-                selectedConversation ? <Chatwindow 
+                selectedConversation ? <Chatwindow
                     conversationId={selectedConversation} />
-                    : selectedGroupChat ? <GroupChat messages={messages}
-                        setMessages={setMessages}
+                    :
+                    selectedGroupChat ? <GroupChat
                         groupId={selectedGroupChat}
                         setOpenEdit={setOpenEdit}
-                    /> : <Welcome />
+                    /> :
+                        selectedNewConversation ?
+                            <NewChat UserId={selectedNewConversation} /> :
+                                            <Welcome />
             }
+
             <CreateChatGroup open={open} onClose={() => { setOpen(false) }} fetchGroupConversation={fetchGroupConversation} />
 
             <EditChatGroup open={openEdit}

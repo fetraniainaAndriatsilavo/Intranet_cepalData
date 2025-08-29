@@ -2,21 +2,59 @@ import { Avatar } from "@mui/material";
 import { useContext } from "react";
 import { AppContext } from "../../../context/AppContext";
 
-export default function UserCard({ data, type, setSelectedConversation, setSelectedGroupChat }) {
+export default function UserCard({ data, type, setSelectedConversation, setSelectedGroupChat, setSelectedNewConversation, setSearchUser }) {
     const { user } = useContext(AppContext)
+
+    function stringToColor(string) {
+        let hash = 0;
+        let i;
+        for (i = 0; i < string.length; i += 1) {
+            hash = string.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        let color = '#';
+        for (i = 0; i < 3; i += 1) {
+            const value = (hash >> (i * 8)) & 0xff;
+            color += `00${value.toString(16)}`.slice(-2);
+        }
+        return color;
+    }
+
+    function stringAvatar(name) {
+        return {
+            sx: {
+                bgcolor: stringToColor(name),
+            },
+            children: `${name.split(' ')[0][0]}`,
+        };
+    }
+
+    function returnColorName(type, data, id) {
+        if (type == 'search') {
+            return data.first_name
+        } else {
+            if (id == data.user_one_id) {
+                return data.user_two.first_name
+            } else {
+                return data.user_one.first_name
+            }
+        }
+    }
+    const colorName = returnColorName(type, data, user.id)
+
     return <div className="flex items-center p-2 cursor-pointer transition rounded-lg  mt-1.5 overflow-hidden w-full" onClick={() => {
         if (type == 'conversation') {
-            alert('Comversation récente:' + data.id)
             setSelectedConversation(data.id)
+            setSelectedNewConversation(null)
             setSelectedGroupChat(null)
         } else {
-            alert('nouvelle conversation :' + data.id)
-            setSelectedConversation(data.id)
+            setSelectedNewConversation(data.id)
+            setSelectedConversation(null)
             setSelectedGroupChat(null)
+            setSearchUser('')
         }
     }}>
         <div className="w-12 h-12 overflow-hidden mr-4 flex-shrink-0">
-            <Avatar> {'Utilisateur'.charAt(0).toUpperCase()} </Avatar>
+            <Avatar {...stringAvatar(colorName)} /> 
         </div>
         <div className="flex flex-col min-w-0 ">
             {
@@ -39,7 +77,7 @@ export default function UserCard({ data, type, setSelectedConversation, setSelec
 
             {
                 type == 'search' && <span className="text-sm text-gray-500 truncate whitespace-nowrap overflow-hidden">
-                    {data.role}
+                    Démarrez une nouvelle conversation
                 </span>
             }
         </div>

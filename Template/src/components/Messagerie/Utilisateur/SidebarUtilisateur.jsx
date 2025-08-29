@@ -3,7 +3,7 @@ import UserCard from "./UserCard";
 import api from "../../axios";
 import { AppContext } from "../../../context/AppContext";
 
-export default function SidebarUtilisateur({ setSelectedConversation, setSelectedGroupChat }) {
+export default function SidebarUtilisateur({ setSelectedConversation, setSelectedGroupChat, setSelectedNewConversation }) {
     const { user } = useContext(AppContext)
     const [searchUser, setSearchUser] = useState('')
     const [allUser, setAllUser] = useState([])
@@ -63,15 +63,18 @@ export default function SidebarUtilisateur({ setSelectedConversation, setSelecte
                 searchUser && filteredUsers ? filteredUsers.map((user, index) => {
                     return <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between">
                         <UserCard data={user} type={'search'} key={index}
-                         setSelectedConversation={setSelectedConversation}
-                         setSelectedGroupChat={setSelectedGroupChat}> </UserCard>
+                            setSelectedConversation={setSelectedConversation}
+                            setSelectedGroupChat={setSelectedGroupChat}
+                            setSelectedNewConversation={setSelectedNewConversation}
+                            setSearchUser={setSearchUser}> </UserCard> 
                     </li>
                 }) : conversationList.length > 0 ? conversationList.map((conversation, index) => {
                     return <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between">
-                        <UserCard data={conversation} type={'conversation'} key={index} 
-                        setSelectedGroupChat={setSelectedGroupChat}
-                         setSelectedConversation={setSelectedConversation}> </UserCard>
-                    </li> 
+                        <UserCard data={conversation} type={'conversation'} key={index}
+                            setSelectedGroupChat={setSelectedGroupChat}
+                            setSelectedConversation={setSelectedConversation}
+                            setSelectedNewConversation={setSelectedNewConversation}> </UserCard>
+                    </li>
                 }) : <span className="flex  text-sm text-center items-center justify-center mt-3 "> Aucune discussion n’est disponible pour le moment.</span>
             }
         </ul >

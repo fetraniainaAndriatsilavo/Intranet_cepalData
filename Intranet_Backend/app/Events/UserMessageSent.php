@@ -6,6 +6,7 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Message;
+use Illuminate\Broadcasting\PrivateChannel;
 
 class UserMessageSent implements ShouldBroadcast
 {

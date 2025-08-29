@@ -328,7 +328,6 @@ class MessageController extends Controller
         return response()->json($message);
     }
 
-
     public function markAsRead(Request $request, $id)
     {
         try {
@@ -371,8 +370,6 @@ class MessageController extends Controller
         }
     }
 
-
-
     public function update(Request $request, $id)
     {
         try {
@@ -385,7 +382,7 @@ class MessageController extends Controller
             }
 
             $validated = $request->validate([
-                'content' => 'nullable'
+                'content' => 'required'
             ]);
 
             $message->content = $validated['content'];
@@ -419,24 +416,25 @@ class MessageController extends Controller
         }
     }
 
-
     public function destroy($id)
     {
         try {
             $message = Message::findOrFail($id);
 
-            $message->delete();
+            $message->update([
+                'status' => 'inactive'
+            ]);
 
             broadcast(new MessageDeleted($message))->toOthers();
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Message supprimé avec succès.',
+                'message' => 'Message marqué comme inactif avec succès.',
                 'data' => [
                     'id' => $message->id,
                     'sender_id' => $message->sender_id,
                     'receiver_id' => $message->receiver_id,
-                    'deleted' => true,
+                    'status' => $message->status,
                 ]
             ], 200);
         } catch (ModelNotFoundException $e) {
@@ -445,7 +443,7 @@ class MessageController extends Controller
             ], 404);
         } catch (Exception $e) {
             return response()->json([
-                'error' => 'Erreur lors de la suppression.',
+                'error' => 'Erreur lors de la mise à jour du statut.',
                 'details' => $e->getMessage()
             ], 500);
         }

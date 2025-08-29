@@ -100,7 +100,7 @@ export default function Informations() {
             {/* Profile Info */}
             <div className="pt-16 px-6 pb-6">
                 <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-semibold text-gray-800"> {userInformation.first_name} </h2>
+                    <h2 className="text-xl font-semibold text-gray-800"> {userInformation.last_name +" " +userInformation.first_name} </h2>
                 </div>
                 <p className="text-sm text-gray-500">
                     {departmentId}
@@ -196,7 +196,7 @@ export default function Informations() {
                                 <path d="M9 7h4" />
                                 <path d="M9 11h4" /><path d="M18.42 12.61a2.1 2.1 0 0 1 2.97 2.97l-6.39 6.42h-3v-3z" />
                             </svg>
-                            <span> {userInformation.type ? userInformation.type : 'XXX (type de Contrats) '}  </span>
+                            <span> {userInformation.contract_code ? userInformation.contract_code : 'XXX (type de Contrats) '}  </span>
                         </div>
 
                         {/* Catégorie */}

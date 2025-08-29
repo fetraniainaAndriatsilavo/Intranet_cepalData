@@ -3,7 +3,7 @@ import GroupCard from "./GroupCard";
 import { AppContext } from "../../../context/AppContext";
 import api from "../../axios";
 
-export default function SidebarGroupes({ setSelectedGroupChat, setSelectedConversation }) {
+export default function SidebarGroupes({ setSelectedGroupChat, setSelectedConversation, setSelectedNewConversation }) {
     const { user } = useContext(AppContext)
     const [searchGroup, setSearchGroup] = useState('')
     const [allGroup, setAllGroup] = useState([])
@@ -52,7 +52,8 @@ export default function SidebarGroupes({ setSelectedGroupChat, setSelectedConver
                         >
                             <GroupCard data={selectedGroup}
                                 setSelectedConversation={setSelectedConversation}
-                                setSelectedGroupChat={setSelectedGroupChat} />
+                                setSelectedGroupChat={setSelectedGroupChat}  
+                                setSelectedNewConversation={setSelectedNewConversation} />
                         </li>
                     ))
                 ) : allGroup.length > 0 ? (
@@ -63,7 +64,8 @@ export default function SidebarGroupes({ setSelectedGroupChat, setSelectedConver
                         >
                             <GroupCard data={group}
                                 setSelectedConversation={setSelectedConversation}
-                                setSelectedGroupChat={setSelectedGroupChat} />
+                                setSelectedGroupChat={setSelectedGroupChat}  
+                                setSelectedNewConversation={setSelectedNewConversation}/>
                         </li>
                     ))
                 ) : (

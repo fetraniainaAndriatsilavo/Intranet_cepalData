@@ -1,28 +1,18 @@
 import EmojiPicker from "emoji-picker-react";
 import { useContext, useEffect, useRef, useState } from "react";
-import api from "../axios";
-import { AppContext } from "../../context/AppContext";
+import api from "../../axios";
+import { AppContext } from "../../../context/AppContext";
 
-export default function InputBox({ conversation, messageId, setMessageId, setMessages }) {
+export default function NewInputBox({ receiverId, messageId, setMessageId, setMessages }) {
     const { user } = useContext(AppContext)
+
     const [sending, setSending] = useState(false)
     const [input, setInput] = useState("");
     const [picture, setPicture] = useState([])
     const emojiButtonRef = useRef(null);
     const [isShown, setIsShown] = useState(false);
 
-    const [receiver, setReceiver] = useState(null)
     const [send, setSend] = useState(false)
-
-    useEffect(() => {
-        if (conversation?.user_one && conversation?.user_two) {
-            if (conversation.user_one.id === user.id) {
-                setReceiver(conversation.user_two?.id || 0);
-            } else {
-                setReceiver(conversation.user_one?.id || 0);
-            }
-        }
-    }, [conversation])
 
     // donne les informations d'une message
     const fetchMessageInfo = (id) => {
@@ -39,8 +29,7 @@ export default function InputBox({ conversation, messageId, setMessageId, setMes
         api.post('/messages', {
             content: input,
             sender_id: user.id,
-            receiver_id: receiver,
-            conversationId: conversation.id,
+            receiver_id: receiverId,
             status: 'active'
         })
             .then((response) => {
