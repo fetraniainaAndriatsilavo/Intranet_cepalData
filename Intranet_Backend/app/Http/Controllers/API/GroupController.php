@@ -6,23 +6,60 @@ use App\Models\Group;
 use App\Models\MessageGroup;
 use App\Models\MessageGroupUser;
 use App\Models\User;
+use App\Notifications\NewGroupMessageAdded;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Container\Attributes\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\ValidationException;
 
 class GroupController extends Controller
 {
+    // public function getGroupInfo($groupId)
+    // {
+    //     try {
+    //         $group = MessageGroup::with(['users' => function ($q) {
+    //             $q->select('users.id', 'users.first_name', 'users.last_name', 'users.email');
+    //         }])->findOrFail($groupId);
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'group' => [
+    //                 'id' => $group->id,
+    //                 'name' => $group->name,
+    //                 'updated_at' => $group->updated_at,
+    //                 'updated_by' => $group->updated_by,
+    //                 'members' => $group->users->map(function ($user) {
+    //                     return [
+    //                         'id' => $user->id,
+    //                         'first_name' => $user->first_name,
+    //                         'last_name' => $user->last_name,
+    //                         'email' => $user->email,
+    //                         'is_admin' => (bool) $user->pivot->is_admin, // pivot dispo direct ici
+    //                     ];
+    //                 })
+    //             ]
+    //         ], 200);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Erreur lors de la récupération du groupe',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+
     public function getGroupInfo($group_id)
     {
         try {
             $group = MessageGroup::with([
                 'users:id,first_name',
                 'messages' => function ($query) {
-                    $query->orderBy('created_at', 'desc');
+                    $query->orderBy('created_at', 'asc');
                 },
                 'messages.sender:id,first_name'
             ])->find($group_id);
@@ -39,7 +76,7 @@ class GroupController extends Controller
                     'message_id' => $msg->id,
                     'content' => $msg->content,
                     'sender_id' => $msg->sender_id,
-                    'sender_name' => $msg->sender?->name,
+                    'sender_name' => $msg->sender?->first_name,
                     'is_read' => $msg->read_at,
                     'created_at' => $msg->created_at,
                 ];
@@ -64,7 +101,6 @@ class GroupController extends Controller
             ], 500);
         }
     }
-
 
     public function getMembers($groupId)
     {
@@ -103,9 +139,14 @@ class GroupController extends Controller
         try {
             $user = User::findOrFail($userId);
 
-            $groups = $user->messageGroups()->with(['users' => function ($q) {
-                $q->select('users.id', 'users.first_name', 'users.last_name', 'users.email');
-            }])->get();
+            $groups = $user->messageGroups()->with([
+                'users:id,first_name,last_name,email',
+                'lastMessage.sender:id,first_name,last_name,email'
+            ])->get();
+
+            $groups = $groups->sortByDesc(function ($group) {
+                return $group->lastMessage ? $group->lastMessage->created_at : null;
+            })->values();
 
             return response()->json([
                 'success' => true,
@@ -116,6 +157,13 @@ class GroupController extends Controller
                         return [
                             'id' => $group->id,
                             'name' => $group->name,
+                            'last_message' => $group->lastMessage ? [
+                                'id' => $group->lastMessage->id,
+                                'content' => $group->lastMessage->content,
+                                'sender_id' => $group->lastMessage->sender_id,
+                                'sender_name' => $group->lastMessage->sender?->first_name,
+                                'created_at' => $group->lastMessage->created_at
+                            ] : null,
                             'members' => $group->users->map(function ($user) {
                                 return [
                                     'id' => $user->id,
@@ -128,7 +176,7 @@ class GroupController extends Controller
                         ];
                     })
                 ]
-            ]);
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -169,6 +217,11 @@ class GroupController extends Controller
             }
 
             FacadesDB::commit();
+
+            $admin = User::find($request->admin_id);
+            $usersToNotify = User::whereIn('id', $users)->get();
+
+            Notification::send($usersToNotify, new NewGroupMessageAdded($group, $admin));
 
             return response()->json([
                 'success' => true,
@@ -250,6 +303,8 @@ class GroupController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
             'updated_by' => 'required|integer|exists:intranet_extedim.users,id',
+            'members' => 'array',
+            'members.*' => 'integer|exists:intranet_extedim.users,id',
         ]);
 
         try {
@@ -260,10 +315,14 @@ class GroupController extends Controller
                 'updated_by' => $request->updated_by,
             ]);
 
+            if ($request->has('members')) {
+                $group->users()->syncWithoutDetaching($request->members);
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'Nom du groupe mis à jour avec succès',
-                'group' => $group
+                'message' => 'Groupe mis à jour avec succès',
+                'group' => $group->load('users')
             ]);
         } catch (\Exception $e) {
             return response()->json([
@@ -273,6 +332,35 @@ class GroupController extends Controller
             ], 500);
         }
     }
+
+    // public function update(Request $request, $groupId)
+    // {
+    //     $request->validate([
+    //         'name' => 'required|string|max:255',
+    //         'updated_by' => 'required|integer|exists:intranet_extedim.users,id',
+    //     ]);
+
+    //     try {
+    //         $group = MessageGroup::findOrFail($groupId);
+
+    //         $group->update([
+    //             'name' => $request->name,
+    //             'updated_by' => $request->updated_by,
+    //         ]);
+
+    //         return response()->json([
+    //             'success' => true,
+    //             'message' => 'Nom du groupe mis à jour avec succès',
+    //             'group' => $group
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'success' => false,
+    //             'message' => 'Erreur lors de la mise à jour du groupe',
+    //             'error' => $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
 
     public function destroy($groupId)
     {

@@ -3,39 +3,36 @@ import UserCard from "./UserCard";
 import api from "../../axios";
 import { AppContext } from "../../../context/AppContext";
 
-export default function SidebarUtilisateur({ setSelectedConversation, setSelectedGroupChat, setSelectedNewConversation }) {
+export default function SidebarUtilisateur({ setSelectedConversation, setSelectedGroupChat, setSelectedNewConversation, conversationList, fetchConversation }) {
     const { user } = useContext(AppContext)
     const [searchUser, setSearchUser] = useState('')
     const [allUser, setAllUser] = useState([])
-    const [conversationList, setConversationList] = useState([])
 
-    const fetchConversation = (id) => {
-        api.get('/conversations/ ' + id)
-            .then((response) => {
-                setConversationList(response.data);
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    }
 
-    const fetchAllUser = () => {
-        api.get('/getUser/all')
-            .then((response) => {
-                setAllUser(response.data.users);
-            })
-            .catch((error) => {
-                console.log(error);
+    const fetchAllUser = async () => {
+        try {
+            const usersRes = await api.get('/getUser/all');
+            const convRes = await api.get('/conversations/' + user.id);
+
+            const allUsers = usersRes.data.users;
+            const conversations = convRes.data;
+
+            const existingIds = conversations.map(conv => {
+                return conv.user_one_id === user.id ? conv.user_two_id : conv.user_one_id;
             });
-    }
+
+            const filteredUsers = allUsers.filter(u => !existingIds.includes(u.id) && u.id !== user.id);
+
+            setAllUser(filteredUsers);
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
     useEffect(() => {
         fetchAllUser()
     }, []);
 
-    useEffect(() => {
-        fetchConversation(user.id)
-    }, [user])
 
     const filteredUsers = allUser.filter((user) => {
         const name = user.first_name?.toLowerCase() || "";
@@ -66,9 +63,11 @@ export default function SidebarUtilisateur({ setSelectedConversation, setSelecte
                             setSelectedConversation={setSelectedConversation}
                             setSelectedGroupChat={setSelectedGroupChat}
                             setSelectedNewConversation={setSelectedNewConversation}
-                            setSearchUser={setSearchUser}> </UserCard> 
+                            setSearchUser={setSearchUser}
+                            fetchConversation={fetchConversation}
+                            > </UserCard>
                     </li>
-                }) : conversationList.length > 0 ? conversationList.map((conversation, index) => {
+                }) : conversationList && conversationList.length > 0 ? conversationList.map((conversation, index) => {
                     return <li className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between">
                         <UserCard data={conversation} type={'conversation'} key={index}
                             setSelectedGroupChat={setSelectedGroupChat}

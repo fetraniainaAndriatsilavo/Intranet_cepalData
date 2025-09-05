@@ -3,11 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Event;
+use App\Models\User;
+use App\Notifications\NewEventCreated;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use Exception;
+use Illuminate\Support\Facades\Notification;
 
 class EventController extends Controller
 {
@@ -50,6 +53,9 @@ class EventController extends Controller
                 'description' => $validated['description'],
                 'date' => $validated['date'],
             ]);
+
+            $users = User::all();
+            Notification::send($users, new NewEventCreated($event));
 
             return response()->json([
                 'message' => 'Événement créé avec succès',

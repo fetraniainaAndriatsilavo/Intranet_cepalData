@@ -49,7 +49,7 @@ export default function CardNotification({ notification, fetchNotifications }) {
         }
             <h1 className="title font-bold p-1"> {notification.data.title ? notification.data.title : ''} </h1>
         </div>
-        <p className="leading-5 p-3"> {notification.data.message} </p>
+        <p className="leading-5 p-3"> {notification.data.message ? notification.data.message : notification.data.content} </p>
         <div className="flex items-center flex-row justify-between">
             <button className="text-sky-600 p-3 cursor-pointer" onClick={(e) => {
                 e.preventDefault()

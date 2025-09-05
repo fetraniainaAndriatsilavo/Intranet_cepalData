@@ -12,6 +12,8 @@ export default function CreateEvent({ fecthEvent, open, onClose }) {
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
 
+  const [loading, setLoading] = useState(false)
+
   const handleChange = (e) => {
     setFormData((prev) => ({
       ...prev,
@@ -22,7 +24,7 @@ export default function CreateEvent({ fecthEvent, open, onClose }) {
   const handleSubmit = async () => {
     setSuccess(null);
     setError(null);
-
+    setLoading(true)
     try {
       const response = await api.post(
         "event/create",
@@ -37,10 +39,12 @@ export default function CreateEvent({ fecthEvent, open, onClose }) {
       setTimeout(() => {
         setSuccess(null)
       }, [5000])
+      setLoading(false)
       setFormData({ title: "", date: "", time: "", description: "" });
       onClose()
       fecthEvent()
     } catch (err) {
+      setLoading(false)
       console.error(err);
       setError(error.data.message);
       setTimeout(() => {

@@ -4,10 +4,10 @@ import DoughnutChart from '../../charts/DoughnutChart';
 // Import utilities
 import { getCssVariable } from '../../utils/Utils';
 
-function DashboardCard06({ title, data, value }) {
+function DashboardCard06({ title, labels, value }) {
 
   const chartData = {
-    labels: data,
+    labels: labels,
     datasets: [
       {
         label: title,

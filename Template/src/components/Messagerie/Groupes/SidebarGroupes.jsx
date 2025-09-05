@@ -1,12 +1,8 @@
-import { useContext, useEffect, useState } from "react";
+import { useState } from "react";
 import GroupCard from "./GroupCard";
-import { AppContext } from "../../../context/AppContext";
-import api from "../../axios";
 
-export default function SidebarGroupes({ setSelectedGroupChat, setSelectedConversation, setSelectedNewConversation }) {
-    const { user } = useContext(AppContext)
+export default function SidebarGroupes({ setSelectedGroupChat, setSelectedConversation, setSelectedNewConversation, allGroup }) {
     const [searchGroup, setSearchGroup] = useState('')
-    const [allGroup, setAllGroup] = useState([])
 
     const filteredGroup = allGroup.filter((group) => {
         const name = group.first_name?.toLowerCase() || "";
@@ -14,20 +10,6 @@ export default function SidebarGroupes({ setSelectedGroupChat, setSelectedConver
             name.includes(searchGroup.toLowerCase())
         );
     });
-
-    const fetchGroupConversation = (id) => {
-        api.get('/users/' + id + '/message-groups')
-            .then((response) => {
-                setAllGroup(response.data.user.groups);
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    }
-
-    useEffect(() => {
-        fetchGroupConversation(user.id)
-    }, [user])
 
     return <>
         <input
@@ -52,7 +34,7 @@ export default function SidebarGroupes({ setSelectedGroupChat, setSelectedConver
                         >
                             <GroupCard data={selectedGroup}
                                 setSelectedConversation={setSelectedConversation}
-                                setSelectedGroupChat={setSelectedGroupChat}  
+                                setSelectedGroupChat={setSelectedGroupChat}
                                 setSelectedNewConversation={setSelectedNewConversation} />
                         </li>
                     ))
@@ -64,8 +46,8 @@ export default function SidebarGroupes({ setSelectedGroupChat, setSelectedConver
                         >
                             <GroupCard data={group}
                                 setSelectedConversation={setSelectedConversation}
-                                setSelectedGroupChat={setSelectedGroupChat}  
-                                setSelectedNewConversation={setSelectedNewConversation}/>
+                                setSelectedGroupChat={setSelectedGroupChat}
+                                setSelectedNewConversation={setSelectedNewConversation} />
                         </li>
                     ))
                 ) : (

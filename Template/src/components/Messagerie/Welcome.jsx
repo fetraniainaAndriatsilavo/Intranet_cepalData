@@ -11,7 +11,7 @@ export default function Welcome() {
           </span>
         </h2>
         <p className="text-gray-600 text-base sm:text-lg max-w-xl mx-auto font-light">
-          Votre espace de discussion moderne, rapide et sécurisé.
+          Votre intranet de discussion moderne, conçu pour améliorer la communication interne et renforcer la collaboration entre vos équipes.
         </p>
       </div>
     </div>

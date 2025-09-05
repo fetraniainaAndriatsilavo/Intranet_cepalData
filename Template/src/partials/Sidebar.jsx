@@ -3,6 +3,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import Logo from '../images/image005.png'
 import SidebarLinkGroup from "./SidebarLinkGroup";
 import { AppContext } from "../context/AppContext"
+import api from "../components/axios";
 
 function Sidebar({
   sidebarOpen,
@@ -17,6 +18,9 @@ function Sidebar({
 
   const storedSidebarExpanded = localStorage.getItem("sidebar-expanded");
   const [sidebarExpanded, setSidebarExpanded] = useState(storedSidebarExpanded === null ? false : storedSidebarExpanded === "true");
+
+  const [allNotifications, setAllNotifications] = useState([])
+
 
   // close on click outside
   useEffect(() => {
@@ -47,6 +51,18 @@ function Sidebar({
       document.querySelector("body").classList.remove("sidebar-expanded");
     }
   }, [sidebarExpanded]);
+
+
+  const fetchNotifications = (id) => {
+    api.get('/notifications/' + id)
+      .then((response) => {
+        setAllNotifications(response.data)
+      })
+  }
+
+  useEffect(() => {
+    fetchNotifications(user.id)
+  }, [user])
 
   return (
     <div className="min-w-fit">
@@ -161,7 +177,7 @@ function Sidebar({
                                   Mes Informations
                                 </span>
                               </NavLink>
-                            </li> 
+                            </li>
 
                             <li className="mb-1 last:mb-0">
                               <NavLink
@@ -314,6 +330,10 @@ function Sidebar({
                               <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
                                 Kanban
                               </span>
+                              <span className="inline-flex items-center ml-3 justify-center h-5 text-xs font-medium text-white px-2 rounded-full" style={{ backgroundColor: '#f56565' }}> {
+                                (allNotifications?.filter(n => n.type == "App\\Notifications\\TaskAssigned")?.length) || 0
+                              }</span>
+
                             </NavLink>
                           </li>
                         </ul>
@@ -411,9 +431,10 @@ function Sidebar({
                       </span>
                     </div>
                     {/* Badge */}
-                    {/* <div className="flex shrink-0 ml-2">
-                      <span className="inline-flex items-center justify-center h-5 text-xs font-medium text-white px-2 rounded-sm" style={{ backgroundColor: '#04adf0' }}> 4</span>
-                    </div> */}
+                    <div className="flex shrink-0 ml-2">
+                      <span className="inline-flex items-center justify-center h-5 text-xs font-medium text-white px-2 rounded-sm" style={{ backgroundColor: '#f56565' }}> {
+                        (allNotifications?.filter(n => n.type == 'App\\Notifications\\NewMessageNotification' || n.type == 'App\\Notifications\\NewGroupMessageAdded')?.length) || 0} </span>
+                    </div>
                   </div>
                 </NavLink>
               </li>
@@ -439,7 +460,9 @@ function Sidebar({
                     </div>
                     {/* Badge */}
                     <div className="flex shrink-0 ml-2">
-                      {/* <span className="inline-flex items-center justify-center h-5 text-xs font-medium text-white px-2 rounded-sm" style={{ backgroundColor: '#04adf0' }}> 1 </span> */}
+                      <span className="inline-flex items-center justify-center h-5 text-xs font-medium text-white px-2 rounded-sm" style={{ backgroundColor: '#f56565' }}>
+                        {(allNotifications?.filter(n => n.type == 'App\\Notifications\\NewGroupPostAdded' || n.type == 'App\\Notifications\\NewGroupPostAdded')?.length) || 0}
+                      </span>
                     </div>
                   </div>
                 </NavLink>

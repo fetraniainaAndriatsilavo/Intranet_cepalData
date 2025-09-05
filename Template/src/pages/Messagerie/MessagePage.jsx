@@ -1,5 +1,5 @@
 // MessagesPage.jsx
-import { useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import SidebarUtilisateur from "../../components/Messagerie/Utilisateur/SidebarUtilisateur";
 import SidebarGroupes from "../../components/Messagerie/Groupes/SidebarGroupes";
 import Chatwindow from "../../components/Messagerie/Chatwindow";
@@ -8,8 +8,11 @@ import CreateChatGroup from "../../components/Messagerie/Groupes/CreateChatGroup
 import GroupChat from "../../components/Messagerie/GroupeLayout/GroupChat";
 import EditChatGroup from "../../components/Messagerie/Groupes/EditChatGroup";
 import NewChat from "../../components/Messagerie/Nouvelle Conversation/NewChat";
+import api from "../../components/axios";
+import { AppContext } from "../../context/AppContext"; 
 
-export default function MessagesPage() {
+export default function MessagesPage({setInstantNotif}) {
+    const { user } = useContext(AppContext)
     const [sidebar, setSidebar] = useState("Utilisateurs");
 
     const [open, setOpen] = useState(false)
@@ -20,15 +23,37 @@ export default function MessagesPage() {
     const [selectedNewConversation, setSelectedNewConversation] = useState(null)
 
 
+    const [conversationList, setConversationList] = useState([])
+    const [allGroup, setAllGroup] = useState([])
+
+
     const fetchGroupConversation = (id) => {
         api.get('/users/' + id + '/message-groups')
             .then((response) => {
-                setAllGroup(response.data.users.groups);
+                setAllGroup(response.data.user.groups);
+                console.log(response.data.user.groups)
             })
             .catch((error) => {
                 console.log(error);
             });
     }
+
+    const fetchConversation = (id) => {
+        api.get('/conversations/' + id)
+            .then((response) => {
+                setConversationList(response.data);
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }
+
+
+    useEffect(() => {
+        fetchConversation(user.id)
+        fetchGroupConversation(user.id)
+    }, [user.id])
+
 
     return (
         <div className="flex h-[80vh] w-full bg-gray-50 dark:bg-gray-900">
@@ -68,25 +93,35 @@ export default function MessagesPage() {
                     </div>
                     {sidebar === "Utilisateurs" ? <SidebarUtilisateur setSelectedGroupChat={setSelectedGroupChat}
                         setSelectedConversation={setSelectedConversation}
-                        setSelectedNewConversation={setSelectedNewConversation} />
+                        setSelectedNewConversation={setSelectedNewConversation} 
+                        fetchConversation={fetchConversation}
+                        conversationList={conversationList} 
+                    />
 
                         : <SidebarGroupes setSelectedGroupChat={setSelectedGroupChat}
                             setSelectedConversation={setSelectedConversation}
-                            setSelectedNewConversation={setSelectedNewConversation} />}
+                            setSelectedNewConversation={setSelectedNewConversation} 
+                            allGroup={allGroup} />}
                 </div>
             </aside>
             {/* Chat Window */}
             {
                 selectedConversation ? <Chatwindow
-                    conversationId={selectedConversation} />
+                    conversationId = {selectedConversation}
+                    fetchConversationList = {fetchConversation} 
+                    setInstantNotif = {setInstantNotif} 
+                />
                     :
                     selectedGroupChat ? <GroupChat
                         groupId={selectedGroupChat}
-                        setOpenEdit={setOpenEdit}
-                    /> :
+                        setOpenEdit={setOpenEdit} 
+                        fetchGroupConversation={fetchGroupConversation}
+                    />  :
                         selectedNewConversation ?
-                            <NewChat UserId={selectedNewConversation} /> :
-                                            <Welcome />
+                            <NewChat UserId={selectedNewConversation}  
+                            fetchConversationList={fetchConversation}
+                             /> : 
+                            <Welcome />
             }
 
             <CreateChatGroup open={open} onClose={() => { setOpen(false) }} fetchGroupConversation={fetchGroupConversation} />
@@ -96,6 +131,8 @@ export default function MessagesPage() {
                 fetchGroupConversation={fetchGroupConversation}
                 groupId={selectedGroupChat}
             />
+            
+            
         </div>
     );
 }

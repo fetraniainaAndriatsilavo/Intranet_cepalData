@@ -1,8 +1,9 @@
-import { Alert, AlertTitle, Avatar, Button } from "@mui/material";
+import { Alert, AlertTitle, Avatar, Button, Switch } from "@mui/material";
 import { CheckCircle } from '@mui/icons-material';
 import { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../context/AppContext";
 import api from "../../components/axios";
+import { id } from "date-fns/locale";
 
 export default function Informations() {
     const { user } = useContext(AppContext)
@@ -16,7 +17,7 @@ export default function Informations() {
     const [classification, setClassification] = useState([])
     const [managers, setManagers] = useState([])
 
-
+    const [checked, setChecked] = useState(false);
     // report 
     const [report, setReport] = useState('')
     const [success, setSuccess] = useState('')
@@ -75,11 +76,33 @@ export default function Informations() {
         api.get('/user/' + user.id + '/info')
             .then((response) => {
                 setUserInformation(response.data.user)
+                setChecked(response.data.user.public)
             })
             .catch((error) => {
                 console.log(error)
             })
     }, [user])
+
+
+
+    const ToggleStatus = async (id, state) => {
+        try {
+            await api.put(`/users/${id}/activateInformation`, {
+                public: state,
+            });
+            console.log("Status updated:", state);
+            window.location.reload()
+        } catch (error) {
+            console.error("Error updating status:", error);
+            setChecked((prev) => !prev);
+        }
+    };
+
+    const handleChange = (event) => {
+        const newState = event.target.checked;
+        setChecked(newState);
+        ToggleStatus(user.id, newState);
+    }
 
     return (
         <div className="bg-white rounded-lg shadow-md overflow-hidden max-w-6xl mx-auto">
@@ -100,12 +123,29 @@ export default function Informations() {
             {/* Profile Info */}
             <div className="pt-16 px-6 pb-6">
                 <div className="flex items-center gap-2">
-                    <h2 className="text-xl font-semibold text-gray-800"> {userInformation.last_name +" " +userInformation.first_name} </h2>
+                    <h2 className="text-xl font-semibold text-gray-800"> {userInformation.last_name + " " + userInformation.first_name} </h2>
                 </div>
                 <p className="text-sm text-gray-500">
                     {departmentId}
                 </p>
                 <p className="text-md text-gray-400"> {userInformation.address ? userInformation.address + ", Madagascar" : 'Addresse'}</p>
+
+                <div className="mt-2 ">
+                    <label htmlFor="public"> Public </label>
+                    <Switch
+                        checked={checked}
+                        onChange={handleChange}
+                        slotProps={{ input: { 'aria-label': 'controlled' } }}
+                        id="public"
+                    />
+                </div>
+                <div>
+                    {
+                        userInformation && userInformation.public == true && <p className="border border-green-500 text-green-500 p-3">
+                            Votre compte est désormais public. Tous les utilisateurs peuvent désormais accéder à vos informations personnelles visibles en ligne. Pensez à vérifier vos paramètres de confidentialité si vous souhaitez limiter la visibilité de vos données personnelles
+                        </p>
+                    }
+                </div>
             </div>
 
             {/* Infos */}
@@ -152,8 +192,8 @@ export default function Informations() {
                                 <path d="M16 12v1.5a2.5 2.5 0 0 0 5 0v-1.5a9 9 0 1 0 -5.5 8.28" />
                             </svg>
                             <span> {userInformation.email ? userInformation.email : '............@xxxx.com'} </span>
-                        </div> 
-                        
+                        </div>
+
                         {/* Situation Marital   */}
                         <div className="flex flex-row gap-2 items-center mb-3">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="icon icon-tabler icons-tabler-filled icon-tabler-heart">

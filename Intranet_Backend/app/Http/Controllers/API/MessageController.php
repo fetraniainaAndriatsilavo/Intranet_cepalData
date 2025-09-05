@@ -12,6 +12,8 @@ use App\Models\Message;
 use App\Models\User;
 use App\Models\Conversation;
 use App\Models\File;
+use App\Models\MessageGroup;
+use App\Notifications\NewMessageNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\QueryException;
@@ -114,25 +116,23 @@ class MessageController extends Controller
     {
         try {
             $data = $request->validate([
-                'sender_id' => 'required|exists:intranet_extedim.users,id',
-                'receiver_id' => 'nullable|exists:intranet_extedim.users,id',
-                'content' => 'required|string',
+                'sender_id'       => 'required|exists:intranet_extedim.users,id',
+                'receiver_id'     => 'nullable|exists:intranet_extedim.users,id',
+                'content'         => 'nullable|string',
                 'conversation_id' => 'nullable|exists:intranet_extedim.conversations,id',
-                'group_id' => 'nullable|exists:intranet_extedim.messages_groups,id',
-                'status' => 'required|string'
+                'group_id'        => 'nullable|exists:intranet_extedim.messages_groups,id',
+                'status'          => 'required|string',
+                'attachments.*'   => 'nullable|file|max:10240',
             ]);
 
             if (!empty($data['receiver_id']) && empty($data['conversation_id']) && empty($data['group_id'])) {
-
                 $conversation = Conversation::where(function ($q) use ($data) {
                     $q->where('user_one_id', $data['sender_id'])
                         ->where('user_two_id', $data['receiver_id']);
-                })
-                    ->orWhere(function ($q) use ($data) {
-                        $q->where('user_one_id', $data['receiver_id'])
-                            ->where('user_two_id', $data['sender_id']);
-                    })
-                    ->first();
+                })->orWhere(function ($q) use ($data) {
+                    $q->where('user_one_id', $data['receiver_id'])
+                        ->where('user_two_id', $data['sender_id']);
+                })->first();
 
                 if (!$conversation) {
                     $conversation = Conversation::create([
@@ -153,17 +153,69 @@ class MessageController extends Controller
             }
 
             $message = Message::create([
-                'sender_id' => $data['sender_id'],
-                'content' => $data['content'],
+                'sender_id'      => $data['sender_id'],
+                'content'        => $data['content'] ?? null,
                 'conversation_id' => $data['conversation_id'] ?? null,
-                'group_id' => $data['group_id'] ?? null,
-                'is_read' => false,
-                'status' => $data['status']
+                'group_id'       => $data['group_id'] ?? null,
+                'is_read'        => false,
+                'status'         => $data['status']
             ]);
 
-            broadcast(new UserMessageSent($message))->toOthers();
+            if ($request->hasFile('attachments')) {
+                foreach ($request->file('attachments') as $file) {
+                    $extension     = $file->getClientOriginalExtension();
+                    $originalName  = $file->getClientOriginalName();
+                    $mimeType      = $file->getClientMimeType();
 
-            $messageWithUser = $message->load('sender:id,first_name,last_name,email');
+                    $filename = 'message_' . $message->id . '_' . time() . '.' . $extension;
+
+                    if (!empty($data['conversation_id'])) {
+                        $directory = "discussion/user_{$data['sender_id']}/conversation_{$data['conversation_id']}";
+                    } elseif (!empty($data['group_id'])) {
+                        $directory = "discussion/user_{$data['sender_id']}/group_{$data['group_id']}";
+                    } else {
+                        $directory = "discussion/user_{$data['sender_id']}/misc";
+                    }
+
+                    $storedPath = $file->storeAs($directory, $filename, 'sftp');
+
+                    if (!$storedPath) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => 'Échec de l\'upload du fichier "' . $originalName . '".',
+                        ], 500);
+                    }
+
+                    $fileUrl = 'https://57.128.116.184/intranet/' . $storedPath;
+
+                    $message->files()->create([
+                        'path'          => $fileUrl,
+                        'original_name' => $originalName,
+                        'mime_type'     => $mimeType,
+                    ]);
+                }
+            }
+
+
+            $messageWithUser = $message->load('sender:id,first_name,last_name,email', 'files');
+
+            // broadcast(new UserMessageSent($messageWithUser))->toOthers();
+
+            if (!empty($data['receiver_id'])) {
+                $receiver = User::find($data['receiver_id']);
+                // if ($receiver) {
+                //     $receiver->notify(new NewMessageNotification($messageWithUser));
+                // }
+            } elseif (!empty($data['group_id'])) {
+                $groupMembers = MessageGroup::find($data['group_id'])
+                    ->users()
+                    ->where('id', '!=', $data['sender_id'])
+                    ->get();
+
+                // foreach ($groupMembers as $member) {
+                //     $member->notify(new NewMessageNotification($messageWithUser));
+                // }
+            }
 
             return response()->json([
                 'success' => true,
@@ -173,12 +225,13 @@ class MessageController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Erreur interne lors de l’envoi du message',
-                'error' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile()
+                'error'   => $e->getMessage(),
+                'line'    => $e->getLine(),
+                'file'    => $e->getFile()
             ], 500);
-        }
     }
+}
+
 
 
     // public function store(Request $request)
@@ -328,6 +381,7 @@ class MessageController extends Controller
         return response()->json($message);
     }
 
+
     public function markAsRead(Request $request, $id)
     {
         try {
@@ -370,6 +424,8 @@ class MessageController extends Controller
         }
     }
 
+
+
     public function update(Request $request, $id)
     {
         try {
@@ -382,7 +438,7 @@ class MessageController extends Controller
             }
 
             $validated = $request->validate([
-                'content' => 'required'
+                'content' => 'nullable'
             ]);
 
             $message->content = $validated['content'];
@@ -415,6 +471,7 @@ class MessageController extends Controller
             ], 500);
         }
     }
+
 
     public function destroy($id)
     {

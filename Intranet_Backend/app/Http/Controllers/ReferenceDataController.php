@@ -7,8 +7,6 @@ use Illuminate\Support\Facades\Request;
 
 class ReferenceDataController extends Controller
 {
-
-
     public function getDataUser()
     {
         try {

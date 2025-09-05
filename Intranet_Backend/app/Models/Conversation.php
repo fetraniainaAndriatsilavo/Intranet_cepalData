@@ -25,6 +25,10 @@ class Conversation extends Model
         return $this->hasMany(Message::class, 'conversation_id')->orderBy('created_at', 'asc');
     }
 
+    public function lastMessage()
+    {
+        return $this->hasOne(Message::class)->latestOfMany();
+    }
 
     /**
      * Récupère l'utilisateur 1 (initiateur).

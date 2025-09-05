@@ -3,11 +3,11 @@ import { useContext, useEffect, useRef, useState } from "react";
 import api from "../../axios";
 import { AppContext } from "../../../context/AppContext";
 
-export default function GroupInput({ groupId, messageId, setMessageId }) {
+export default function GroupInput({ groupId, messageId, setMessageId, fetchGroupConversation }) {
     const { user } = useContext(AppContext)
     const [sending, setSending] = useState(false);
     const [input, setInput] = useState("");
-    const [picture, setPicture] = useState([]); // <-- track uploaded files
+    const [picture, setPicture] = useState([]);
     const emojiButtonRef = useRef(null);
     const [isShown, setIsShown] = useState(false);
 
@@ -31,14 +31,17 @@ export default function GroupInput({ groupId, messageId, setMessageId }) {
             content: input,
             sender_id: user.id,
             group_id: groupId,
-            status: 'active'
+            status: 'active', 
+            attachments:picture
         }, {
             headers: {
                 "Content-Type": 'application/json'
             }
         })
-            .then((response) => {
-                setMessages((prev) => [...prev, response.data]);
+            .then((response) => { 
+                setPicture([])
+                setMessages((prev) => [...prev, response.data.message]); 
+                fetchGroupConversation(user.id)
             })
             .finally(() => {
                 setSending(false)
@@ -103,33 +106,76 @@ export default function GroupInput({ groupId, messageId, setMessageId }) {
         <div className="border-t p-3 bg-white dark:bg-gray-800">
             {/* File Preview Section */}
             {picture.length > 0 && (
-                <div className="flex flex-row flex-wrap gap-2 p-2 bg-white items-center justify-center">
-                    {picture.map((file, key) => (
-                        <div key={key} className="relative group">
-                            {file.name.endsWith(".mp4") ? (
-                                <video
-                                    src={URL.createObjectURL(file)}
-                                    controls
-                                    className="w-40 h-24 rounded"
-                                />
-                            ) : (
-                                <img
-                                    src={URL.createObjectURL(file)}
-                                    alt={file.name}
-                                    className="w-20 h-20 object-cover rounded"
-                                />
-                            )}
-                            <button
-                                onClick={() =>
-                                    setPicture((prev) => prev.filter((_, index) => index !== key))
-                                }
-                                className="absolute top-0 right-0 bg-gray-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-70 group-hover:opacity-100"
-                                title="Remove"
-                            >
-                                ×
-                            </button>
-                        </div>
-                    ))}
+                <div className="flex flex-row flex-wrap gap-2 p-2 bg-white items-center justify-start">
+                    {picture.map((file, key) => {
+                        const fileUrl = URL.createObjectURL(file);
+
+                        const renderPreview = () => {
+                            if (file.type.startsWith("image/")) {
+                                return <img src={fileUrl} alt={file.name} className="w-20 h-20 object-cover rounded" />;
+                            } else if (file.type.startsWith("video/")) {
+                                return <video src={fileUrl} controls className="w-40 h-24 rounded" />;
+                            } else if (file.name.endsWith(".pdf")) {
+                                return (
+                                    <div className="flex flex-col items-center justify-center w-24 h-24 bg-red-50 text-red-600 rounded p-2 truncate">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 2h9l5 5v13a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" />
+                                        </svg>
+                                        <span className="text-xs text-center">{file.name}</span>
+                                    </div>
+                                );
+                            } else if (file.name.endsWith(".docx")) {
+                                return (
+                                    <div className="flex flex-col items-center justify-center w-24 h-24 bg-blue-50 text-blue-600 rounded p-2 truncate">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M6 2h9l5 5v13a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" />
+                                        </svg>
+                                        <span className="text-xs text-center">{file.name}</span>
+                                    </div>
+                                );
+                            } else if (file.name.endsWith(".xlsx")) {
+                                return (
+                                    <div className="flex flex-col items-center justify-center w-24 h-24 bg-green-50 text-green-600 rounded p-2 truncate">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M6 2h9l5 5v13a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" />
+                                        </svg>
+                                        <span className="text-xs text-center ">{file.name}</span>
+                                    </div>
+                                );
+                            } else if (file.name.endsWith(".ppt") || file.name.endsWith(".pptx")) {
+                                return (
+                                    <div className="flex flex-col items-center justify-center w-24 h-24 bg-orange-50 text-orange-600 rounded p-2 truncate">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M6 2h9l5 5v13a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" />
+                                        </svg>
+                                        <span className="text-xs text-center">{file.name}</span>
+                                    </div>
+                                );
+                            } else {
+                                return (
+                                    <div className="flex flex-col items-center justify-center w-24 h-24 bg-gray-100 text-gray-600 rounded p-2 truncate">
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 mb-1" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M6 2h9l5 5v13a2 2 0 01-2 2H6a2 2 0 01-2-2V4a2 2 0 012-2z" />
+                                        </svg>
+                                        <span className="text-xs text-justify">{file.name}</span>
+                                    </div>
+                                );
+                            }
+                        };
+
+                        return (
+                            <div key={key} className="relative group">
+                                {renderPreview()}
+                                <button
+                                    onClick={() => setPicture((prev) => prev.filter((_, index) => index !== key))}
+                                    className="absolute top-0 right-0 bg-gray-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center opacity-70 group-hover:opacity-100"
+                                    title="Remove"
+                                >
+                                    ×
+                                </button>
+                            </div>
+                        );
+                    })}
                 </div>
             )}
 
@@ -205,7 +251,7 @@ export default function GroupInput({ groupId, messageId, setMessageId }) {
 
                 {/* Send Button */}
                 {
-                    input && <button
+                    (input || picture.length > 0) && <button
                         onClick={() => {
                             if (messageId) {
                                 UpdateMessage(messageId)

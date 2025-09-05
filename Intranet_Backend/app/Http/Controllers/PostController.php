@@ -34,6 +34,32 @@ class PostController extends Controller
         return response()->json($allPosts->toArray());
     }
 
+    public function UserPost($userId)
+    {
+        $allPosts = Post::with('attachments', 'user')
+            ->published()
+            ->withTrashed()
+            ->whereNull('group_id')
+            ->where('user_id', $userId)
+            ->orderBy('created_at', 'desc')
+            ->take(5)
+            ->get();
+
+        if ($allPosts->isEmpty()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Aucune publication disponible.',
+                'posts'   => [],
+            ], 200);
+        }
+
+        return response()->json([
+            'success' => true,
+            'posts'   => $allPosts,
+        ], 200);
+    }
+
+
     public function getPublishedPosts()
     {
         $allPosts = Post::with('attachments', 'user')

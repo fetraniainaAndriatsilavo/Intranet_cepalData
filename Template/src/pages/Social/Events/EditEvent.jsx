@@ -11,6 +11,7 @@ export default function EditEvent({ fecthEvent, open, onClose, eventId }) {
 
     const [success, setSuccess] = useState(null);
     const [error, setError] = useState(null);
+    const [loading, setLoading] = useState(false)
 
     const handleChange = (e) => {
         setFormData((prev) => ({
@@ -38,7 +39,7 @@ export default function EditEvent({ fecthEvent, open, onClose, eventId }) {
     const handleSubmit = async () => {
         setSuccess(null);
         setError(null);
-
+        setLoading(true)
         try {
             const response = await api.put(
                 "event/update/" + eventId,
@@ -49,6 +50,7 @@ export default function EditEvent({ fecthEvent, open, onClose, eventId }) {
                     },
                 }
             );
+            setLoading(false)
             setSuccess(response.data.message);
             setTimeout(() => {
                 setSuccess(null)
@@ -57,6 +59,7 @@ export default function EditEvent({ fecthEvent, open, onClose, eventId }) {
             onClose()
             fecthEvent()
         } catch (err) {
+            setLoading(false)
             console.error(err);
             setError(error.data.message);
             setTimeout(() => {

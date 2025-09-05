@@ -267,7 +267,27 @@ class UserController extends Controller
     public function GetInfoUser($id)
     {
         try {
-            $user = User::with('position', 'classification', 'client', 'manager', 'documents', 'contrat')->findOrFail($id);
+            $user = User::with([
+                'position',
+                'classification',
+                'client',
+                'manager',
+                'documents',
+                'contrat',
+                'posts' => function ($query) {
+                    $query->with(
+                        'attachments',
+                        'comments.user',
+                        'reactions.user'
+                    )
+                        ->withCount(['comments', 'reactions'])
+                        ->withTrashed()
+                        ->orderBy('created_at', 'desc')
+                        ->take(5);
+                }
+            ])->findOrFail($id);
+
+
 
             return response()->json([
                 'user' => [
@@ -301,6 +321,7 @@ class UserController extends Controller
                     'contrat_code' => $user->contrat ? $user->contrat->code : null,
                     'department' => $user->department ? $user->department->id : null,
                     'manager' => $user->manager ? $user->manager->first_name : null,
+                                        'public' => $user->public,
                     'documents' => $user->documents->map(
                         function ($doc) {
                             return [
@@ -314,6 +335,39 @@ class UserController extends Controller
                             ];
                         }
                     ),
+                    'posts' => $user->posts->map(function ($post) {
+                        return [
+                            'id' => $post->id,
+                            'content' => $post->content,
+                            'created_at' => $post->created_at,
+                            'deleted_at' => $post->deleted_at,
+                            'attachments' => $post->attachments->map(fn($a) => [
+                                'id' => $a->id,
+                                'file_path' => $a->file_path,
+                            ]),
+                            'comments_count' => $post->comments_count,
+                            'reactions_count' => $post->reactions_count,
+                            'comments' => $post->comments->map(fn($c) => [
+                                'id' => $c->id,
+                                'content' => $c->content,
+                                'user' => [
+                                    'id' => $c->user->id,
+                                    'first_name' => $c->user->first_name,
+                                    'last_name' => $c->user->last_name,
+                                ]
+                            ]),
+                            'reactions' => $post->reactions->map(fn($r) => [
+                                'id' => $r->id,
+                                'type' => $r->type,
+                                'user' => [
+                                    'id' => $r->user->id,
+                                    'first_name' => $r->user->first_name,
+                                    'last_name' => $r->user->last_name,
+                                ]
+                            ]),
+                        ];
+                    }),
+
                 ],
 
             ], 200);
@@ -340,6 +394,7 @@ class UserController extends Controller
             ], 500);
         }
     }
+
 
     public function GetAllUsers()
     {
@@ -377,6 +432,7 @@ class UserController extends Controller
                     'contrat_code' => $user->contrat ? $user->contrat->code : null,
                     'department' => $user->department ? $user->department->name : null,
                     'manager' => $user->manager ? $user->manager->first_name : null,
+                    'public' => $user->public,
                     'documents' => $user->documents->map(function ($doc) {
                         return [
                             'id' => $doc->id,
@@ -410,20 +466,24 @@ class UserController extends Controller
         }
     }
 
-    public function updatePublic(Request $request, $id)
+    public function activatePublic(Request $request, $id)
     {
         $request->validate([
-            'is_public' => 'required|boolean',
+            'public' => 'required|boolean',
         ]);
 
         $user = User::findOrFail($id);
-        $user->is_public = $request->is_public;
+        $user->public = $request->public;
         $user->save();
+
+        $message = $user->public
+            ? 'Votre profil a été rendu public avec succès. Toutes vos informations sont désormais visibles par les autres utilisateurs.'
+            : 'Votre profil a été rendu privé avec succès. Les informations importantes ne sont plus visibles par les autres utilisateurs.';
 
         return response()->json([
             'id' => $user->id,
-            'is_public' => $user->is_public,
-            'message' => 'Profil public mis à jour avec succès',
+            'public' => $user->public,
+            'message' => $message,
         ]);
     }
 }

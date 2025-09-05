@@ -20,4 +20,9 @@ class MessageGroup extends Model
     {
         return $this->hasMany(Message::class, 'group_id', 'id');
     }
+
+    public function lastMessage()
+    {
+        return $this->hasOne(Message::class, 'group_id')->latestOfMany();
+    }
 }

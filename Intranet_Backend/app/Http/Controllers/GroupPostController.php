@@ -6,10 +6,12 @@ namespace App\Http\Controllers;
 use App\Models\GroupPost;
 use App\Models\Post;
 use App\Models\User;
+use App\Notifications\NewGroupPostAdded;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB as FacadesDB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 
 class GroupPostController extends Controller
@@ -52,6 +54,14 @@ class GroupPostController extends Controller
                     ]);
                 }
             }
+
+            $creator = User::find($request->creator_id);
+
+            $usersToNotify = User::whereIn('id', $request->user_ids)
+                ->where('id', '!=', $creator->id)
+                ->get();
+
+            Notification::send($usersToNotify, new NewGroupPostAdded($group, $creator));
 
             return response()->json([
                 'message' => 'Groupe créé avec succès.',

@@ -49,7 +49,7 @@ Route::put('/user/{id}/update', [UserController::class, 'update']);
 Route::get('/getUser/all', [UserController::class, 'GetAllUsers']);
 Route::put('v1/users/{id}', [UserController::class, 'toggleStatus']);
 Route::get('v1/personal/{id}', [UserController::class, 'personal']);
-Route::put('/users/{id}/public', [UserController::class, 'updatePublic']);
+Route::put('/users/{id}/activateInformation', [UserController::class, 'activatePublic']);
 Route::get('v1/checkers/{id}', function ($id) {
     $user = User::where('id', $id)->first();
     if (!$user) {
@@ -175,6 +175,7 @@ Route::delete('/timesheet/{id}/destroy', [TimesheetController::class, 'destroy']
 //publication
 Route::post('/posts/store', [PostController::class, 'store']);
 Route::get('/posts/all', [PostController::class, 'postAll']);
+Route::get('/posts/user/{userId}', [PostController::class, 'UserPost']);
 Route::get('/posts/published', [PostController::class, 'getPublishedPosts']);
 Route::get('/posts/{post}/getInfo', [PostController::class, 'show']);
 Route::put('/posts/{postId}/update', [PostController::class, 'update']);
@@ -236,6 +237,8 @@ Route::get('/groups/not/{id}', [GroupMessageController::class, 'getLeftUsers']);
 // Route::get('/conversations/{user_id}', [ConversationController::class, 'getConversation']);
 Route::get('/conversations/{user_id}', [ConversationController::class, 'myConversations']);
 Route::get('/conversations/{conversationId}/getConversation', [ConversationController::class, 'getConversationInfo']);
+Route::delete('/conversations/{conversationId}/delete', [ConversationController::class, 'destroy']);
+
 
 
 //Auth Pusher

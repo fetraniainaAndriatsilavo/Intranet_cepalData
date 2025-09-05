@@ -66,17 +66,38 @@ class ConversationController extends Controller
         }
     }
 
+    // public function myConversations($userId)
+    // {
+
+    //     $conversations = Conversation::where('user_one_id', $userId)
+    //         ->orWhere('user_two_id', $userId)
+    //         ->with(['userOne', 'userTwo'])
+    //         ->orderBy('updated_at', 'desc')
+    //         ->get();
+
+    //     return response()->json($conversations);
+    // }
     public function myConversations($userId)
     {
-
-        $conversations = Conversation::where('user_one_id', $userId)
-            ->orWhere('user_two_id', $userId)
+        $conversations = Conversation::where(function ($query) use ($userId) {
+            $query->where('user_one_id', $userId)
+                ->orWhere('user_two_id', $userId);
+        })
             ->with(['userOne', 'userTwo'])
-            ->orderBy('updated_at', 'desc')
+            ->with(['lastMessage' => function ($q) {
+                $q->latest();
+            }])
+            ->orderByDesc(
+                Message::select('created_at')
+                    ->whereColumn('conversation_id', 'conversations.id')
+                    ->latest()
+                    ->take(1)
+            )
             ->get();
 
         return response()->json($conversations);
     }
+
 
     public function getConversationInfo($conversationId)
     {
@@ -121,5 +142,18 @@ class ConversationController extends Controller
                 'file' => $e->getFile()
             ], 500);
         }
+    }
+
+    public function destroy($conversationId)
+    {
+        $conversation = Conversation::findOrFail($conversationId);
+
+
+        $conversation->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Groupe supprimé avec succès'
+        ]);
     }
 }

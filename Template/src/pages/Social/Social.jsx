@@ -20,7 +20,7 @@ export default function Social() {
       .catch((error) => {
         console.log(error);
       });
-  } 
+  }
 
   const fetchUserGroup = (id) => {
     api
@@ -56,7 +56,6 @@ export default function Social() {
             <Grouplist userID={user.id} lists={groups || []} fetchUserGroup={fetchUserGroup} />
             <Events setOpen={setOpened} />
           </div>
-          {user.role == 'user' && opened && <CreateEvent />}
         </div>
       </div>
     </div>

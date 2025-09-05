@@ -7,7 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class File extends Model
 {
-    protected $table='intranet_extedim.files';
+    protected $table = 'intranet_extedim.messages_files';
+    protected $timestamp = false;
     protected $fillable = [
         'message_id',
         'path',
@@ -17,6 +18,6 @@ class File extends Model
 
     public function message()
     {
-        return $this->belongsTo(Message::class);
+        return $this->belongsTo(Message::class, 'message_id');
     }
 }

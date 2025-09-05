@@ -117,7 +117,7 @@ function DropdownNotifications({
                     to="/mesnotifications"
                     onClick={() => setDropdownOpen(!dropdownOpen)}
                   >
-                    <span className="block text-sm mb-2">📣 <span className="font-medium text-gray-800 dark:text-gray-100">{notification.data.title ? notification.data.title : ''} </span> {notification.data.message}</span>
+                    <span className="block text-sm mb-2">📣 <span className="font-medium text-gray-800 dark:text-gray-100">{notification.data.title ? notification.data.title : ''} </span> {notification.data.message ? notification.data.message : notification.data.content}</span>
                     <span className="block text-xs font-medium text-gray-400 dark:text-gray-500"> {formatDate(notification.created_at)} </span>
                   </Link>
                 </li>

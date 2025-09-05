@@ -66,7 +66,8 @@ export default function EditPost({ PostID, setIsOpen, fetchPost }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black bg-opacity-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-25 flex items-center justify-center 
+                bg-white/30 backdrop-blur-md">
       <div
         ref={modalRef}
         className="bg-white w-full max-w-xl mx-auto rounded-xl shadow-lg animate-scaleIn overflow-hidden"

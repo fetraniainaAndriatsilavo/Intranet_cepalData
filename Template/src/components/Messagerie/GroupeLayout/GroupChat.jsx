@@ -2,11 +2,10 @@
 import { useEffect, useRef, useState } from "react";
 import GroupHeader from "./GroupHeader";
 import GroupInput from "./GroupInput";
-import MessageBox from "../MessageBox";
 import api from "../../axios";
 import MessageGroupBox from "./MessageGroupBox";
 
-export default function GroupChat({ groupId, setOpenEdit }) {
+export default function GroupChat({ groupId, setOpenEdit, fetchGroupConversation }) {
     const [messages, setMessages] = useState([])
     const messagesEndRef = useRef(null);
     const [group, setGroup] = useState({
@@ -75,6 +74,42 @@ export default function GroupChat({ groupId, setOpenEdit }) {
     }, []);
 
 
+    // Date/time helpers
+    const isNewDay = (prev, current) => prev.toDateString() !== current.toDateString();
+
+    const shouldShowTime = (prevMsg, currMsg) => {
+        if (!prevMsg) return true;
+        const prev = new Date(prevMsg.created_at);
+        const curr = new Date(currMsg.created_at);
+        return prevMsg.sender_id !== currMsg.sender_id || curr - prev > 2 * 60 * 1000;
+    };
+
+    const formatDateLabel = (str) => {
+        const d = new Date(str);
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(today.getDate() - 1);
+
+        if (d.toDateString() === today.toDateString()) return "Aujourd’hui";
+        if (d.toDateString() === yesterday.toDateString()) return "Hier";
+
+        return d.toLocaleDateString("fr-FR", {
+            weekday: "long",
+            day: "numeric",
+            month: "long",
+            year: "numeric",
+        });
+    };
+
+    const DateSeparator = ({ date }) => (
+        <div className="text-center text-gray-400 text-sm my-2">
+            {formatDateLabel(date)}
+        </div>
+    );
+
+    // Render
+    let previousMessage = null;
+
     return (
         <>
             {
@@ -83,15 +118,38 @@ export default function GroupChat({ groupId, setOpenEdit }) {
                     <GroupHeader groupId={groupId} group={group ? group : {}} setOpenEdit={setOpenEdit}> </GroupHeader>
                     {/* Messages section */}
                     <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                        {messages.map((msg, index) => (
-                            <MessageGroupBox key={index} msg={msg} setMessageId={setMessageId} />
-                        ))}
+                        {messages.map((msg, index) => {
+                            const currentDate = new Date(msg.created_at);
+                            const prevDate = previousMessage ? new Date(previousMessage.created_at) : null;
+
+                            const showDateSeparator = !previousMessage || isNewDay(prevDate, currentDate);
+                            const showTime = shouldShowTime(previousMessage, msg);
+
+                            const elements = [];
+
+                            if (showDateSeparator) {
+                                elements.push(<DateSeparator key={`date-${index}`} date={msg.created_at} />);
+                            }
+
+                            elements.push(<MessageGroupBox key={index}
+                                msg={msg}
+                                setMessageId={setMessageId}
+                                showTime={showTime}
+                            />)
+                            previousMessage = msg;
+                            return elements;
+                        }
+                        )}
                         {/* Scroll target */}
                         <div ref={messagesEndRef} />
                     </div>
 
                     {/* Input box */}
-                    <GroupInput setMessages={setMessages} groupId={groupId} messageId={messageId} setMessageId={setMessageId} />
+                    <GroupInput setMessages={setMessages}
+                        groupId={groupId}
+                        messageId={messageId}
+                        setMessageId={setMessageId}
+                        fetchGroupConversation={fetchGroupConversation} />
                 </main>
             }
         </>

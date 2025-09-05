@@ -39,6 +39,7 @@ function App() {
             <Route path="/ajout-utilisateur" element={<Dashboard />} />
             <Route path="/liste-utilisateur" element={<Dashboard />} />
             <Route path="/modif-utilisateur/:id" element={<Dashboard />} />
+            <Route path="/profil-utilisateur/:UserId" element={<Dashboard />} />
             <Route path="/documents-utilisateurs" element={<Dashboard />} />
 
             {/* OGC */}
@@ -66,8 +67,8 @@ function App() {
 
 
             {/*  Discussions  */}
-            <Route path="/messagerie" element={<Dashboard />} /> 
-            
+            <Route path="/messagerie" element={<Dashboard />} />
+
             {/* Mes Notifications */}
             <Route path="/mesnotifications" element={<Dashboard />} />
             {/* Fallback route for authenticated users */}

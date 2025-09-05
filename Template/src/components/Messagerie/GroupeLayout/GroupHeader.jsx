@@ -42,7 +42,6 @@ export default function GroupHeader({ groupId, group, setOpenEdit }) {
     return <div className="border-b p-4 flex items-center gap-2 justify-between bg-white dark:bg-gray-800">
         <div className="flex items-center gap-2 ">
             <Avatar {...stringAvatar(colorName)} />
-            {/* <Avatar> {group.name ? group.name.charAt(0, 1).toUpperCase() : 'Nom'.charAt(0, 1).toUpperCase()} </Avatar> */}
             <h2 className="font-bold text-lg">{group.name || 'Nom du Groupe '}  </h2>
         </div>
         <div>

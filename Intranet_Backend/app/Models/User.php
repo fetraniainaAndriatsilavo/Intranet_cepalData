@@ -164,4 +164,9 @@ class User extends Authenticatable
         return $this->belongsToMany(MessageGroup::class, 'intranet_extedim.messages_groups_users', 'user_id', 'group_id')
             ->withPivot('is_admin');
     }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
+    }
 }

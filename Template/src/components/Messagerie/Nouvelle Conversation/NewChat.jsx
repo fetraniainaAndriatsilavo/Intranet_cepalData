@@ -5,7 +5,7 @@ import NewMessageBox from "./NewMessageBox";
 import NewInputBox from "./NewInputBox";
 import api from "../../axios";
 
-export default function NewChat({ UserId }) {
+export default function NewChat({ UserId, fetchConversationList }) {
     const messagesEndRef = useRef(null);
     const [conversation, setConversation] = useState(null)
     const [messages, setMessages] = useState([])
@@ -74,7 +74,8 @@ export default function NewChat({ UserId }) {
                     <NewInputBox setMessages={setMessages}
                         receiverId={UserId}
                         messageId={messageId}
-                        setMessageId={setMessageId}
+                        setMessageId={setMessageId} 
+                        fetchConversationList={fetchConversationList}
                     />
                 </> : ''
             }

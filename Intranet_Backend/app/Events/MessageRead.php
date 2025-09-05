@@ -5,33 +5,49 @@ namespace App\Events;
 use App\Models\Message;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
-use Illuminate\Broadcasting\PresenceChannel;
-use Illuminate\Broadcasting\PrivateChannel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
-use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
 class MessageRead implements ShouldBroadcast
 {
-    public $message;
-    public $broadcastQueue = null;
+    use InteractsWithSockets, SerializesModels;
 
+    public $broadcastQueue = null;
+    public $message;
 
     public function __construct(Message $message)
     {
         $this->message = $message;
     }
 
-    public function broadcastOn(): Channel
+    public function broadcastOn(): array
     {
-        return new Channel('chat.' . $this->message->conversation_id);
+        $channels = [];
+
+        if (!empty($this->message->conversation_id)) {
+            $channels[] = new Channel('conversation.' . $this->message->conversation_id);
+        }
+
+        if (!empty($this->message->group_id)) {
+            $channels[] = new Channel('group.' . $this->message->group_id);
+        }
+
+        if (!empty($this->message->receiver_id)) {
+            $channels[] = new Channel('chat.' . $this->message->receiver_id);
+        }
+
+        if (empty($channels)) {
+            $channels[] = new Channel('chat.global');
+        }
+
+        return $channels;
     }
 
     public function broadcastWith(): array
     {
         return [
-            'id' => $this->message->id,
-            'read_at' => $this->message->read_at,
+            'id'          => $this->message->id,
+            'read_at'     => $this->message->read_at ? $this->message->read_at->toDateTimeString() : null,
             'receiver_id' => $this->message->receiver_id,
         ];
     }
