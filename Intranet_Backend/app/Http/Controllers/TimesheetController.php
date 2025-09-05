@@ -57,28 +57,6 @@ class TimesheetController extends Controller
         return response()->json($grouped, 200);
     }
 
-    // public function getTimesheetsForManager($managerId)
-    // {
-    //     $timesheets = Timesheet::with(['user:id,first_name', 'timesheetPeriod'])
-    //         ->whereHas('user', function ($query) use ($managerId) {
-    //             $query->where('manager_id', $managerId);
-    //         })
-    //         ->where('status', 'sent')
-    //         ->get();
-
-    //     $grouped = $timesheets->groupBy('user_id')->map(function ($items) {
-    //         return [
-    //             'first_name'       => $items->first()->user->first_name,
-    //             'timesheet_period' => $items->first()->timesheetPeriod,
-    //             'details'          => $items->values(),
-    //         ];
-    //     })->values();
-
-    //     return response()->json($grouped, 200);
-    // }
-
-
-
     public function getTimesheetById($id)
     {
         try {
@@ -263,8 +241,6 @@ class TimesheetController extends Controller
         ], 200);
     }
 
-
-
     public function update(Request $request, int $id)
     {
         $entry = Timesheet::findOrFail($id);
@@ -323,18 +299,4 @@ class TimesheetController extends Controller
             'message' => "$affectedRows feuilles de temps ont été changés en 'sent' pour l'utilisateur $user_id."
         ]);
     }
-
-    // $user = User::find($user_id);
-
-    // if ($user && $user->manager_id) {
-    //     $manager = User::find($user->manager_id);
-    //     if ($manager) {
-    //         $manager->notify(new TimesheetCreated($entry));
-    //     }
-    // }
-
-    // $admins = User::where('role', 'admin')->get();
-    // foreach ($admins as $admin) {
-    //     $admin->notify(new TimesheetCreated($entry));
-    // }
 }

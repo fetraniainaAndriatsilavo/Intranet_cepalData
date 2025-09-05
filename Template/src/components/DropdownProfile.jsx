@@ -150,7 +150,7 @@ function DropdownProfile({ align, setLoading }) {
                   to="/reinit"
                   onClick={() => setDropdownOpen(!dropdownOpen)}
                 >
-                  Paramètres
+                  Modif. mot de passe
                 </Link>
               </li>
               <li>

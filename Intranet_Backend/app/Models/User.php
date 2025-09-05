@@ -84,7 +84,7 @@ class User extends Authenticatable
     }
     public function sendPasswordResetNotification($token)
     {
-        $url = url('http://localhost:5173/changepswd/' . $token . '/' . $this->email);
+        $url = url('http://intranet.ext.local:8080/changepswd/' . $token . '/' . $this->email);
         Mail::to($this->email)->send(new ResetPasswordMail($url, $this));
     }
 
@@ -164,7 +164,6 @@ class User extends Authenticatable
         return $this->belongsToMany(MessageGroup::class, 'intranet_extedim.messages_groups_users', 'user_id', 'group_id')
             ->withPivot('is_admin');
     }
-
     public function posts()
     {
         return $this->hasMany(Post::class);

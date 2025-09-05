@@ -54,8 +54,6 @@
         <p>
             <a href="{{ $url }}" class="button text-white">RESET PASSWORD</a>
         </p>
-        <p>Ou copiez et collez ce lien dans votre navigateur :</p>
-        <a class="link"> {{ $url }} </a>
     </div>
 </body>
 

@@ -207,7 +207,7 @@ Route::delete('/groups/{groupId}', [GroupPostController::class, 'destroy']);
 Route::get('fliter/{mois_avant}/{mois_apres}/{recherche}');
 
 //Message
-Route::get('/messages/{user1}/{user2}', [MessageController::class, 'getConversation']);
+// Route::get('/messages/{user1}/{user2}', [MessageController::class, 'getConversation']);
 Route::post('/messages', [MessageController::class, 'store']);
 Route::post('/messages/{id}/read', [MessageController::class, 'markAsRead']);
 Route::prefix('group-messages')->controller(GroupMessageController::class)->group(function () {

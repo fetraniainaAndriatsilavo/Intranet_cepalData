@@ -134,7 +134,7 @@ function Dashboard() {
                   </div>
 
                   {/* Right: Actions */}
-                  <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
+                  {/* <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
                     <FilterButton align="right" />
                     <Datepicker align="right" />
                     <button className="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white">
@@ -143,7 +143,7 @@ function Dashboard() {
                       </svg>
                       <span className="max-xs:sr-only">Add View</span>
                     </button>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Cards */}

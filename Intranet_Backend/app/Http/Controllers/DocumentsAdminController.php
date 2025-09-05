@@ -12,6 +12,20 @@ use Illuminate\Support\Facades\Storage;
 
 class DocumentsAdminController extends Controller
 {
+    public function getUserDocuments($userId)
+    {
+
+        $documents = DocumentAdmin::where('user_id', $userId)->get();
+
+        if ($documents->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Aucun document trouvé pour cet utilisateur.',
+            ], 404);
+        }
+
+        return response()->json($documents);
+    }
 
     public function doc_type()
     {
@@ -123,19 +137,5 @@ class DocumentsAdminController extends Controller
             'message' => "Document mise à jour avec succès en tant que {$request->status}.",
             'data' => $document
         ]);
-    }
-    public function getUserDocuments($userId)
-    {
-
-        $documents = DocumentAdmin::where('user_id', $userId)->get();
-
-        if ($documents->isEmpty()) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Aucun document trouvé pour cet utilisateur.',
-            ], 404);
-        }
-
-        return response()->json($documents);
     }
 }

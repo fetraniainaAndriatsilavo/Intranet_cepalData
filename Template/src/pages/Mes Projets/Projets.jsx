@@ -2,15 +2,20 @@ import { useContext, useEffect, useState } from "react";
 import KanbanBoard from "./KanbanBoard";
 import api from "../../components/axios";
 import { AppContext } from "../../context/AppContext";
+import { PulseLoader } from "react-spinners";
 
 export default function Projets() {
     const { user } = useContext(AppContext)
     const [projectList, setProjectList] = useState([])
     const [activeProject, setActiveProject] = useState(0)
 
+    const [loading, setLoading] = useState(false)
+
     const fetchProjectList = (userId) => {
+        setLoading(true)
         api.get('/getProject/' + userId)
             .then((response) => {
+                setLoading(false)
                 setProjectList(response.data.data)
             })
             .catch((error) => {
@@ -50,8 +55,22 @@ export default function Projets() {
         </div>
         <div className="w-full p-1">
             {
-                activeProject != 0 ? <KanbanBoard project={activeProject}> </KanbanBoard>
-                    : <span className="flex italic text-xl items-center justify-center "> Aucun projet n’est disponible pour le moment. Sélectionnez un projet pour accéder aux fonctionnalités.  </span>
+                loading ? (
+                    <div className="flex items-center justify-center w-full h-full">
+                        <PulseLoader
+                            color="#1a497f"
+                            loading={loading}
+                            aria-label="Loading Spinner"
+                            data-testid="loader"
+                        />
+                    </div>
+                ) : activeProject !== 0 ? (
+                    <KanbanBoard project={activeProject} />
+                ) : (
+                    <span className="flex italic text-xl items-center justify-center">
+                        Aucun projet n’est disponible pour le moment. Sélectionnez un projet pour accéder aux fonctionnalités.
+                    </span>
+                )
             }
         </div>
     </div>

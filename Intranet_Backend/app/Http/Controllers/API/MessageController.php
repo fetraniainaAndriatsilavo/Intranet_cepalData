@@ -22,78 +22,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class MessageController extends Controller
 {
-    // public function getConversation($user1, $user2)
-    // {
-    //     $messages = Message::where(function ($query) use ($user1, $user2) {
-    //         $query->where('sender_id', $user1)
-    //             ->where('receiver_id', $user2);
-    //     })
-    //         ->orWhere(function ($query) use ($user1, $user2) {
-    //             $query->where('sender_id', $user2)
-    //                 ->where('receiver_id', $user1);
-    //         })
-    //         ->orderBy('created_at', 'asc')
-    //         ->get();
-
-    //     return response()->json($messages);
-    // } 
-    // public function getConversation($user1, $user2)
-    // {
-    //     try {
-    //         $userOne = min($user1, $user2);
-    //         $userTwo = max($user1, $user2);
-
-    //         $conversation = Conversation::where('user_one_id', $userOne)
-    //             ->where('user_two_id', $userTwo)
-    //             ->first();
-
-    //         if (!$conversation) {
-    //             return response()->json([
-    //                 'status' => 'success',
-    //                 'messages' => [],
-    //                 'conversation_id' => null
-    //             ]);
-    //         }
-    //         $messages = Message::withTrashed()->with('files')
-    //             ->where('conversation_id', $conversation->id)
-    //             ->orderBy('created_at', 'asc')
-    //             ->get();
-
-    //         $result = $messages->map(function ($msg) {
-    //             return [
-    //                 'id' => $msg->id,
-    //                 'sender_id' => $msg->sender_id,
-    //                 'receiver_id' => $msg->receiver_id,
-    //                 'content' => $msg->trashed() ? 'Message indisponible' : $msg->content,
-    //                 'read_at' => $msg->read_at,
-    //                 'created_at' => $msg->created_at,
-    //                 'deleted' => $msg->trashed(),
-    //                 'files' => $msg->trashed() ? [] : $msg->files->map(function ($file) {
-    //                     return [
-    //                         'path' => $file->path,
-    //                         'original_name' => $file->original_name,
-    //                         'mime_type' => $file->mime_type,
-    //                     ];
-    //                 }),
-    //             ];
-    //         });
-
-
-    //         return response()->json([
-    //             'status' => 'success',
-    //             'messages' => $result,
-    //             'conversation_id' => $conversation->id
-    //         ]);
-    //     } catch (Exception $e) {
-    //         return response()->json([
-    //             'status' => 'error',
-    //             'message' => 'Erreur lors de la récupération des messages.',
-    //             'error' => $e->getMessage()
-    //         ], 500);
-    //     }
-    // }
-
-
     public function index(Request $request)
     {
         $conversation_id = $request->query('conversation_id');
@@ -199,22 +127,22 @@ class MessageController extends Controller
 
             $messageWithUser = $message->load('sender:id,first_name,last_name,email', 'files');
 
-            // broadcast(new UserMessageSent($messageWithUser))->toOthers();
+            broadcast(new UserMessageSent($messageWithUser))->toOthers();
 
             if (!empty($data['receiver_id'])) {
                 $receiver = User::find($data['receiver_id']);
-                // if ($receiver) {
-                //     $receiver->notify(new NewMessageNotification($messageWithUser));
-                // }
+                if ($receiver) {
+                    $receiver->notify(new NewMessageNotification($messageWithUser));
+                }
             } elseif (!empty($data['group_id'])) {
                 $groupMembers = MessageGroup::find($data['group_id'])
                     ->users()
                     ->where('id', '!=', $data['sender_id'])
                     ->get();
 
-                // foreach ($groupMembers as $member) {
-                //     $member->notify(new NewMessageNotification($messageWithUser));
-                // }
+                foreach ($groupMembers as $member) {
+                    $member->notify(new NewMessageNotification($messageWithUser));
+                }
             }
 
             return response()->json([
@@ -229,158 +157,14 @@ class MessageController extends Controller
                 'line'    => $e->getLine(),
                 'file'    => $e->getFile()
             ], 500);
+        }
     }
-}
-
-
-
-    // public function store(Request $request)
-    // {
-    //     try {
-    //         $data = $request->validate([
-    //             'sender_id'       => 'required|exists:users,id',
-    //             'content'         => 'required|string',
-    //             'conversation_id' => 'nullable|exists:conversations,id',
-    //             'group_id'        => 'nullable|exists:groups,id',
-    //         ]);
-
-    //         if (empty($data['conversation_id']) && empty($data['group_id'])) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'error'   => 'Aucune conversation ou groupe spécifié.',
-    //                 'debug'   => $data,
-    //             ], 422);
-    //         }
-
-    //         $message = Message::create([
-    //             'sender_id'       => $data['sender_id'],
-    //             'content'         => $data['content'],
-    //             'conversation_id' => $data['conversation_id'] ?? null,
-    //             'group_id'        => $data['group_id'] ?? null,
-    //             'is_read'         => false,
-    //             'status'          => 'active',
-    //         ]);
-
-    //         if (!$message) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'error'   => 'Impossible de créer le message en base.',
-    //                 'debug'   => $data,
-    //             ], 500);
-    //         }
-
-    //         try {
-    //             broadcast(new MessageSent($message))->toOthers();
-    //         } catch (Exception $e) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'error'   => 'Échec du broadcast.',
-    //                 'debug'   => [
-    //                     'message_id' => $message->id,
-    //                     'exception'  => $e->getMessage(),
-    //                     'trace'      => $e->getTraceAsString(),
-    //                 ],
-    //             ], 500);
-    //         }
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => $message,
-    //         ], 201);
-    //     } catch (\Illuminate\Validation\ValidationException $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'error'   => 'Erreur de validation.',
-    //             'details' => $e->errors(),
-    //             'input'   => $request->all(),
-    //         ], 422);
-    //     } catch (Exception $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'error'   => 'Erreur interne.',
-    //             'debug'   => [
-    //                 'exception' => $e->getMessage(),
-    //                 'trace'     => $e->getTraceAsString(),
-    //             ],
-    //             'input' => $request->all(),
-    //         ], 500);
-    //     }
-    // }
-
-
-    // public function store(Request $request)
-    // {
-    //     try {
-    //         $data = $request->validate([
-    //             'sender_id' => 'required|exists:users,id',
-    //             'receiver_id' => 'nullable|exists:users,id',
-    //             'content'   => 'required|string',
-    //             'conversation_id' => 'nullable|exists:conversations,id',
-    //             'group_id'  => 'nullable|exists:groups,id',
-    //             'status' => 'required'
-    //         ]);
-
-    //         if (!empty($data['receiver_id']) && empty($data['conversation_id']) && empty($data['group_id'])) {
-
-    //             $conversation = Conversation::where(function ($q) use ($data) {
-    //                 $q->where('user_one_id', $data['sender_id'])
-    //                     ->where('user_two_id', $data['receiver_id']);
-    //             })
-    //                 ->orWhere(function ($q) use ($data) {
-    //                     $q->where('user_one_id', $data['receiver_id'])
-    //                         ->where('user_two_id', $data['sender_id']);
-    //                 })
-    //                 ->first();
-
-    //             if (!$conversation) {
-    //                 $conversation = Conversation::create([
-    //                     'user_one_id' => $data['sender_id'],
-    //                     'user_two_id' => $data['receiver_id'],
-    //                 ]);
-    //             }
-
-    //             $data['conversation_id'] = $conversation->id;
-    //         }
-
-    //         if (empty($data['conversation_id']) && empty($data['group_id'])) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'error'   => 'Aucune conversation, groupe ou receiver_id spécifié.',
-    //                 'debug'   => $data,
-    //             ], 422);
-    //         }
-
-    //         $message = Message::create([
-    //             'sender_id'       => $data['sender_id'],
-    //             'content'         => $data['content'],
-    //             'conversation_id' => $data['conversation_id'] ?? null,
-    //             'group_id'        => $data['group_id'] ?? null,
-    //             'is_read'         => false,
-    //             'status'          => $data['status'],
-    //         ]);
-
-    //         broadcast(new UserMessageSent($message))->toOthers();
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'message' => $message,
-    //         ], 201);
-    //     } catch (Exception $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'error'   => 'Erreur interne',
-    //             'debug'   => $e->getMessage(),
-    //             'trace'   => $e->getTraceAsString(),
-    //         ], 500);
-    //     }
-    // }
 
     public function getMessage($id)
     {
         $message = Message::findOrFail($id);
         return response()->json($message);
     }
-
 
     public function markAsRead(Request $request, $id)
     {
@@ -424,8 +208,6 @@ class MessageController extends Controller
         }
     }
 
-
-
     public function update(Request $request, $id)
     {
         try {
@@ -438,12 +220,21 @@ class MessageController extends Controller
             }
 
             $validated = $request->validate([
-                'content' => 'nullable'
+                'content' => 'nullable|string',
             ]);
 
-            $message->content = $validated['content'];
-            $message->save();
-            $message->refresh();
+            $message->content = $validated['content'] ?? $message->content;
+
+            if ($message->content === "Message Indisponible") {
+                $message->status = 'inactive';
+
+                $message->save();
+                $message->refresh();
+            } else {
+                $message->content = $validated['content'];
+                $message->save();
+                $message->refresh();
+            }
 
 
             broadcast(new MessageUpdated($message))->toOthers();
@@ -454,8 +245,10 @@ class MessageController extends Controller
                 'data' => [
                     'id' => $message->id,
                     'sender_id' => $message->sender_id,
-                    'receiver_id' => $message->receiver_id,
+                    'conversation_id' => $message->conversation_id,
+                    'group_id' => $message->group_id,
                     'content' => $message->content,
+                    'status' => $message->status,
                     'updated_at' => $message->updated_at,
                     'created_at' => $message->created_at
                 ]
@@ -472,14 +265,14 @@ class MessageController extends Controller
         }
     }
 
-
     public function destroy($id)
     {
         try {
             $message = Message::findOrFail($id);
 
             $message->update([
-                'status' => 'inactive'
+                'status' => 'inactive',
+                'content' => 'Message Indisponible'
             ]);
 
             broadcast(new MessageDeleted($message))->toOthers();
@@ -490,7 +283,9 @@ class MessageController extends Controller
                 'data' => [
                     'id' => $message->id,
                     'sender_id' => $message->sender_id,
-                    'receiver_id' => $message->receiver_id,
+                    'conversation_id' => $message->conversation_id,
+                    'group_id' => $message->group_id,
+                    'content' => $message->content,
                     'status' => $message->status,
                 ]
             ], 200);
@@ -500,7 +295,7 @@ class MessageController extends Controller
             ], 404);
         } catch (Exception $e) {
             return response()->json([
-                'error' => 'Erreur lors de la mise à jour du statut.',
+                'error' => 'Erreur lors de la suppression.',
                 'details' => $e->getMessage()
             ], 500);
         }

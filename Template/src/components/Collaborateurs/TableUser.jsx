@@ -3,7 +3,7 @@ import UserRows from "./UserRows";
 
 export default function TableUser({ listHeader, datas, setAllUsers }) { 
     
-    return <div className="relative overflow-x-auto">
+    return <div className="relative overflow-x-auto overflow-y-hidden">
         <table className="w-full text-sm text-center rtl:text-right text-gray-500 ">
             <thead className="text-xs  uppercase bg-gray-50">
                 <tr>

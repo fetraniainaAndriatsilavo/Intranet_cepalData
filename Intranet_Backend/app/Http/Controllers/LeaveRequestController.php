@@ -20,117 +20,6 @@ use App\Notifications\LeaveRequestCreated;
 
 class LeaveRequestController extends Controller
 {
-
-    /**
-     * Crée une nouvelle demande de congé/permission/autre
-     */
-    // public function store(Request $request)
-    // {
-    //     $validated = $request->validate([
-    //         'user_id' => 'required|integer|exists:intranet_extedim.users,id',
-    //         'reason' => 'nullable|string',
-    //         'start_date' => 'required|date',
-    //         'end_date' => 'required|date|after_or_equal:start_date',
-    //         'start_half_day' => 'required',
-    //         'end_half_day' => 'required',
-    //         'approved_at' => 'nullable|date',
-    //         'approved_by' => 'nullable|integer|exists:intranet_extedim.users,id',
-    //         'approved_comment' => 'nullable|string',
-    //         'is_inserted_to_ogcumul' => 'nullable|boolean',
-    //         'leave_type_id' => 'required|exists:intranet_extedim.ogc_leave_types,id',
-    //         'support_file_path' => 'nullable|file|mimes:pdf,jpg,png,docx,doc|max:2048',
-    //     ]);
-
-    //     $fileUrl = null;
-    //     if ($request->hasFile('support_file_path')) {
-    //         $file = $request->file('support_file_path');
-    //         $filename = sprintf(
-    //             'justificatif_%s.%s',
-    //             now()->format('Y-m-d_H-i-s'),
-    //             $file->getClientOriginalExtension()
-    //         );
-
-    //         $directory = 'users/' . $validated['user_id'] . '/documents';
-    //         $disk = Storage::disk('sftp');
-    //         if (!$disk->exists($directory)) {
-    //             $disk->makeDirectory($directory);
-    //         }
-
-    //         $storedPath = $file->storeAs($directory, $filename, 'sftp');
-
-    //         if (!$storedPath) {
-    //             return response()->json([
-    //                 'success' => false,
-    //                 'message' => 'Échec de l\'enregistrement du fichier sur le serveur.',
-    //             ], 500);
-    //         }
-
-    //         $fileUrl = 'https://57.128.116.184/intranet/' . $storedPath;
-    //     }
-
-    //     $start = Carbon::parse($validated['start_date']);
-    //     $end = Carbon::parse($validated['end_date']);
-    //     $period = CarbonPeriod::create($start, $end);
-
-    //     $holidayDates = OgcHoliday::whereBetween('date', [$start, $end])
-    //         ->pluck('date')
-    //         ->map(fn($date) => Carbon::parse($date)->format('Y-m-d'))
-    //         ->toArray();
-
-    //     $numberDay = collect($period)->filter(function ($date) use ($holidayDates) {
-    //         return !$date->isWeekend() && !in_array($date->format('Y-m-d'), $holidayDates);
-    //     })->count();
-
-    //     if ($validated['start_half_day'] === 'afternoon') $numberDay -= 0.5;
-    //     if ($validated['end_half_day'] === 'morning') $numberDay -= 0.5;
-
-    //     try {
-    //         $leaveRequest = LeaveRequest::create([
-    //             'user_id' => $validated['user_id'],
-    //             'reason' => $validated['reason'] ?? null,
-    //             'start_date' => $validated['start_date'],
-    //             'end_date' => $validated['end_date'],
-    //             'start_half_day' => $validated['start_half_day'],
-    //             'end_half_day' => $validated['end_half_day'],
-    //             'number_day' => $numberDay,
-    //             'status' => 'created',
-    //             'approved_at' => $validated['approved_at'] ?? null,
-    //             'approved_by' => $validated['approved_by'] ?? null,
-    //             'approved_comment' => $validated['approved_comment'] ?? null,
-    //             'is_inserted_to_ogcumul' => $validated['is_inserted_to_ogcumul'] ?? false,
-    //             'leave_type_id' => $validated['leave_type_id'],
-    //             'support_file_path' => $fileUrl,
-    //         ]);
-    //     } catch (\Exception $e) {
-    //         return response()->json([
-    //             'success' => false,
-    //             'message' => 'Erreur lors de la sauvegarde de la demande de congé.',
-    //             'error' => $e->getMessage(),
-    //         ], 500);
-    //     }
-
-    //     $user = User::find($validated['user_id']);
-    //     $recipients = collect();
-
-    //     if ($user && $user->manager_id) {
-    //         $manager = User::find($user->manager_id);
-    //         if ($manager) $recipients->push($manager);
-    //     }
-
-    //     $admins = User::where('role', 'admin')->get();
-    //     $recipients = $recipients->merge($admins);
-
-    //     foreach ($recipients as $recipient) {
-    //         $recipient->notify(new LeaveRequestCreated($leaveRequest));
-    //     }
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'message' => 'Demande de congé enregistrée avec succès.',
-    //         'data' => $leaveRequest,
-    //     ], 201);
-    // }
-
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -306,15 +195,14 @@ class LeaveRequestController extends Controller
             ->whereIn('user_id', $teamUserIds)
             ->where('status', 'pending')
             ->get();
-
         return response()->json($leaveRequests);
     }
 
-
     public function getAllLeaveRequests()
     {
-        $leaveRequests = LeaveRequest::with('user', 'leaveType')->get();
-
+        $leaveRequests = LeaveRequest::with('user', 'leaveType')
+            ->orderBy('created_at', 'desc')
+            ->get();
         return response()->json($leaveRequests);
     }
 

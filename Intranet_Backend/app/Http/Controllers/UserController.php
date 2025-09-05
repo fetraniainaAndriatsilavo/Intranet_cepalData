@@ -267,27 +267,7 @@ class UserController extends Controller
     public function GetInfoUser($id)
     {
         try {
-            $user = User::with([
-                'position',
-                'classification',
-                'client',
-                'manager',
-                'documents',
-                'contrat',
-                'posts' => function ($query) {
-                    $query->with(
-                        'attachments',
-                        'comments.user',
-                        'reactions.user'
-                    )
-                        ->withCount(['comments', 'reactions'])
-                        ->withTrashed()
-                        ->orderBy('created_at', 'desc')
-                        ->take(5);
-                }
-            ])->findOrFail($id);
-
-
+            $user = User::with('position', 'classification', 'client', 'manager', 'documents', 'contrat',)->findOrFail($id);
 
             return response()->json([
                 'user' => [
@@ -300,6 +280,7 @@ class UserController extends Controller
                     'birth_date' => $user->birth_date,
                     'birth_place' => $user->birth_place,
                     'employee_number' => $user->employee_number,
+                    'hire_date' => $user->hire_date,
                     'cnaps_number' => $user->cnaps_number,
                     'phone_number' => $user->phone_number,
                     'address' => $user->address,
@@ -321,7 +302,7 @@ class UserController extends Controller
                     'contrat_code' => $user->contrat ? $user->contrat->code : null,
                     'department' => $user->department ? $user->department->id : null,
                     'manager' => $user->manager ? $user->manager->first_name : null,
-                                        'public' => $user->public,
+                    'public' => $user->public,
                     'documents' => $user->documents->map(
                         function ($doc) {
                             return [
@@ -335,39 +316,6 @@ class UserController extends Controller
                             ];
                         }
                     ),
-                    'posts' => $user->posts->map(function ($post) {
-                        return [
-                            'id' => $post->id,
-                            'content' => $post->content,
-                            'created_at' => $post->created_at,
-                            'deleted_at' => $post->deleted_at,
-                            'attachments' => $post->attachments->map(fn($a) => [
-                                'id' => $a->id,
-                                'file_path' => $a->file_path,
-                            ]),
-                            'comments_count' => $post->comments_count,
-                            'reactions_count' => $post->reactions_count,
-                            'comments' => $post->comments->map(fn($c) => [
-                                'id' => $c->id,
-                                'content' => $c->content,
-                                'user' => [
-                                    'id' => $c->user->id,
-                                    'first_name' => $c->user->first_name,
-                                    'last_name' => $c->user->last_name,
-                                ]
-                            ]),
-                            'reactions' => $post->reactions->map(fn($r) => [
-                                'id' => $r->id,
-                                'type' => $r->type,
-                                'user' => [
-                                    'id' => $r->user->id,
-                                    'first_name' => $r->user->first_name,
-                                    'last_name' => $r->user->last_name,
-                                ]
-                            ]),
-                        ];
-                    }),
-
                 ],
 
             ], 200);
@@ -395,7 +343,6 @@ class UserController extends Controller
         }
     }
 
-
     public function GetAllUsers()
     {
         try {
@@ -405,11 +352,13 @@ class UserController extends Controller
                 return [
                     'id' => $user->id,
                     'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
                     'email' => $user->email,
                     'status' => $user->status,
                     'role' => $user->role,
                     'birth_date' => $user->birth_date,
                     'birth_place' => $user->birth_place,
+                    'hire_date' => $user->hire_date,
                     'employee_number' => $user->employee_number,
                     'cnaps_number' => $user->cnaps_number,
                     'phone_number' => $user->phone_number,

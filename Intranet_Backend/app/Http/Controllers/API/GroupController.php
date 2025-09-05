@@ -61,7 +61,8 @@ class GroupController extends Controller
                 'messages' => function ($query) {
                     $query->orderBy('created_at', 'asc');
                 },
-                'messages.sender:id,first_name'
+                'messages.sender:id,first_name',
+                'messages.files'
             ])->find($group_id);
 
             if (!$group) {
@@ -79,6 +80,14 @@ class GroupController extends Controller
                     'sender_name' => $msg->sender?->first_name,
                     'is_read' => $msg->read_at,
                     'created_at' => $msg->created_at,
+                    'files'       => $msg->files->map(function ($file) {
+                        return [
+                            'id'            => $file->id,
+                            'path'          => $file->path,
+                            'original_name' => $file->original_name,
+                            'mime_type'     => $file->mime_type,
+                        ];
+                    })
                 ];
             });
 

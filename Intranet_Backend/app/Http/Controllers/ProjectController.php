@@ -102,7 +102,6 @@ class ProjectController extends Controller
         }
     }
 
-
     public function getProjectByUserId($userId)
     {
         $userProject = Project::with('sprints')

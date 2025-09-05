@@ -51,7 +51,7 @@ export default function Connexion() {
                 setError(err.response.data.message);
             } else if (err.response && err.response.status === 403) {
                 setError(err.response.data.message);
-            }else {
+            } else {
                 setError('Une erreur est survenue. Veuillez réessayer.');
             }
         } finally {
@@ -69,7 +69,7 @@ export default function Connexion() {
                 <TextField
                     label="Adresse Email"
                     variant="outlined"
-                    className="w-2/3 border focus:border-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    className="w-2/3 focus:border-none focus:outline-none  focus:ring-0 dark:border-gray-600 dark:bg-gray-700 dark:text-white MuiOutlinedInput-input:focus"
                     name="email"
                     id="email"
                     value={email}
@@ -79,7 +79,7 @@ export default function Connexion() {
                 <TextField
                     label="Mot de passe"
                     variant="outlined"
-                    className="w-2/3 border focus:border-none dark:border-gray-600 dark:bg-gray-700 dark:text-white"
+                    className="w-2/3 focus:border-none  focus:ring-0  focus:outline-none dark:border-gray-600 dark:bg-gray-700 dark:text-white MuiOutlinedInput-input:focus"
                     name="password"
                     id="password"
                     value={password}
@@ -97,6 +97,7 @@ export default function Connexion() {
                             </InputAdornment>
                         ),
                     }}
+
                 />
 
                 {error && (

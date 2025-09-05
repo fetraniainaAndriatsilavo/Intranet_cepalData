@@ -49,7 +49,7 @@ class NewGroupMessageAdded extends Notification
             'group_name' => $this->group->name,
             'admin_name' => $this->admin->first_name,
             'members' => $members,
-            'message' => "{$this->admin->first_name} vous a ajouté au groupe {$this->group->name}",
+            'message' => "Bienvenue dans le groupe de discussion {$this->group->name}, créé par {$this->admin->first_name}. Participez aux échanges et partagez vos idées !",
         ];
     }
 }

@@ -4,10 +4,12 @@ import { useEffect, useState } from "react";
 import api from "../../../components/axios";
 import CreateEvent from "./CreateEvent";
 import EditEvent from "./EditEvent";
+import { PulseLoader } from "react-spinners";
 
 export default function ListEvent() {
     const [open, setOpen] = useState(false)
     const [openModif, setOpenModif] = useState(false)
+    const [loading, setLoading] = useState(false)
     const headers = [
         'Titre',
         'Description',
@@ -18,8 +20,10 @@ export default function ListEvent() {
     const [selecteEvent, setSelectedEvent] = useState(0)
 
     const fecthEvent = () => {
+        setLoading(true)
         api.get('/event/get')
             .then((response) => {
+                setLoading(false)
                 setEventList(response.data.evenements)
             })
             .catch((error) => {
@@ -53,27 +57,42 @@ export default function ListEvent() {
                     setOpen(true)
                 }}> + Ajouter </button>
         </div>
-        <div className="bg-white w-full rounded-lg">
-            <h3 className="p-3">
-                Tous les Evènements
-                <span className="text-gray-400 font-semibold">
-                    {eventList ? '  ' + eventList.length : 0}
-                </span>
-            </h3>
-            <TableEvents listHeader={headers}
-                datas={eventList}
-                fecthEvent={fecthEvent}
-                setSelectedEvent={setSelectedEvent} 
-                setOpenModif={setOpenModif}
-            />
-        </div>
-        <div>
-            <Pagination
-                count={lastPageIndex}
-                page={currentPage}
-                onChange={handleChange}
-            />
-        </div>
+
+        {
+
+            loading == true
+                ? <div className="flex items-center justify-center w-full h-full">
+                    <PulseLoader
+                        color={'#1a497f'}
+                        loading={loading}
+                        aria-label="Loading Spinner"
+                        data-testid="loader"
+                    ></PulseLoader>
+                </div> : <>
+                    <div className="bg-white w-full rounded-lg">
+                        <h3 className="p-3">
+                            Tous les Evènements
+                            <span className="text-gray-400 font-semibold">
+                                {eventList ? '  ' + eventList.length : 0}
+                            </span>
+                        </h3>
+                        <TableEvents listHeader={headers}
+                            datas={eventList}
+                            fecthEvent={fecthEvent}
+                            setSelectedEvent={setSelectedEvent}
+                            setOpenModif={setOpenModif}
+                        />
+                    </div>
+                    <div>
+                        <Pagination
+                            count={lastPageIndex}
+                            page={currentPage}
+                            onChange={handleChange}
+                        />
+                    </div>
+                </>
+        }
+
         <CreateEvent fecthEvent={fecthEvent} open={open} onClose={() => {
             setOpen(false)
         }} />

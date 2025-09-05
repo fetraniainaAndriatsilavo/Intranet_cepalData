@@ -59,7 +59,6 @@ class PostController extends Controller
         ], 200);
     }
 
-
     public function getPublishedPosts()
     {
         $allPosts = Post::with('attachments', 'user')

@@ -7,7 +7,7 @@ Votre compte a été créé sur la plateforme intranet.
 
 Merci de le changer dès maintenant pour des raisons de sécurité.
 
-@component('mail::button', ['url' => 'http://localhost:3000/settings'])
+@component('mail::button', ['url' => 'http://intranet.ext.local:8080'])
 Changer mon mot de passe
 @endcomponent
 
