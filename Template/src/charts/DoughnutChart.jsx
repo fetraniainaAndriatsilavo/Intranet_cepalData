@@ -16,16 +16,24 @@ function DoughnutChart({
 }) {
 
   const [chart, setChart] = useState(null)
+
   const canvas = useRef(null);
   const legend = useRef(null);
+  const chartRef = useRef(null);
   const { currentTheme } = useThemeProvider();
   const darkMode = currentTheme === 'dark';
-  const { tooltipTitleColor, tooltipBodyColor, tooltipBgColor, tooltipBorderColor } = chartColors; 
+  const { tooltipTitleColor, tooltipBodyColor, tooltipBgColor, tooltipBorderColor } = chartColors;
 
   useEffect(() => {
+    
+    if (canvas.current) return;
+
+    if (chartRef.current) {
+      chartRef.current.destroy();
+    }
+
     const ctx = canvas.current;
-    // eslint-disable-next-line no-unused-vars
-    const newChart = new Chart(ctx, {
+    const chartRef = new Chart(ctx, {
       type: 'doughnut',
       data: data,
       options: {
@@ -100,11 +108,17 @@ function DoughnutChart({
           },
         },
       ],
-    });
+    }, [data]);
+
     setChart(newChart);
-    return () => newChart.destroy();
+    return () => {
+      chartRef.current?.destroy();
+    };
+    // eslint-disable-next-line no-unused-vars
+
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [data]);
 
   useEffect(() => {
     if (!chart) return;
@@ -121,12 +135,12 @@ function DoughnutChart({
       chart.options.plugins.tooltip.borderColor = tooltipBorderColor.light;
     }
     chart.update('none');
-  }, [currentTheme]);
+  }, [currentTheme, data]);
 
   return (
     <div className="grow flex flex-col justify-center">
       <div>
-        <canvas ref={canvas} width={width} height={height}></canvas>
+        <canvas ref={canvas} width={width} height={height}> </canvas>
       </div>
       <div className="px-5 pt-2 pb-6">
         <ul ref={legend} className="flex flex-wrap justify-center -m-1"></ul>

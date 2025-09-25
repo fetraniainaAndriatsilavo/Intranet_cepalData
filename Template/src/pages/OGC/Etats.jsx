@@ -24,6 +24,9 @@ export default function Etats() {
             .catch((error) => {
                 console.log(error)
             })
+            .finally(() => {
+                setLoading(false)
+            })
     }, [])
     // pagination du tableau 
     const [currentPage, setCurrentPage] = useState(1);
@@ -61,7 +64,7 @@ export default function Etats() {
 
     return <div className="sm:flex flex-col gap-5 sm:justify-between sm:items-center mb-8">
         <div className="mb-4 sm:mb-0 flex items-center justify-between w-full">
-            <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"> Etats des demandes </h1>
+            <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"> Etats des soldes des droits </h1>
             <TextField
                 size="small"
                 label='Rechercher par nom, prénom'
@@ -85,7 +88,7 @@ export default function Etats() {
                     ></PulseLoader>
                 </div> : <>
                     <div className="bg-white  w-full rounded-lg">
-                        <h3 className="p-3 "> Tous les soldes personnelles <span className=" font-semibold text-gray-300"> {searchUsers ? filteredUsers.length : allUsers ? allUsers.length : 0} </span> </h3>
+                        <h3 className="p-3 ">  <span className=" font-semibold text-gray-300"> {searchUsers ? filteredUsers.length : allUsers ? allUsers.length : 0} </span>&nbsp;enregistrements  </h3>
                         <Tableau header={header} datas={displayedUsers} />
                     </div>
                     <div>

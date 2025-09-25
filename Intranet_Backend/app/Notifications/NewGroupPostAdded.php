@@ -46,7 +46,7 @@ class NewGroupPostAdded extends Notification
             'group_name' => $this->group->name,
             'creator_name' => $this->creator->first_name,
             'members' => $members,
-            'message' => "Vous avez été ajouté au groupe de publication {$this->group->name} par {$this->creator->first_name}. Bienvenue sur notre plateforme et merci de contribuer aux publications du groupe !",
+            'message' => "{$this->creator->first_name} vous a ajouté au groupe {$this->group->name}",
         ];
     }
 }

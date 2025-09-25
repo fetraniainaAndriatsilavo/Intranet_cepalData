@@ -1,147 +1,210 @@
 import { useEffect, useState } from "react";
-import { TextField, Alert, Dialog } from "@mui/material";
+import {
+  TextField,
+  Alert,
+  Modal,
+  Typography,
+  Box,
+  CircularProgress,
+} from "@mui/material";
 import api from "../../../components/axios";
+import dayjs from "dayjs";
 
 export default function EditEvent({ fecthEvent, open, onClose, eventId }) {
-    const [formData, setFormData] = useState({
-        title: "",
-        date: "",
-        description: "",
-    });
+  const [formData, setFormData] = useState({
+    title: "",
+    date: "",
+    description: "",
+  });
 
-    const [success, setSuccess] = useState(null);
-    const [error, setError] = useState(null);
-    const [loading, setLoading] = useState(false)
+  const [success, setSuccess] = useState(null);
+  const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-    const handleChange = (e) => {
-        setFormData((prev) => ({
-            ...prev,
-            [e.target.id]: e.target.value,
-        }));
-    };
+  useEffect(() => {
+    setError('')
+    setSuccess('')
+    setLoading(false)
+  }, [open])
 
-    const fetchEventInformation = (EventID) => {
-        api.get('event/' + EventID + '/info')
-            .then((response) => {
-                const data = response.data.evenements
-                setFormData({
-                    title: data.title || "",
-                    date: data.date || "",
-                    description: data.description || "",
-                })
-            })
+  const handleChange = (e) => {
+    setFormData((prev) => ({
+      ...prev,
+      [e.target.id]: e.target.value,
+    }));
+  };
+
+  const fetchEventInformation = async (EventID) => {
+    try {
+      const response = await api.get(`event/${EventID}/info`);
+      const data = response.data.evenements || {};
+      setFormData({
+        title: data.title || "",
+        date: data.date ? dayjs(data.date).format("YYYY-MM-DDTHH:mm") : "",
+        description: data.description || "",
+      });
+    } catch (err) {
+      console.error(err);
+      setError("Impossible de charger les informations de l’évènement.");
+    }
+  };
+
+  useEffect(() => {
+    if (eventId) {
+      fetchEventInformation(eventId);
+    }
+  }, [eventId, open]);
+
+  const handleSubmit = async () => {
+    setSuccess(null);
+    setError(null);
+    setLoading(true);
+
+    if (!formData.title) {
+      setError("Veuillez inclure le nom de l'évènement.");
+      setLoading(false);
+      return;
+    } else if (!formData.date) {
+      setError("Veuillez inclure la date de l'évènement.");
+      setLoading(false);
+      return;
     }
 
-    useEffect(() => {
-        fetchEventInformation(eventId)
-    }, [eventId])
+    try {
+      const response = await api.put(`event/update/${eventId}`, formData, {
+        headers: { "Content-Type": "application/json" },
+      });
 
-    const handleSubmit = async () => {
-        setSuccess(null);
-        setError(null);
-        setLoading(true)
-        try {
-            const response = await api.put(
-                "event/update/" + eventId,
-                formData,
-                {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-            setLoading(false)
-            setSuccess(response.data.message);
-            setTimeout(() => {
-                setSuccess(null)
-            }, [5000])
-            setFormData({ title: "", date: "", time: "", description: "" });
-            onClose()
-            fecthEvent()
-        } catch (err) {
-            setLoading(false)
-            console.error(err);
-            setError(error.data.message);
-            setTimeout(() => {
-                setError(null)
-            }, [5000])
-        }
-    };
+      setSuccess(response.data.message || "Évènement modifié avec succès.");
+      setLoading(false);
 
-    return (
-        <Dialog open={open} fullWidth>
-            <div className="rounded bg-white w-full gap-4 p-5">
-                <div className="title-group flex flex-row mb-3 mt-2 items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-calendar-event">
-                        <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" />
-                        <path d="M16 3l0 4" />
-                        <path d="M8 3l0 4" />
-                        <path d="M4 11l16 0" />
-                        <path d="M8 15h2v2h-2z" />
-                    </svg>
-                    <h1 className="font-bold mx-5 text-xl"> {eventId} Modification de l'Evènement </h1>
-                </div>
+      setTimeout(() => {
+        onClose();
+      }, 1200);
 
-                <div className="mb-3 mt-3">
-                    <TextField
-                        id="title"
-                        label="Nom de l'Evenement "
-                        variant="outlined"
-                        fullWidth
-                        value={formData.title}
-                        onChange={handleChange}
-                    />
-                </div>
+      fecthEvent();
+    } catch (err) {
+      console.error(err);
+      setError(err.response?.data?.message || "Une erreur est survenue.");
+      setLoading(false);
+    }
+  };
 
-                <div className="flex flex-row mb-3 mt-3 gap-4">
-                    <TextField
-                        id="date"
-                        label="Date"
-                        type="datetime-local"
-                        variant="outlined"
-                        value={formData.date}
-                        onChange={handleChange}
-                        InputLabelProps={{ shrink: true }}
-                    />
-                </div>
+  const cancel = () => {
+    setError(null);
+    setSuccess(null);
+    onClose();
+  };
 
-                <div className="mb-3 mt-3">
-                    <TextField
-                        id="description"
-                        label="Description"
-                        variant="outlined"
-                        fullWidth
-                        value={formData.description}
-                        onChange={handleChange}
-                    />
-                </div>
+  return (
+    <Modal open={open} onClose={cancel}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 420,
+          bgcolor: "background.paper",
+          borderRadius: 1,
+          boxShadow: 24,
+          p: 1.5,
+        }}
+      >
+        {/* Header */}
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{
+            mb: 2,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            fontWeight: "bold",
+          }}
+        >
+          Modifier l'Évènement
+          <button
+            onClick={cancel}
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "1.2rem",
+              lineHeight: "1",
+              marginLeft: "auto",
+            }}
+          >
+            ✕
+          </button>
+        </Typography>
 
-                <div className="flex mt-3 w-full gap-3">
-                    <button className="p-2 bg-gray-50 text-sky-700 font-bold text-center cursor-pointer rounded w-1/3 border border-sky-700"
-                        onClick={onClose}>
-                        FERMER
-                    </button>
-                    <button
-                        className="p-2 bg-blue-500 text-white font-bold text-center cursor-pointer rounded hover:bg-blue-600 w-2/3"
-                        onClick={handleSubmit}
-                    >
-                        MODIFIER
-                    </button>
-                </div>
+        {/* Form */}
+        <TextField
+          id="title"
+          label="Titre **"
+          variant="outlined"
+          fullWidth
+          size="small"
+          sx={{ mb: 2 }}
+          value={formData.title}
+          onChange={handleChange}
+        />
 
-                {success && (
-                    <Alert severity="success" className="mt-3">
-                        {success}
-                    </Alert>
-                )}
+        <TextField
+          id="date"
+          label="Date et heure **"
+          type="datetime-local"
+          fullWidth
+          size="small"
+          variant="outlined"
+          sx={{ mb: 2 }}
+          value={formData.date}
+          onChange={handleChange}
+          InputLabelProps={{ shrink: true }}
+        />
 
-                {error && (
-                    <Alert severity="error" className="mt-3">
-                        {error}
-                    </Alert>
-                )}
-            </div>
-        </Dialog>
-    );
+        <TextField
+          id="description"
+          label="Description"
+          variant="outlined"
+          multiline
+          rows={3}
+          fullWidth
+          size="small"
+          sx={{ mb: 2 }}
+          value={formData.description}
+          onChange={handleChange}
+        />
+
+        {/* Actions */}
+        <div className="flex gap-2 mt-1">
+          <button
+            className="w-full bg-sky-600 hover:bg-sky-700 text-white font-medium rounded p-2 cursor-pointer flex items-center justify-center"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              //   <CircularProgress size={20} sx={{ color: "white" }} />  
+              'Modification en cours...'
+            ) : (
+              "Modifier"
+            )}
+          </button>
+        </div>
+
+        {/* Alerts */}
+        {success && (
+          <Alert severity="success" sx={{ mt: 2 }}>
+            {success}
+          </Alert>
+        )}
+        {error && (
+          <Alert severity="error" sx={{ mt: 2 }}>
+            {error}
+          </Alert>
+        )}
+      </Box>
+    </Modal>
+  );
 }

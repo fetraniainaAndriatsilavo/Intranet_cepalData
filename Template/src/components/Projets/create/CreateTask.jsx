@@ -7,6 +7,7 @@ import {
   Button,
   Autocomplete,
   TextareaAutosize,
+  Alert,
 } from '@mui/material';
 import api from '../../axios';
 
@@ -25,6 +26,8 @@ export default function CreateTask({ open, onClose, projectId, fetchTaskProject 
 
   const [allUsers, setAllUsers] = useState([]);
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
 
   const handleChange = (field) => (e) => {
     setTask((prev) => ({
@@ -50,25 +53,79 @@ export default function CreateTask({ open, onClose, projectId, fetchTaskProject 
       });
   }, []);
 
+  const cancel = () => {
+    setTask({
+      title: '',
+      sprint_id: '',
+      project_id: projectId || 0,
+      type: 'Task',
+      status: 'To-Do',
+      user_allocated_id: '',
+      description: '',
+      due_date: '',
+      priority: 'Medium'
+    })
+    setLoading(false)
+    setError('')
+    setSuccess('')
+    onClose()
+  }
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true)
-    if (!task.title.trim()) {
-      alert("Veuillez entrer un titre de tâche");
+    e.preventDefault()
+    if (!task.title) {
+      setError('Le nom de la tâche est requis')
+      setLoading(false)
       return;
     }
-    try {
-      const response = await api.post("/tasks", task, {
-        headers: { "Content-Type": "application/json" },
-      });
+
+    if (!task.description) {
+      setError('Veuillez élaborer une explication concernant ce tâche')
       setLoading(false)
-      onClose();
-      fetchTaskProject(projectId)
-    } catch (error) {
-      console.error("Erreur lors de la création de la tâche:", error);
-      alert("Impossible de créer la tâche");
+      return;
     }
+
+    if (!task.due_date) {
+      setError('La date limite du est requise')
+      setLoading(false)
+      return;
+    }
+
+    if (!task.user_allocated_id) {
+      setError('une personne doit être assignée à ce tâche')
+      setLoading(false)
+      return;
+    }
+
+    if (!task.type) {
+      setError('quel type voulez-vous assigné à ce tâche ?')
+      setLoading(false)
+      return;
+    }
+
+    if (!task.status) {
+      setError('le status du tâche est requis')
+      setLoading(false)
+      return;
+    }
+
+    setLoading(true)
+    api.post('/tasks', task, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+      .then((response) => {
+        fetchTaskProject(projectId) 
+        setSuccess(response.data.message)
+        onClose()
+      })
+      .catch((error) => {
+        console.log(error)
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   };
 
   return (
@@ -80,11 +137,11 @@ export default function CreateTask({ open, onClose, projectId, fetchTaskProject 
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
-            width: 700,
+            width: 500,
             bgcolor: 'background.paper',
             boxShadow: 24,
-            p: 4,
-            borderRadius: 2,
+            p: 2.5,
+            borderRadius: 1,
           }}
         >
           <Typography variant="h6" component="h2" gutterBottom className="flex flex-row gap-3 items-center">
@@ -97,108 +154,106 @@ export default function CreateTask({ open, onClose, projectId, fetchTaskProject 
               <path d="M10 14h4" />
               <path d="M12 12v4" />
             </svg>
-            Créer une nouvelle Tâche
+            Création d'une nouvelle tâche
           </Typography>
 
-          <form onSubmit={handleSubmit}>
-            <TextField
-              label="Titre du Tâches"
-              fullWidth
-              margin="normal"
-              value={task.title}
-              onChange={handleChange('title')}
-              size="small"
-            />
+          {/* <form onSubmit={handleSubmit}> */}
+          <TextField
+            label="Nom de la tâche"
+            fullWidth
+            margin="normal"
+            value={task.title}
+            onChange={handleChange('title')}
+            size="small"
+          />
 
-            <Autocomplete
-              disablePortal
-              options={allUsers || []}
-              getOptionLabel={(option) => option.first_name || ""}
-              value={allUsers.find((u) => u.id === task.user_allocated_id) || null}
-              onChange={(event, newValue) =>
-                setTask((prev) => ({ ...prev, user_allocated_id: newValue ? newValue.id : null }))
-              }
-              renderInput={(params) => <TextField {...params} label="Personne assignée" />}
-              size="small"
-              className="mt-3"
-            />
+          <Autocomplete
+            disablePortal
+            options={allUsers || []}
+            getOptionLabel={(option) => option.last_name + ' ' + option.first_name || ""}
+            value={allUsers.find((u) => u.id === task.user_allocated_id) || null}
+            onChange={(event, newValue) =>
+              setTask((prev) => ({ ...prev, user_allocated_id: newValue ? newValue.id : null }))
+            }
+            renderInput={(params) => <TextField {...params} label="Personne assignée" />}
+            size="small"
+            className="mt-3"
+          />
 
 
-            <TextField
-              label="fin de la Tâches"
-              type='date'
-              InputLabelProps={{ shrink: true }}
-              fullWidth
-              margin="normal"
-              value={task.due_date}
-              onChange={handleChange('due_date')}
-              size="small"
-            />
+          <TextField
+            label="fin de la tâche"
+            type='date'
+            InputLabelProps={{ shrink: true }}
+            fullWidth
+            margin="normal"
+            value={task.due_date}
+            onChange={handleChange('due_date')}
+            size="small"
+          />
 
-            <div className="mt-3 mb-3 flex flex-col">
-              <label htmlFor="type">Type :</label>
-              <select
-                className="rounded"
-                id="type"
-                value={task.type}
-                onChange={handleChange('type')}
-              >
-                <option value="Story">Stories</option>
-                <option value="Task">Tâches</option>
-                <option value="Bug">Bug</option>
-                <option value="Sub_Task">Sous-tâches</option>
-              </select>
-            </div>
+          <div className="mt-3 mb-3 flex flex-col">
+            <select
+              className="rounded"
+              id="type"
+              value={task.type}
+              onChange={handleChange('type')}
+            >
+              <option value="Story"> Stories </option>
+              <option value="Task"> Tâches </option>
+              <option value="Bug"> Bug </option>
+              <option value="Sub_Task"> Sous-tâches </option>
+            </select>
+          </div>
 
-            <div className="flex flex-col">
-              <label htmlFor="status">Status :</label>
-              <select
-                className="rounded"
-                id="status"
-                value={task.status}
-                onChange={handleChange('status')}
-              >
-                <option value="To-Do">To-Do</option>
-                <option value="In-Progress">In Progress</option>
-                <option value="Review">Reviewing</option>
-                <option value="Deploy"> Deploy </option>
-                <option value="Done">Done</option>
-              </select>
-            </div>
+          <div className="flex flex-col">
+            <select
+              className="rounded"
+              id="status"
+              value={task.status}
+              onChange={handleChange('status')}
+            >
+              <option value="To-Do">To-Do</option>
+              <option value="In-Progress">In Progress</option>
+              <option value="Review">Reviewing</option>
+              <option value="Deploy"> Deploy </option>
+              <option value="Done">Done</option>
+            </select>
+          </div>
 
-            <TextareaAutosize
-              aria-label="minimum height"
-              minRows={3}
-              placeholder="Description"
-              className="mt-3 rounded w-full"
-              value={task.description}
-              onChange={handleChange('description')}
-            />
-
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', mt: 2 }}>
-              <Button onClick={() => {
-                setTask({
-                  title: '',
-                  sprint_id: '',
-                  project_id: '',
-                  type: 'Task',
-                  status: 'To-Do',
-                  user_allocated_id: '',
-                  description: '',
-                  due_date: '',
-                  priority: 'Medium'
-                })
-                onClose()
-              }} sx={{ mr: 1 }} variant="outlined">
-                Retour
-              </Button>
-              <Button type="submit" variant="contained" color="primary">
-                {
-                  loading == true ? 'Création...' : 'Créer'
-                }
-              </Button>
-            </Box>
-          </form>
+          <TextareaAutosize
+            aria-label="Description"
+            minRows={3}
+            placeholder="Description"
+            className="mt-3 rounded w-full resize-none"
+            value={task.description}
+            onChange={handleChange('description')}
+          />
+          <div className='mt-1'>
+            {
+              error && <Alert severity='error'>
+                {error}
+              </Alert>
+            }
+            {
+              success && <Alert severity='success'>
+                {success}
+              </Alert>
+            }
+          </div>
+          <div className="w-full flex flex-row gap-2 mt-3">
+            <button className="px-3 w-1/3 py-2 bg-white border border-sky-600 text-sky-600 rounded cursor-pointer" onClick={() => {
+              cancel()
+            }} type='reset'>
+              Annuler
+            </button>
+            <button className="px-3 py-2 w-2/3 bg-sky-600 text-white rounded cursor-pointer" onClick={(e) => {
+              handleSubmit(e)
+            }}>
+              {loading ? 'En cours d\' enregistrement' : 'Créer'}
+            </button>
+          </div>
+          {/* </form> */}
         </Box>
       </Modal>
     </>

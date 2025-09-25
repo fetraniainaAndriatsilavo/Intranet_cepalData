@@ -59,6 +59,7 @@ class CommentController extends Controller
 
         return response()->json($comment, 201);
     }
+
     public function update(Request $request, $id)
     {
         $request->validate([

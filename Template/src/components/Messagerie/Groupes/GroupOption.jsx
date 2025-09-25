@@ -1,12 +1,19 @@
-import { Menu, MenuItem } from "@mui/material";
+import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 import { useContext } from "react";
 import { AppContext } from "../../../context/AppContext";
 import api from "../../axios";
+import { Delete, Edit, ExitToApp } from "@mui/icons-material";
 
 export default function GroupOption({ anchorEl, onClose, group, setOpenEdit }) {
     const open = Boolean(anchorEl);
     const { user } = useContext(AppContext)
 
+    //variable o=pour savoir si on est admin ou non 
+    const isAdmin = group.members.some(
+        (member) => member.id === user.id && member.pivot.is_admin === true
+    );
+
+    //fonction pour supprimer de ce groupe
     const deleteGroup = (id) => {
         api.delete('/messages/' + id + '/delete')
             .then(() => {
@@ -14,6 +21,8 @@ export default function GroupOption({ anchorEl, onClose, group, setOpenEdit }) {
             })
     }
 
+
+    //fonction pour se quitter du groupe
     const leaveGroup = (id, userId) => {
         api.post('/message-groups/' + id + '/leave',
             {
@@ -34,36 +43,43 @@ export default function GroupOption({ anchorEl, onClose, group, setOpenEdit }) {
             anchorEl={anchorEl}
             open={open}
             onClose={onClose}
-            // anchorOrigin={{
-            //     vertical: "top", // show below the button
-            //     horizontal: "right", // align with button right edge
-            // }}
-            // transformOrigin={{
-            //     vertical: "top", // menu grows downward
-            //     horizontal: "right",
-            // }}
             PaperProps={{
                 elevation: 1,
                 sx: {
-                    mt: 1, // small gap between button and menu
+                    mt: 1,
                     borderRadius: 2,
                     minWidth: 150,
                 },
             }}
         >
-            {
-                user.id == group.updated_by && <MenuItem nClick={(e) => {
-                    e.preventDefault9
-                    deleteGroup(group.id)
-                }}> Supprimer. </MenuItem>
-            }
-            <MenuItem onClick={(e) => {
-                e.preventDefault9
-                leaveGroup(group.id, user.id)
-            }}> Quitter.</MenuItem>
             <MenuItem onClick={() => {
                 setOpenEdit(true)
-            }}> Modif. </MenuItem>
+            }}>
+                <ListItemIcon>
+                    <Edit fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Modifier" />
+            </MenuItem>
+            {
+                isAdmin == true && <MenuItem onClick={(e) => {
+                    e.preventDefault9
+                    deleteGroup(group.id)
+                }}>
+                    <ListItemIcon>
+                        <Delete fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText primary="Supprimer" />
+                </MenuItem>
+            }
+            <MenuItem onClick={(e) => {
+                e.preventDefault()
+                leaveGroup(group.id, user.id)
+            }}>
+                <ListItemIcon>
+                    <ExitToApp fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Quitter" />
+            </MenuItem>
         </Menu>
     );
 }

@@ -88,6 +88,41 @@ function DropdownProfile({ align, setLoading }) {
     }
   };
 
+
+  const colorName = user.last_name + ' ' + user.first_name || '' 
+  
+  function stringToColor(string) {
+    let hash = 0;
+    for (let i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    let color = "#";
+    for (let i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff;
+      color += `00${value.toString(16)}`.slice(-2);
+    }
+    return color;
+  }
+
+  function stringAvatar(name) {
+    const initials = name
+      ? name
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+      : "?";
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+        width: 40,
+        height: 40,
+        fontSize: "0.9rem",
+      },
+      children: initials.toUpperCase(),
+    };
+  }
+
   return (
     <div className="relative inline-flex">
       <button
@@ -97,12 +132,7 @@ function DropdownProfile({ align, setLoading }) {
         onClick={() => setDropdownOpen(!dropdownOpen)}
         aria-expanded={dropdownOpen}
       >
-        <Avatar>
-          {" "}
-          {user
-            ? splitName(user.first_name, user.last_name)
-            : splitName("Utilisateur", "1")}{" "}
-        </Avatar>
+        <Avatar {...stringAvatar(colorName)} />
         <div className="flex items-center truncate">
           <span className="truncate ml-2 text-sm font-medium text-gray-600 dark:text-gray-100 group-hover:text-gray-800 dark:group-hover:text-white">
             {" "}
@@ -163,7 +193,7 @@ function DropdownProfile({ align, setLoading }) {
                     Deconnecter();
                   }}
                 >
-                  Se Déconnecter
+                  Se déconnecter
                 </Link>
               </li>
             </ul>

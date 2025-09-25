@@ -23,21 +23,22 @@ class WelcomeUserNotification extends Notification
     public function toMail($notifiable)
     {
         return (new MailMessage)
-            ->subject('Votre compte a été créé')
-            ->greeting('Bonjour ' . $notifiable->first_name . ',')
-            ->line('Votre compte a été créé par un responsable sur la plateforme intranet.')
-            ->line('Votre mot de passe temporaire est : **' . $this->defaultPassword . '**')
-            ->line('Merci de le changer dès maintenant pour des raisons de sécurité.')
-            ->action('Changer mon mot de passe', 'http://intranet.ext.local:8080/settings')
-            ->line('Merci de votre collaboration.');
+            ->subject('Bienvenue sur l’intranet')
+            ->view('emails.welcome-user', [
+                'user' => $notifiable,
+                'defaultPassword' => $this->defaultPassword,
+                'intranetUrl' => config('app.url'),
+            ]);
     }
 
     public function toDatabase($notifiable)
     {
         return [
             'title' => 'Bienvenue ' . $notifiable->first_name,
-            'message' => 'Votre compte a été créé avec succès. Email: ' . $notifiable->email . 'Votre mot de    passe temporaire est : **' . $this->defaultPassword . '**',
-            'action_url' => 'http://intranet.ext.local:8080',
+            'message' => 'Votre compte a été créé avec succès. Email: '
+                . $notifiable->email
+                . ' Votre mot de passe temporaire est : **' . $this->defaultPassword . '**',
+            'action_url' => config('app.url'),
             'schema' => 'intranet_extedim',
         ];
     }

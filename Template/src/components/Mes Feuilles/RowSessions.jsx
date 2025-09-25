@@ -11,14 +11,21 @@ export default function RowSessions({ data, onEdit, fetchSession }) {
       })
   }
 
+  const formatDate = (d) => {
+    const date = new Date(d);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+    const year = date.getFullYear();
+    return `${day}/${month}/${year}`;
+  };
 
   return <tr
     className={`bg-white hover:bg-gray-50 odd:bg-white`}
   >
     <td className="px-6 py-4 font-medium whitespace-nowrap font-semibold"> {data.periode} </td>
-    <td className="px-6 py-4 text-center"> {data.start_date} </td>
-    <td className="px-6 py-4 text-center"> {data.end_date} </td>
-    <td className="px-6 py-4 text-center">  {data.updated_at} </td>
+    <td className="px-6 py-4 text-center"> {formatDate(data.start_date)} </td>
+    <td className="px-6 py-4 text-center"> {formatDate(data.end_date)} </td>
+    <td className="px-6 py-4 text-center">  {formatDate(data.updated_at)} </td>
     <td className="px-6 py-4 flex items-center justify-center gap-2" >
       <button className="text-green-600 hover:underline cursor-pointer"
         onClick={() => {

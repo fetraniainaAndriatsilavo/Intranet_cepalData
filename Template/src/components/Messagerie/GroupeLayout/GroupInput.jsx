@@ -21,12 +21,15 @@ export default function GroupInput({ groupId, messageId, setMessageId, fetchGrou
             })
     }
 
+    useEffect(() => {
+        setPicture([])
+        setInput('')
+    }, [groupId])
+
     // envoie d'une message
     const handleSend = () => {
         setSending(true)
         if (!input.trim() && picture.length === 0) return;
-        setInput("");
-        setPicture([]);
         api.post('/messages', {
             content: input,
             sender_id: user.id,
@@ -35,7 +38,7 @@ export default function GroupInput({ groupId, messageId, setMessageId, fetchGrou
             attachments: picture
         }, {
             headers: {
-                "Content-Type": 'application/json'
+                "Content-Type": 'multipart/form-data'
             }
         })
             .then((response) => {
@@ -53,14 +56,11 @@ export default function GroupInput({ groupId, messageId, setMessageId, fetchGrou
     const UpdateMessage = (id) => {
         setSending(true)
         if (!input.trim() && picture.length === 0) return;
-        setInput("");
-        setPicture([]);
-
         api.put('/messages/' + id + '/update', {
             content: input,
         }, {
             headers: {
-                "Content-Type": 'application/json'
+                "Content-Type": 'multipart/form-data'
             }
         })
             .then(() => {

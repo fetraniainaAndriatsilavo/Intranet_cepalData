@@ -81,14 +81,6 @@ class EventController extends Controller
                 'description' => 'sometimes|required|string',
                 'date' => 'sometimes|required|date',
             ]);
-        } catch (ValidationException $e) {
-            return response()->json([
-                'message' => 'Erreur de validation',
-                'errors' => $e->errors()
-            ], 422);
-        }
-
-        try {
             $event = Event::findOrFail($id);
 
             $event->update($validated);
@@ -97,15 +89,7 @@ class EventController extends Controller
                 'message' => 'Événement mis à jour avec succès',
                 'evenement' => $event
             ], 200);
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'message' => 'Événement non trouvé'
-            ], 404);
-        } catch (Exception $e) {
-            Log::error('Erreur lors de la mise à jour de l\'événement : ' . $e->getMessage(), [
-                'stack' => $e->getTraceAsString()
-            ]);
-
+        } catch (ValidationException $e) {
             return response()->json([
                 'message' => 'Erreur serveur lors de la mise à jour de l\'événement',
                 'error' => $e->getMessage(),

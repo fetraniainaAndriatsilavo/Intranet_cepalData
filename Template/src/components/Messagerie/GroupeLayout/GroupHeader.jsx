@@ -38,7 +38,8 @@ export default function GroupHeader({ groupId, group, setOpenEdit }) {
 
     const handleClose = () => {
         setAnchorEl(null);
-    };
+    }; 
+    
     return <div className="border-b p-4 flex items-center gap-2 justify-between bg-white dark:bg-gray-800">
         <div className="flex items-center gap-2 ">
             <Avatar {...stringAvatar(colorName)} />
@@ -50,10 +51,8 @@ export default function GroupHeader({ groupId, group, setOpenEdit }) {
                 <path d="M5 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
                 <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
                 <path d="M19 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" /></svg>
-
             </button>
             <GroupOption anchorEl={anchorEl} onClose={handleClose} group={group} setOpenEdit={setOpenEdit} />
         </div>
-
     </div>
 }

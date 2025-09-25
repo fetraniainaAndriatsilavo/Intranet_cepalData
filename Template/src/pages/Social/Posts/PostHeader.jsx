@@ -13,11 +13,55 @@ function PostHeader({ username, id, userID, created_at, fetchPost }) {
   const { user } = useContext(AppContext);
   const [isOpen, setIsOpen] = useState(false);
 
+  const colorName = username || ''
+
+  const [anchorEl, setAnchorEl] = useState(null); 
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget); // save the button element
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  }; 
+
+  function stringToColor(string) {
+    let hash = 0;
+    for (let i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    let color = "#";
+    for (let i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff;
+      color += `00${value.toString(16)}`.slice(-2);
+    }
+    return color;
+  }
+
+  function stringAvatar(name) {
+    const initials = name
+      ? name
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+      : "?";
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+        width: 40,
+        height: 40,
+        fontSize: "0.9rem",
+      },
+      children: initials.toUpperCase(),
+    };
+  }
+
   return (
     <div className="bg-white mt-3 flex items-center justify-between rounded-t-lg p-1 relative">
       <div className="p-2 flex flex-row items-center justify-center gap-3">
         <div>
-          <Avatar> {username.slice(0, 2).toUpperCase()} </Avatar>
+          <Avatar {...stringAvatar(colorName)} />
         </div>
         <div>
           <p>
@@ -35,8 +79,7 @@ function PostHeader({ username, id, userID, created_at, fetchPost }) {
           <button
             className="cursor-pointer"
             onClick={(e) => {
-              e.preventDefault();
-              setIsOpen(!isOpen);
+               handleClick(e)
             }}
           >
             <svg
@@ -57,15 +100,10 @@ function PostHeader({ username, id, userID, created_at, fetchPost }) {
               <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
               <path d="M19 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
             </svg>
-          </button> 
-
-          {isOpen && (
-            <div className="absolute right-10 top-5">
-              <PostOption id={id} fetchPost={fetchPost} onClose={() => {
-                setIsOpen(false)
-              }} />
-            </div>
-          )}
+          </button>
+              <PostOption id={id} fetchPost={fetchPost} anchorEl={anchorEl} onClose={() => {
+                handleClose()
+              }} /> 
         </div>
       )}
     </div>

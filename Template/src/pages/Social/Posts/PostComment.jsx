@@ -8,6 +8,8 @@ function PostComment({ id, setCommentCount }) {
   const [comment, setComment] = useState(null);
   const [seeAll, setSeeAll] = useState(false)
 
+  const [selectedComment, setSelectedComment] = useState(null)
+
   const fetchComments = (postId) => {
     api
       .get(`/comments/${postId}/all`)
@@ -49,7 +51,9 @@ function PostComment({ id, setCommentCount }) {
 
   return (
     <div className="bg-white p-2 gap-2 flex-col rounded-b-lg transition-all duration-300">
-      <CreateComments id={id} fetchComments={fetchComments}> </CreateComments>
+      <CreateComments id={id} fetchComments={fetchComments} selectedComment={selectedComment}
+        setSelectedComment={setSelectedComment}
+      > </CreateComments>
       {
         comment && comment.length > 3 && <div className="mt-1 mb-2 flex items-center ">
           <span className="font-semibold cursor-pointer text-center text-md" onClick={(e) => {
@@ -61,10 +65,12 @@ function PostComment({ id, setCommentCount }) {
       {comment && (
         seeAll
           ? comment.map((data, key) => (
-            <CommentBox Postid={id} key={data.id || key} comment={data} fetchComments={fetchComments} />
+            <CommentBox Postid={id} key={data.id || key} comment={data} fetchComments={fetchComments}
+              setSelectedComment={setSelectedComment}
+            />
           ))
           : comment.slice(-3).map((data, key) => (
-            <CommentBox Postid={id} key={data.id || key} comment={data} fetchComments={fetchComments} />
+            <CommentBox Postid={id} key={data.id || key} comment={data} fetchComments={fetchComments} setSelectedComment={setSelectedComment} />
           ))
       )}
     </div>

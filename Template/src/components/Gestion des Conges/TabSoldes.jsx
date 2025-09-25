@@ -11,13 +11,13 @@ export default function TabSoldes({ data }) {
             </span>
         </td>
         <td className="px-6 py-4 text-center">
-            {data.ogc_leav_bal}
+            {data.ogc_leav_bal || 0 }
         </td>
         <td className="px-6 py-4 text-center">
-            {data.ogc_perm_bal}
+            {data.ogc_perm_bal || 0 }
         </td>
         <td className="px-6 py-4 text-center">
-            {data.ogc_othr_bal}
+            {data.ogc_othr_bal || 0 }
         </td>
     </tr>
 }

@@ -45,15 +45,17 @@
 
 <body>
     <div class="container">
-        <img src="../../../public/storage/image005.png" alt="CepalData Logo" class="logo">
-        <h2>RESET PASSWORD</h2>
+        <img src="https://d15k2d11r6t6rl.cloudfront.net/pub/bfra/lykrscrn/y0n/eac/fc1/image005%20%281%29.png " alt="CepalData Logo" class="logo">
+        <h2> Réinitialisation du mot de passe </h2>
         <p>Bonjour {{ $user->name }},</p>
         <p>Vous avez oublié votre mot de passe ?</p>
         <p>Nous avons reçu une demande de réinitialisation de mot de passe lié à votre compte.</p>
         <p>Pour modifier votre mot de passe, cliquez sur ce lien :</p>
         <p>
-            <a href="{{ $url }}" class="button text-white">RESET PASSWORD</a>
+            <a href="{{ $url }}" class="button text-white">MODIFICATION MOT DE PASSE</a>
         </p>
+        <p>Merci,</p>
+        <p>L'équipe RH</p>
     </div>
 </body>
 

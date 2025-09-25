@@ -1,8 +1,9 @@
 import { useContext, useState } from "react"
 import { AppContext } from "../../context/AppContext"
-import { Avatar, Menu, MenuItem } from "@mui/material"
+import { Avatar, ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material"
 import api from "../axios";
 import { Link } from "react-router-dom";
+import { Delete } from "@mui/icons-material";
 
 export default function HeaderBox({ conversation, fetchConversationList }) {
     const [anchorEl, setAnchorEl] = useState(null);
@@ -14,7 +15,7 @@ export default function HeaderBox({ conversation, fetchConversationList }) {
     };
     const handleClose = () => {
         setAnchorEl(null);
-    };
+    }; 
     const { user } = useContext(AppContext)
 
     const UserProfil = !conversation.user_one
@@ -71,6 +72,7 @@ export default function HeaderBox({ conversation, fetchConversationList }) {
         api.delete('/conversations/' + id + '/delete')
             .then(() => {
                 fetchConversationList(userId)
+                window.location.reload()
             })
             .catch((error) => {
                 console.log(error)
@@ -112,8 +114,14 @@ export default function HeaderBox({ conversation, fetchConversationList }) {
         >
             <MenuItem onClick={(e) => {
                 e.preventDefault()
+                alert(conversation.id)
                 deleteConversation(conversation.id, user.id)
-            }}> Suppr. </MenuItem>
+            }}>
+                <ListItemIcon>
+                    <Delete fontSize="small" />
+                </ListItemIcon>
+                <ListItemText primary="Supprimer" />
+            </MenuItem>
         </Menu>
     </div>
 }

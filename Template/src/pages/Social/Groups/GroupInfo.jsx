@@ -1,11 +1,11 @@
-import { Button } from "@mui/material";
+import { ListItemIcon, ListItemText, Menu, MenuItem } from "@mui/material";
 import GroupEdit from "./GroupEdit";
 import api from "../../../components/axios";
 import { useContext, useEffect, useState } from "react";
-import { AppContext } from "../../../context/AppContext";
 import CoverPhoto from "../../../images/360_F_467961418_UnS1ZAwAqbvVVMKExxqUNi0MUFTEJI83.jpg";
-export default function  GroupInfo({ GroupId}) {
-
+import { Delete, DeleteForever, Edit, ExitToApp } from "@mui/icons-material";
+import { AppContext } from "../../../context/AppContext";
+export default function GroupInfo({ GroupId }) {
   const { user } = useContext(AppContext)
   const [group, setGroup] = useState({
     name: '',
@@ -13,6 +13,18 @@ export default function  GroupInfo({ GroupId}) {
     id: ''
   })
   const [open, setOpen] = useState(false);
+
+  const [anchorEl, setAnchorEl] = useState(null);
+
+  const isOpen = Boolean(anchorEl);
+
+  const handleClick = (event) => {
+    setAnchorEl(event.currentTarget); // save the button element
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
 
   const onClose = () => {
     if (open) {
@@ -22,10 +34,9 @@ export default function  GroupInfo({ GroupId}) {
     }
   };
 
-
-  useEffect(() => {
+  const fetchGroupInformation = (id) => {
     api
-      .get("/getMembersGroup/" + GroupId)
+      .get("/getMembersGroup/" + id)
       .then((response) => {
         const group = response.data.group
         const members = response.data.members
@@ -38,14 +49,19 @@ export default function  GroupInfo({ GroupId}) {
       .catch((error) => {
         console.log(error);
       });
-  }, [GroupId]);
+  }
+
+  // generer les informations du groupe 
+  useEffect(() => {
+    fetchGroupInformation(GroupId)
+  }, [GroupId, open]);
 
 
-
-  const leaveGroup = (GroupId, id) => {
+  // se quitter du groupe
+  const leaveGroup = (id, userId) => {
     api
       .delete(
-        "groups/" + GroupId + "/members/" + id + "/remove"
+        "groups/" + id + "/members/" + userId + "/remove"
       )
       .then((response) => {
         window.location.href = '/social'
@@ -55,10 +71,12 @@ export default function  GroupInfo({ GroupId}) {
       });
   };
 
-  const deleteGroup = (GroupId) => {
+
+  // suppression de groupe
+  const deleteGroup = (id) => {
     api
       .delete(
-        "groups/" + GroupId
+        "groups/" + id
       )
       .then((response) => {
         window.location.href = '/social'
@@ -82,70 +100,75 @@ export default function  GroupInfo({ GroupId}) {
             </h1>
             <p className="text-gray-600"> {group.members.length}  Membres </p>
           </div>
-          <div className="flex gap-3 items-center flex-row"> 
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={() => {
-                setOpen(!open)
-              }}
-              title="Modifier ce groupe"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-pencil cursor-pointer">
+          <div className="flex gap-3 items-center flex-row">
+            <button className="cursor-pointer rounded bg-gray-100 p-1" onClick={handleClick}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-dots">
+                <title> plus d'action </title>
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
-                <path d="M13.5 6.5l4 4" />
+                <path d="M5 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                <path d="M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
+                <path d="M19 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />
               </svg>
-            </Button>
-
-            <Button
-              variant="outlined"
-              color="error"
-              onClick={(e) => {
-                if (confirm("Voulez-vous vraiment quitter ce groupe ?")) {
-                  e.preventDefault();
-                  leaveGroup(GroupId, user.id);
-                }
-              }}
-              title="Quitter ce groupe"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-door-exit">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M13 12v.01" />
-                <path d="M3 21h18" />
-                <path d="M5 21v-16a2 2 0 0 1 2 -2h7.5m2.5 10.5v7.5" />
-                <path d="M14 7h7m-3 -3l3 3l-3 3" />
-              </svg>
-            </Button>
-
-            <Button
-              variant="outlined"
-              color="warning"
-              onClick={(e) => {
-                if (confirm("Voulez-vous vraiment supprimer ce groupe ?")) {
-                  e.preventDefault();
-                  deleteGroup(GroupId);
-                }
-              }}
-              title="Supprimer ce groupe"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-trash">
-                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                <path d="M4 7l16 0" />
-                <path d="M10 11l0 6" />
-                <path d="M14 11l0 6" />
-                <path d="M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2 -2l1 -12" />
-                <path d="M9 7v-3a1 1 0 0 1 1 -1h4a1 1 0 0 1 1 1v3" />
-              </svg>
-            </Button>
+            </button>
           </div>
         </div>
       </div>
+      <>
+        <Menu
+          anchorEl={anchorEl}
+          open={isOpen}
+          onClose={handleClose}
+          PaperProps={{
+            elevation: 1,
+            sx: {
+              mt: 1,
+              borderRadius: 2,
+              minWidth: 150,
+            },
+          }}
+        >
+          <MenuItem
+            onClick={() => {
+              handleClose()
+              setOpen(true)
+            }}
+          >
+            <ListItemIcon>
+              <Edit fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Modifier" />
+          </MenuItem>
+
+          <MenuItem
+            onClick={(e) => {
+              e.preventDefault();
+              if (confirm("Souhaitez-vous retirer cette publication ?")) {
+                deleteGroup(GroupId)
+              }
+            }}
+          >
+            <ListItemIcon>
+              <Delete fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Supprimer" />
+          </MenuItem>
+          <MenuItem onClick={(e) => {
+            e.preventDefault()
+            leaveGroup(GroupId, user.id)
+          }}>
+            <ListItemIcon>
+              <ExitToApp fontSize="small" />
+            </ListItemIcon>
+            <ListItemText primary="Quitter" />
+          </MenuItem>
+        </Menu>
+      </>
+
       {open && (
         <GroupEdit
           open={open}
           onClose={onClose}
-          GroupId={GroupId} 
+          GroupId={GroupId}
         >
           {" "}
         </GroupEdit>

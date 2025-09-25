@@ -1,5 +1,12 @@
 import { useState } from "react";
-import { TextField, Alert, Dialog } from "@mui/material";
+import {
+  TextField,
+  Alert,
+  Modal,
+  Typography,
+  Box,
+  CircularProgress,
+} from "@mui/material";
 import api from "../../../components/axios";
 
 export default function CreateEvent({ fecthEvent, open, onClose }) {
@@ -11,8 +18,7 @@ export default function CreateEvent({ fecthEvent, open, onClose }) {
 
   const [success, setSuccess] = useState(null);
   const [error, setError] = useState(null);
-
-  const [loading, setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setFormData((prev) => ({
@@ -24,109 +30,169 @@ export default function CreateEvent({ fecthEvent, open, onClose }) {
   const handleSubmit = async () => {
     setSuccess(null);
     setError(null);
-    setLoading(true)
-    try {
-      const response = await api.post(
-        "event/create",
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      setSuccess(response.data.message);
-      setTimeout(() => {
-        setSuccess(null)
-      }, [5000])
+    setLoading(true);
+    if (!formData.date && !formData.title && !formData.description) {
+      setError('Vous devez remplir tous champs')
       setLoading(false)
-      setFormData({ title: "", date: "", time: "", description: "" });
-      onClose()
-      fecthEvent()
-    } catch (err) {
-      setLoading(false)
-      console.error(err);
-      setError(error.data.message);
-      setTimeout(() => {
-        setError(null)
-      }, [5000])
+      return;
     }
+    else if (!formData.date) {
+      setError('Veuillez inclure la date et l\'heure de l\'évènement')
+      setLoading(false)
+      return;
+    }
+    else if (!formData.title) {
+      setError('Veuillez inclure le nom de l\'évènement')
+      setLoading(false)
+      return;
+    }
+
+    api.post('event/create', formData, {
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    })
+      .then((response) => {
+        setLoading(false)
+        setSuccess(response.data.message)
+        setError('')
+        setFormData({ title: "", date: "", description: "" });
+        setTimeout(() => {
+          onClose();
+        }, 1200);
+        fecthEvent()
+      })
+      .catch((error) => {
+        setLoading(false)
+        setError(error.response?.data?.message)
+      })
   };
 
+  const cancel = () => {
+    setFormData({ title: "", date: '', description: "" });
+    setError(null);
+    setSuccess(null);
+    onClose();
+  };
+
+
   return (
-    <Dialog open={open} fullWidth>
-      <div className="rounded bg-white w-full gap-4 p-5">
-        <div className="title-group flex flex-row mb-3 mt-2 items-center justify-center">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-calendar-event">
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" />
-            <path d="M16 3l0 4" />
-            <path d="M8 3l0 4" />
-            <path d="M4 11l16 0" />
-            <path d="M8 15h2v2h-2z" />
-          </svg>
-          <h1 className="font-bold mx-5 text-xl"> Nouvel Evènement </h1>
-        </div>
-
-        <div className="mb-3 mt-3">
-          <TextField
-            id="title"
-            label="Nom de l'Evenement "
-            variant="outlined"
-            fullWidth
-            value={formData.title}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="flex flex-row mb-3 mt-3 gap-4">
-          <TextField
-            id="date"
-            label="Date"
-            type="datetime-local"
-            variant="outlined"
-            value={formData.date}
-            onChange={handleChange}
-            InputLabelProps={{ shrink: true }}
-          />
-        </div>
-
-        <div className="mb-3 mt-3">
-          <TextField
-            id="description"
-            label="Description"
-            variant="outlined"
-            fullWidth
-            value={formData.description}
-            onChange={handleChange}
-          />
-        </div>
-
-        <div className="flex mt-3 w-full gap-3">
-          <button className="p-2 bg-gray-50 text-sky-700 font-bold text-center cursor-pointer rounded w-1/3 border border-sky-700"
-            onClick={onClose}>
-            FERMER
-          </button>
+    <Modal open={open} onClose={cancel}>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: 420,
+          bgcolor: "background.paper",
+          borderRadius: 1,
+          boxShadow: 24,
+          p: 1.5,
+        }}
+      >
+        {/* Header */}
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{
+            mb: 2,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            fontWeight: "bold",
+          }}
+        >
+          Nouvel Évènement
           <button
-            className="p-2 bg-blue-500 text-white font-bold text-center cursor-pointer rounded hover:bg-blue-600 w-2/3"
-            onClick={handleSubmit}
+            onClick={cancel}
+            style={{
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              fontSize: "1.2rem",
+              lineHeight: "1",
+              marginLeft: "auto",
+            }}
           >
-            CREER
+            ✕
+          </button>
+        </Typography>
+
+        {/* Form */}
+        <TextField
+          id="title"
+          label="Titre **"
+          variant="outlined"
+          fullWidth
+          size="small"
+          sx={{ mb: 2 }}
+          value={formData.title}
+          onChange={handleChange}
+        />
+
+        <TextField
+          id="date"
+          label="Date et heure **"
+          type="datetime-local"
+          fullWidth
+          size="small"
+          variant="outlined"
+          sx={{ mb: 2 }}
+          value={formData.date}
+          onChange={handleChange}
+          InputLabelProps={{ shrink: true }}
+        />
+
+        <TextField
+          id="description"
+          label="Description"
+          variant="outlined"
+          multiline
+          rows={3}
+          fullWidth
+          size="small"
+          sx={{ mb: 2 }}
+          value={formData.description}
+          onChange={handleChange}
+        />
+
+
+
+
+        {/* Actions */}
+        <div className="flex gap-2 mt-1">
+          {/* <button
+            className="w-1/3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium rounded p-2 cursor-pointer"
+            onClick={clear}
+          >
+            Réinitialiser
+          </button> */}
+          <button
+            className="w-full bg-sky-600 hover:bg-sky-700 text-white font-medium rounded p-2 cursor-pointer flex items-center justify-center"
+            onClick={handleSubmit}
+            disabled={loading}
+          >
+            {loading ? (
+              // <CircularProgress size={20} sx={{ color: "white" }} />
+              'Création en cours...'
+            ) : (
+              "Créer"
+            )}
           </button>
         </div>
-
+        {/* Alerts */}
         {success && (
-          <Alert severity="success" className="mt-3">
+          <Alert severity="success" sx={{ mt: 2 }}>
             {success}
           </Alert>
         )}
-
         {error && (
-          <Alert severity="error" className="mt-3">
+          <Alert severity="error" sx={{ mt: 2 }}>
             {error}
           </Alert>
         )}
-      </div>
-    </Dialog>
+      </Box>
+    </Modal>
   );
 }

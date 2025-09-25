@@ -1,30 +1,31 @@
-import { Autocomplete, TextField } from "@mui/material";
 import { useState } from "react";
 import PrivateDocument from "./PrivateDocument";
 import PublicDocuments from "./Public Documents";
+import { Autocomplete, TextField } from "@mui/material";
 
-export default function AjoutDocument() {
+export default function AjoutDocument({ documents }) {
     const [type, setType] = useState('public');
-
     return (
-        <div className="bg-white w-full rounded-lg p-6 shadow-sm space-y-6">
-            {/* Header Selection */}
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                <h2 className="text-xl font-semibold text-slate-800">Ajouter un document</h2>
-                <select
-                    value={type}
-                    onChange={(e) => setType(e.target.value)} 
-                    className="rounded-lg"
-                >
-                    <option value="public">public</option>
-                    <option value="personel">personel</option>
-                </select>
-            </div>
-
-            {/* Dynamic Form Section */}
-            <div className="w-full">
-                {type === 'public' ? <PublicDocuments /> : <PrivateDocument />}
-            </div>
+        <div className="bg-white w-1/2 rounded p-3 shadow-sm border border-gray-100 space-y-2">
+            <Autocomplete
+                disablePortal
+                options={['public', 'personel']}
+                value={type}
+                onChange={(e, value) => {
+                    setType(value)
+                }}
+                renderInput={(params) => (
+                    <TextField
+                        {...params}
+                        label="Type du document"
+                        name="droit"
+                        variant="outlined"
+                        size="small"
+                    />
+                )}
+                className="w-1/3 ml-3 mt-2"
+            />
+            {type === "public" ? <PublicDocuments documents={documents} /> : <PrivateDocument documents={documents} />}
         </div>
     );
 }

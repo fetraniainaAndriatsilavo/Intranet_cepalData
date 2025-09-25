@@ -5,25 +5,31 @@ import CreateTimeSheet from "./CreateTimesheet";
 import ModifyTimeSheet from "./ModifyTimesheet";
 import api from "../../components/axios";
 import { AppContext } from "../../context/AppContext";
+import { PulseLoader } from "react-spinners";
 
 export default function ListTimeSheet() {
     const { user } = useContext(AppContext)
     const header = [
-        "Nom",
-        "Description",
+        "Date",
+        "Type",
         "Clients",
+        "Projets",
+        "Description",
         "Durée (h)",
         "Action Disponible"
     ]
 
+    const [finishing, setFinishing] = useState(false)
+    const [isLoading, setIsLoading] = useState(false)
     const [lists, setLists] = useState([])
     const [error, setError] = useState('')
-    const [success, setSuccess] = useState('') 
+    const [success, setSuccess] = useState('')
     const [sessions, setSessions] = useState()
     const [listSession, setListSession] = useState([])
-    useEffect(() => {
+
+    const fetchAllTimeSheet = () => {
         api.get("/timesheet-periods/all")
-            .then((response) => { 
+            .then((response) => {
                 setListSession(response.data)
                 const activeSessions = response.data.filter(
                     (session) => session.status === "active"
@@ -36,9 +42,10 @@ export default function ListTimeSheet() {
             .catch((error) => {
                 console.error("Error fetching timesheet periods:", error);
             });
-    }, []);
+    }
 
     const fetchTimeSheetUser = (id) => {
+        setIsLoading(true)
         api.get('/timesheet/' + id + '/user')
             .then((response) => {
                 setLists(response.data)
@@ -46,7 +53,32 @@ export default function ListTimeSheet() {
             .catch((error) => {
                 console.log(error)
             })
+            .finally(() => {
+                setIsLoading(false)
+            });
     }
+
+    const sendTimesheet = (id) => {
+        setFinishing(true)
+        api.post('/timesheets/' + id + '/send', {
+        })
+            .then((response) => {
+                console.log(response.data)
+                setSuccess(response.data.message)
+                fetchTimeSheetUser(id)
+            })
+            .catch((error) => {
+                console.log(error.response.data)
+                setError(error.response.data.message)
+            })
+            .finally(() => {
+                setFinishing(false)
+            })
+    }
+
+    useEffect(() => {
+        fetchAllTimeSheet()
+    }, []);
 
     useEffect(() => {
         fetchTimeSheetUser(user.id)
@@ -95,47 +127,54 @@ export default function ListTimeSheet() {
                     }}> + Ajouter </button>
             }
         </div>
-        <div className="bg-white w-full rounded-lg">
-            <h3 className="p-3"> Liste des feuilles de temps durant la session
-                <span className="text-gray-400 font-semibold"> {lists.length} </span> </h3>
-            <TableFeuille header={header} datas={currentView.length < 1 ? lists.slice(0, userPerPage) : currentView} type={'personnel'} onEdit={handleEditClick} />
-        </div>
-        <div>
-            <Pagination
-                count={lastPageIndex}
-                page={currentPage}
-                onChange={handleChange}
-            />
-        </div>
+
         {
-            isMiddleOfMonth(d) == true && <div>
-                <button className="px-3 bg-sky-600 py-2 text-white cursor-pointer rounded" onClick={(e) => {
-                    e.preventDefault()
-                    api.post('/timesheets/' + user.id + '/send', {
-                    })
-                        .then((response) => {
-                            console.log(response.data)
-                            setSuccess(response.data.message)
-                            fetchTimeSheetUser(user.id)
-                        })
-                        .catch((error) => {
-                            console.log(error.response.data)
-                            setError(error.response.data.message)
-                        })
-                }}> Terminer la sessions </button>
-            </div>
+            isLoading ? <div className="flex items-center justify-center w-full h-full">
+                <PulseLoader
+                    color={"#1a497f"}
+                    loading={isLoading}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
+                />
+            </div> : <>
+                <div className="bg-white w-full rounded-lg">
+                    <h3 className="p-3"> <span className="text-gray-400 font-semibold"> {lists.length} {lists && lists.length > 1 ? 'pointages' : 'pointage'} </span> </h3>
+                    <TableFeuille header={header} datas={currentView.length < 1 ? lists.slice(0, userPerPage) : currentView} type={'personnel'} onEdit={handleEditClick} />
+                </div>
+                <div>
+                    <Pagination
+                        count={lastPageIndex}
+                        page={currentPage}
+                        onChange={handleChange}
+                    />
+                </div>
+                {/*  */}
+                {
+                    isMiddleOfMonth(d) == true && <div>
+                        <button className="px-3 bg-sky-600 py-2 text-white cursor-pointer rounded" onClick={() => {
+                            sendTimesheet(user.id)
+                        }}>
+                            {
+                                finishing == true ? 'Traitement en cours...' : 'Terminer la session'
+                            }
+                        </button>
+                    </div>
+                }
+            </>
+        }
+        {/* modal pour créer une feuille de tempss */}
+        {
+            open == true && sessions && <CreateTimeSheet
+                open={open}
+                onClose={() => setOpen(false)}
+                fetchTimeSheetUser={fetchTimeSheetUser}
+                sessions={sessions}
+            />
         }
 
-        {/* modal pour créer une feuille de tempss */}
-        <CreateTimeSheet
-            open={open}
-            onClose={() => setOpen(false)}
-            fetchTimeSheetUser={fetchTimeSheetUser} 
-            sessions={sessions}
-        />
 
         {/* modal pour modifier une feuille de tempss */}
-        <ModifyTimeSheet open={openModal} onClose={() => setOpenModal(false)} id={FeuilleId ? FeuilleId : null} />
+        <ModifyTimeSheet open={openModal} onClose={() => setOpenModal(false)} id={FeuilleId ? FeuilleId : null} fetchTimeSheetUser={fetchTimeSheetUser} />
 
         {/* Toast pour notifications */}
         {

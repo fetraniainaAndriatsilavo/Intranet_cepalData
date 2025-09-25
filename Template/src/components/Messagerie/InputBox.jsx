@@ -3,7 +3,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import api from "../axios";
 import { AppContext } from "../../context/AppContext";
 
-export default function InputBox({ conversation, messageId, setMessageId, setMessages, fetchConversationList }) {
+export default function InputBox({ conversation, messageId, setMessageId, conversationId, fetchConversationList }) {
     const { user } = useContext(AppContext)
     const [sending, setSending] = useState(false)
     const [input, setInput] = useState("");
@@ -23,6 +23,11 @@ export default function InputBox({ conversation, messageId, setMessageId, setMes
             }
         }
     }, [conversation])
+
+    useEffect(() => {
+        setPicture([])
+        setInput('')
+    }, [conversationId])
 
     // donne les informations d'une message
     const fetchMessageInfo = (id) => {
@@ -46,11 +51,11 @@ export default function InputBox({ conversation, messageId, setMessageId, setMes
         },
             {
                 headers: {
-                    "Content-Type": "multipart/form-data"
+                    "Content-Type": 'multipart/form-data'
                 }
             })
             .then((response) => {
-                setMessages((prev) => [...prev, response.data.message]);
+                // setMessages((prev) => [...prev, response.data.message]);
                 setInput('')
                 setPicture([])
                 fetchConversationList(user.id)
@@ -107,7 +112,7 @@ export default function InputBox({ conversation, messageId, setMessageId, setMes
 
     // Handle emoji selection
     const handleEmojiClick = (emojiData) => {
-        setMessages((prev) => prev + emojiData.emoji);
+        setInput((prev) => prev + emojiData.emoji);
     };
 
     // Handle file input change (support multiple)

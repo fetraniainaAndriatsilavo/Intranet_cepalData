@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use phpDocumentor\Reflection\Types\Boolean;
 use Illuminate\Validation\ValidationException as ValidationValidationException;
+use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rules\Password as PasswordRule;
 
 
 class UserController extends Controller
@@ -177,6 +180,60 @@ class UserController extends Controller
         }
     }
 
+    public function uploadImage(Request $request, $id)
+    {
+        try {
+            $user = User::findOrFail($id);
+
+            $request->validate([
+                'image' => 'required|file|mimes:jpg,jpeg,png,gif|max:2048',
+            ], [
+                'image.required' => 'Veuillez sélectionner une image.',
+                'image.file' => 'Le fichier doit être une image.',
+                'image.mimes' => 'L\'image doit être au format JPG, JPEG, PNG ou GIF.',
+                'image.max' => 'L\'image ne doit pas dépasser 2 Mo.',
+            ]);
+
+            $file = $request->file('image');
+            $extension = $file->getClientOriginalExtension();
+            $filename = 'profile@user' . $user->id . '.' . $extension;
+            $directory = 'users/' . $user->id . '/profil';
+
+            $disk = Storage::disk('sftp');
+            if (!$disk->exists($directory)) {
+                $disk->makeDirectory($directory);
+            }
+
+            if ($user->image && $disk->exists($user->image)) {
+                $disk->delete($user->image);
+            }
+
+            $imagePath = $file->storeAs($directory, $filename, 'sftp');
+            $imageUrl = 'http://57.128.116.184/intranet/' . $imagePath;
+
+            $user->update(['image' => $imageUrl]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Image mise à jour avec succès.',
+                'image_url' => $imageUrl,
+                'user' => $user,
+            ], 200);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Utilisateur non trouvé.'
+            ], 404);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur lors de l\'upload.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
     public function toggleStatus(Request $request, $id)
     {
 
@@ -243,8 +300,24 @@ class UserController extends Controller
 
             $request->validate([
                 'currentPassword' => 'required|string',
-                'newPassword' => 'required|string|min:8',
+                'newPassword' => [
+                    'required',
+                    'confirmed',
+                    'string',
+                    'min:8',
+                    'regex:/[a-z]/',
+                    'regex:/[A-Z]/',
+                    'regex:/[0-9]/',
+                    'regex:/[!@#$%^&*()\-_=+\[\]{}|;:\'",.<>\/?`~]/',
+                ],
+            ], [
+                'currentPassword.required' => 'Le mot de passe actuel est obligatoire.',
+                'newPassword.required' => 'Le nouveau mot de passe est obligatoire.',
+                'newPassword.min' => 'Votre mot de passe doit contenir au moins 8 caractères, incluant une majuscule, une minuscule, un chiffre et un caractère spécial ( !$@% ).',
+                'newPassword.regex' => 'Votre mot de passe doit contenir au moins 8 caractères, incluant une majuscule, une minuscule, un chiffre et un caractère spécial ( !$@% ).',
+                'newPassword.confirmed' => 'La confirmation du nouveau mot de passe ne correspond pas.',
             ]);
+
 
             if (!Hash::check($request->currentPassword, $user->password)) {
                 return response()->json(['message' => 'Mot de passe actuel incorrect.'], 403);
@@ -256,18 +329,114 @@ class UserController extends Controller
             return response()->json(['message' => 'Mot de passe mis à jour.']);
         } catch (Exception $e) {
             return response()->json([
-                'message' => 'Erreur serveur.',
-                'error' => $e->getMessage(),
+                'message' => $e->getMessage(),
                 'line' => $e->getLine(),
                 'file' => $e->getFile()
             ], 500);
         }
     }
 
+    public function sendResetLink(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|email'
+        ], [
+            'email.required' => 'L’adresse e-mail est obligatoire.',
+            'email.email'    => 'Veuillez entrer une adresse e-mail valide.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
+
+        try {
+            $status = Password::sendResetLink($request->only('email'));
+
+            if ($status === Password::RESET_LINK_SENT) {
+                return response()->json([
+                    'status'  => 'success',
+                    'message' => 'Un lien de réinitialisation a été envoyé à votre adresse e-mail.',
+                    'email'   => $request->email
+                ], 200);
+            }
+
+            if ($status === Password::INVALID_USER) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Aucun utilisateur trouvé avec cette adresse e-mail.',
+                ], 404);
+            }
+
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Une erreur est survenue lors de l’envoi du lien de réinitialisation.',
+            ], 500);
+        } catch (Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Erreur serveur : ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function reset(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'token' => 'required',
+            'password' => [
+                'required',
+                'confirmed',
+                'regex:/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/'
+            ],
+        ], [
+            'password.required' => 'Le mot de passe est obligatoire.',
+            'password.confirmed' => 'Le mot de passe de confirmation ne correspond pas.',
+            'password.regex' => 'Votre mot de passe doit contenir au moins 8 caractères, incluant une majuscule, une minuscule, un chiffre et un caractère spécial ( !$@% ).',
+        ]);
+
+
+        $status = Password::reset(
+            $request->only('email', 'password', 'password_confirmation', 'token'),
+            function ($user, $password) {
+                $user->forceFill([
+                    'password' => bcrypt($password),
+                ])->save();
+            }
+        );
+
+        return $status === Password::PASSWORD_RESET
+            ? response()->json(['success' => true, 'message' => __($status)], 200)
+            : response()->json(['success' => false, 'message' => __($status)], 400);
+    }
+
     public function GetInfoUser($id)
     {
         try {
-            $user = User::with('position', 'classification', 'client', 'manager', 'documents', 'contrat',)->findOrFail($id);
+            $user = User::with([
+                'position',
+                'classification',
+                'client',
+                'manager',
+                'documents',
+                'contrat',
+                'posts' => function ($query) {
+                    $query->with(
+                        'attachments',
+                        'comments.user',
+                        'reactions.user'
+                    )
+                        ->withCount(['comments', 'reactions'])
+                        ->withTrashed()
+                        ->orderBy('created_at', 'desc')
+                        ->take(5);
+                }
+            ])->findOrFail($id);
+
+
 
             return response()->json([
                 'user' => [
@@ -278,9 +447,9 @@ class UserController extends Controller
                     'status' => $user->status,
                     'role' => $user->role,
                     'birth_date' => $user->birth_date,
+                    'hire_date' => $user->hire_date,
                     'birth_place' => $user->birth_place,
                     'employee_number' => $user->employee_number,
-                    'hire_date' => $user->hire_date,
                     'cnaps_number' => $user->cnaps_number,
                     'phone_number' => $user->phone_number,
                     'address' => $user->address,
@@ -316,6 +485,39 @@ class UserController extends Controller
                             ];
                         }
                     ),
+                    'posts' => $user->posts->map(function ($post) {
+                        return [
+                            'id' => $post->id,
+                            'content' => $post->content,
+                            'created_at' => $post->created_at,
+                            'deleted_at' => $post->deleted_at,
+                            'attachments' => $post->attachments->map(fn($a) => [
+                                'id' => $a->id,
+                                'file_path' => $a->file_path,
+                            ]),
+                            'comments_count' => $post->comments_count,
+                            'reactions_count' => $post->reactions_count,
+                            'comments' => $post->comments->map(fn($c) => [
+                                'id' => $c->id,
+                                'content' => $c->content,
+                                'user' => [
+                                    'id' => $c->user->id,
+                                    'first_name' => $c->user->first_name,
+                                    'last_name' => $c->user->last_name,
+                                ]
+                            ]),
+                            'reactions' => $post->reactions->map(fn($r) => [
+                                'id' => $r->id,
+                                'type' => $r->type,
+                                'user' => [
+                                    'id' => $r->user->id,
+                                    'first_name' => $r->user->first_name,
+                                    'last_name' => $r->user->last_name,
+                                ]
+                            ]),
+                        ];
+                    }),
+
                 ],
 
             ], 200);
@@ -358,8 +560,8 @@ class UserController extends Controller
                     'role' => $user->role,
                     'birth_date' => $user->birth_date,
                     'birth_place' => $user->birth_place,
-                    'hire_date' => $user->hire_date,
                     'employee_number' => $user->employee_number,
+                    'hire_date' => $user->hire_date,
                     'cnaps_number' => $user->cnaps_number,
                     'phone_number' => $user->phone_number,
                     'address' => $user->address,

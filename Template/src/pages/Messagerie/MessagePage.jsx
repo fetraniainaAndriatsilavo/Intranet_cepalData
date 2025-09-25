@@ -9,9 +9,9 @@ import GroupChat from "../../components/Messagerie/GroupeLayout/GroupChat";
 import EditChatGroup from "../../components/Messagerie/Groupes/EditChatGroup";
 import NewChat from "../../components/Messagerie/Nouvelle Conversation/NewChat";
 import api from "../../components/axios";
-import { AppContext } from "../../context/AppContext"; 
+import { AppContext } from "../../context/AppContext";
 
-export default function MessagesPage({setInstantNotif}) {
+export default function MessagesPage({ setInstantNotif }) {
     const { user } = useContext(AppContext)
     const [sidebar, setSidebar] = useState("Utilisateurs");
 
@@ -31,7 +31,6 @@ export default function MessagesPage({setInstantNotif}) {
         api.get('/users/' + id + '/message-groups')
             .then((response) => {
                 setAllGroup(response.data.user.groups);
-                console.log(response.data.user.groups)
             })
             .catch((error) => {
                 console.log(error);
@@ -63,16 +62,16 @@ export default function MessagesPage({setInstantNotif}) {
                     Messagerie
                     <button onClick={() => {
                         setOpen(true)
-                    }}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="hover:text-sky-700 cursor-pointer icon icon-tabler icons-tabler-outline icon-tabler-users-group">
+                    }} 
+                    className="cursor-pointer">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-users-plus hover:text-sky-600">
+                            <title> Créez un groupe de discussion</title>
                             <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                            <title> Créer une groupe de discussion</title>
-                            <path d="M10 13a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                            <path d="M8 21v-1a2 2 0 0 1 2 -2h4a2 2 0 0 1 2 2v1" />
-                            <path d="M15 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                            <path d="M17 10h2a2 2 0 0 1 2 2v1" />
-                            <path d="M5 5a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
-                            <path d="M3 13v-1a2 2 0 0 1 2 -2h2" />
+                            <path d="M5 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
+                            <path d="M3 21v-2a4 4 0 0 1 4 -4h4c.96 0 1.84 .338 2.53 .901" />
+                            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                            <path d="M16 19h6" />
+                            <path d="M19 16v6" />
                         </svg>
                     </button>
                 </div>
@@ -94,46 +93,42 @@ export default function MessagesPage({setInstantNotif}) {
                     </div>
                     {sidebar === "Utilisateurs" ? <SidebarUtilisateur setSelectedGroupChat={setSelectedGroupChat}
                         setSelectedConversation={setSelectedConversation}
-                        setSelectedNewConversation={setSelectedNewConversation} 
+                        setSelectedNewConversation={setSelectedNewConversation}
                         fetchConversation={fetchConversation}
-                        conversationList={conversationList} 
+                        conversationList={conversationList}
                     />
-
                         : <SidebarGroupes setSelectedGroupChat={setSelectedGroupChat}
                             setSelectedConversation={setSelectedConversation}
-                            setSelectedNewConversation={setSelectedNewConversation} 
+                            setSelectedNewConversation={setSelectedNewConversation}
                             allGroup={allGroup} />}
                 </div>
             </aside>
             {/* Chat Window */}
             {
                 selectedConversation ? <Chatwindow
-                    conversationId = {selectedConversation}
-                    fetchConversationList = {fetchConversation} 
-                    setInstantNotif = {setInstantNotif} 
+                    conversationId={selectedConversation}
+                    fetchConversationList={fetchConversation}
+                    setInstantNotif={setInstantNotif}
                 />
                     :
                     selectedGroupChat ? <GroupChat
                         groupId={selectedGroupChat}
-                        setOpenEdit={setOpenEdit} 
+                        setOpenEdit={setOpenEdit}
                         fetchGroupConversation={fetchGroupConversation}
-                    />  :
+                    /> :
                         selectedNewConversation ?
-                            <NewChat UserId={selectedNewConversation}  
-                            fetchConversationList={fetchConversation}
-                             /> : 
+                            <NewChat UserId={selectedNewConversation}
+                                fetchConversationList={fetchConversation}
+                            /> :
                             <Welcome />
             }
 
-            <CreateChatGroup open={open} onClose={() => { setOpen(false) }} fetchGroupConversation={fetchGroupConversation} />
-
+            <CreateChatGroup open={open} onClose={() => { setOpen(false) }} fetchGroupConversation={fetchGroupConversation} /> 
             <EditChatGroup open={openEdit}
                 onClose={() => { setOpenEdit(false) }}
                 fetchGroupConversation={fetchGroupConversation}
                 groupId={selectedGroupChat}
             />
-            
-            
         </div>
     );
 }

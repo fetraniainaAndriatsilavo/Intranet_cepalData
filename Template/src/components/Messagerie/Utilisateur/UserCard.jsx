@@ -91,7 +91,7 @@ export default function UserCard({
             onMouseLeave={() => setIsHovered(false)}
         >
             {/* Avatar */}
-            <div className="flex-shrink-0">  
+            <div className="flex-shrink-0">
                 <Avatar {...stringAvatar(colorName)} />
             </div>
 
@@ -99,11 +99,13 @@ export default function UserCard({
             <div className="flex flex-col min-w-0 flex-1">
                 <div className="flex justify-between items-center">
                     <h1 className="font-semibold text-gray-900 text-sm truncate">
-                        {type === "search"
-                            ? data.first_name
-                            : user.id === data.user_one_id
-                                ? data.user_two.first_name
-                                : data.user_one.first_name}
+                        {
+                            type === "search"
+                                ? data.last_name + ' ' + data.first_name
+                                : user.id === data.user_one_id
+                                    ? data.user_two.last_name + ' ' + data.user_two.first_name
+                                    : data.user_one.last_name + ' ' + data.user_one.first_name
+                        }
                     </h1>
                     {type === "conversation" && data.last_message?.created_at && (
                         <span className="text-xs text-gray-400 ml-2 whitespace-nowrap">
@@ -122,7 +124,7 @@ export default function UserCard({
                                 ? `Vous: ${data.last_message.content}`
                                 : data.last_message.content)
                             : (user.id === data.last_message.sender_id
-                                ? "Vous aviez envoyé un fichier"
+                                ? "Vous avez envoyé un fichier"
                                 : "a envoyé un fichier")}
                     </span>
                 )}
@@ -136,7 +138,7 @@ export default function UserCard({
             </div>
 
             {/* Hover menu */}
-            {isHovered && type === "conversation" && (
+            {/* {isHovered && type === "conversation" && (
                 <button
                     className="cursor-pointer p-1 hover:bg-gray-200 rounded-full"
                     onClick={(e) => {
@@ -160,9 +162,9 @@ export default function UserCard({
                         <circle cx="12" cy="19" r="1" />
                     </svg>
                 </button>
-            )}
+            )} */}
 
-            <Menu
+            {/* <Menu
                 anchorEl={anchorEl}
                 open={open}
                 onClose={handleClose}
@@ -179,7 +181,7 @@ export default function UserCard({
                 >
                     Supprimer
                 </MenuItem>
-            </Menu>
+            </Menu> */}
         </div>
     );
 }

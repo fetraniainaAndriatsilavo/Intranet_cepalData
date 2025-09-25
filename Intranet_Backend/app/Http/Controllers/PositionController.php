@@ -8,6 +8,10 @@ use Illuminate\Support\Facades\Validator;
 
 class PositionController extends Controller
 {
+    /**
+     * Crée une nouvelle position.
+     */
+
     public function positionAll()
     {
         try {
@@ -20,7 +24,6 @@ class PositionController extends Controller
             ], 500);
         }
     }
-
     public function store(Request $request)
     {
         $rules = [

@@ -4,6 +4,7 @@ import api from "../../components/axios";
 import { AppContext } from "../../context/AppContext";
 import ViewTimeSheet from "./ViewTimesheet";
 import { Snackbar } from "@mui/material";
+import { PulseLoader } from "react-spinners";
 
 export default function TeamTimesheet() {
     const { user } = useContext(AppContext)
@@ -19,6 +20,7 @@ export default function TeamTimesheet() {
 
 
     const fetchTeamTimesheet = (id) => {
+        setLoading(true)
         api.get('managers/' + id + '/timesheets/sent')
             .then((response) => {
                 setLists(response.data)
@@ -26,13 +28,16 @@ export default function TeamTimesheet() {
             .catch((error) => {
                 console.log(error)
             })
+            .finally(() => {
+                setLoading(false)
+            })
     }
 
     useEffect(() => {
         fetchTeamTimesheet(user.id)
     }, [user])
 
-
+    const [loading, setLoading] = useState(false);
     // pagination du tableau
     const [currentPage, setCurrentPage] = useState(1);
     const userPerPage = 10;
@@ -58,35 +63,47 @@ export default function TeamTimesheet() {
                 Feuilles de Temps Equipes
             </h1>
         </div>
-        <div className="bg-white w-full rounded-lg">
-            <div className="bg-white w-full rounded-lg">
-                <h3 className="p-3"> Les feuilles de temps reçues
-                    <span className="text-gray-400 font-semibold"> {lists.length} </span> </h3>
-                <TableFeuille
-                    header={header}
-                    datas={currentView.length < 1 ? lists.slice(0, userPerPage) : currentView}
-                    type={'equipe'}
-                    setDetails={setDetails}
-                    setOpen={setOpen}
-                    setMessage={setMessage}
+        {loading ? (
+            <div className="flex items-center justify-center w-full h-full">
+                <PulseLoader
+                    color={"#1a497f"}
+                    loading={loading}
+                    aria-label="Loading Spinner"
+                    data-testid="loader"
                 />
             </div>
-        </div>
-        {
-            isMiddleOfMonth(d) == true && <div>
-                <button className="px-3 bg-sky-600 py-2 text-white cursor-pointer rounded"> Envoyer </button>
+        ) : (<>
+            <div className="bg-white w-full rounded-lg">
+                <div className="bg-white w-full rounded-lg">
+                    <h3 className="p-3"> Les feuilles de temps reçues
+                        <span className="text-gray-400 font-semibold"> {lists.length} </span> </h3>
+                    <TableFeuille
+                        header={header}
+                        datas={currentView.length < 1 ? lists.slice(0, userPerPage) : currentView}
+                        type={'equipe'}
+                        setDetails={setDetails}
+                        setOpen={setOpen}
+                        setMessage={setMessage}
+                    />
+                </div>
             </div>
-        }
-        <ViewTimeSheet
-            details={details ? details : []}
-            open={open} handleClose={() => { setOpen(false) }} />
+            {
+                isMiddleOfMonth(d) == true && <div>
+                    <button className="px-3 bg-sky-600 py-2 text-white cursor-pointer rounded"> Envoyer </button>
+                </div>
+            }
+            <ViewTimeSheet
+                details={details ? details : []}
+                open={open} handleClose={() => { setOpen(false) }} />
 
-        {
-            message && <Snackbar
-                open={open}
-                autoHideDuration={5000}
-                message={message}
-            />
+            {
+                message && <Snackbar
+                    open={open}
+                    autoHideDuration={5000}
+                    message={message}
+                />
+            }
+        </>)
         }
     </div>
 }

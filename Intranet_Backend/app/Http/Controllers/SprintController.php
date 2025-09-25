@@ -55,7 +55,7 @@ class SprintController extends Controller
 
                 'start_date.date' => 'La date de début doit être une date valide.',
                 'due_date.date' => 'La date de fin doit être une date valide.',
-                'due_date.after_or_equal' => 'La date de fin doit être postérieure ou égale à la date de début.',
+                'due_date.after_or_equal' => 'La date de fin doit être postérieure ou égale à la date de début',
 
                 'status.required' => 'Le statut du sprint est obligatoire.',
                 'status.in' => 'Le statut doit être : To-Do, In-Progress, Deploy, Review ou Done.',

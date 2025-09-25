@@ -174,15 +174,14 @@ function Sidebar({
                                 }
                               >
                                 <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                  Mes Informations
+                                  Mes informations
                                 </span>
                               </NavLink>
                             </li>
-
                             <li className="mb-1 last:mb-0">
                               <NavLink
                                 end
-                                to="/accueil"
+                                to="/mesdocuments"
                                 className={({ isActive }) =>
                                   "block transition duration-150 truncate " + (isActive ? "text-sky-500" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
                                 }
@@ -243,7 +242,22 @@ function Sidebar({
                                 }
                               >
                                 <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                  Demandes
+                                  Demande d'absence
+                                </span>
+                              </NavLink>
+                            </li>
+                          }
+                          {
+                            user && <li className="mb-1 last:mb-0">
+                              <NavLink
+                                end
+                                to="/meslists"
+                                className={({ isActive }) =>
+                                  "block transition duration-150 truncate " + (isActive ? "text-sky-500" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                                }
+                              >
+                                <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                  Ma liste de demandes
                                 </span>
                               </NavLink>
                             </li>
@@ -313,7 +327,7 @@ function Sidebar({
                                 }
                               >
                                 <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                  + Nouveau Projet
+                                  + Nouveau projet
                                 </span>
                               </NavLink>
                             </li>
@@ -330,10 +344,6 @@ function Sidebar({
                               <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
                                 Kanban
                               </span>
-                              <span className="inline-flex items-center ml-3 justify-center h-5 text-xs font-medium text-white px-2 rounded-full" style={{ backgroundColor: '#f56565' }}> {
-                                (allNotifications?.filter(n => n.type == "App\\Notifications\\TaskAssigned")?.length) || 0
-                              }</span>
-
                             </NavLink>
                           </li>
                         </ul>
@@ -386,7 +396,7 @@ function Sidebar({
                               }
                             >
                               <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Personnel
+                                Ma feuille de temps
                               </span>
                             </NavLink>
                           </li>
@@ -430,11 +440,6 @@ function Sidebar({
                         Discussions
                       </span>
                     </div>
-                    {/* Badge */}
-                    <div className="flex shrink-0 ml-2">
-                      <span className="inline-flex items-center justify-center h-5 text-xs font-medium text-white px-2 rounded-sm" style={{ backgroundColor: '#f56565' }}> {
-                        (allNotifications?.filter(n => n.type == 'App\\Notifications\\NewMessageNotification' || n.type == 'App\\Notifications\\NewGroupMessageAdded')?.length) || 0} </span>
-                    </div>
                   </div>
                 </NavLink>
               </li>
@@ -459,11 +464,13 @@ function Sidebar({
                       </span>
                     </div>
                     {/* Badge */}
-                    <div className="flex shrink-0 ml-2">
-                      <span className="inline-flex items-center justify-center h-5 text-xs font-medium text-white px-2 rounded-sm" style={{ backgroundColor: '#f56565' }}>
-                        {(allNotifications?.filter(n => n.type == 'App\\Notifications\\NewGroupPostAdded' || n.type == 'App\\Notifications\\NewGroupPostAdded')?.length) || 0}
-                      </span>
-                    </div>
+                    {/* <div className="flex shrink-0 ml-2">
+                      {
+                        (allNotifications?.filter(n => n.type == 'App\\Notifications\\NewGroupPostAdded' || n.type == 'App\\Notifications\\NewGroupPostAdded')?.length > 0) && <span className="inline-flex items-center justify-center h-5 text-xs font-medium text-white px-2 rounded-sm" style={{ backgroundColor: '#f56565' }}>
+                          {(allNotifications?.filter(n => n.type == 'App\\Notifications\\NewGroupPostAdded' || n.type == 'App\\Notifications\\NewGroupPostAdded')?.length) || 0}
+                        </span>
+                      }
+                    </div> */}
                   </div>
                 </NavLink>
               </li>
@@ -521,7 +528,7 @@ function Sidebar({
                               }
                             >
                               <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Mes Notifications
+                                Mes notifications
                               </span>
                             </NavLink>
                           </li>
@@ -534,10 +541,25 @@ function Sidebar({
                               }
                             >
                               <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                Conditions Générales d'Utilisation
+                                Conditions générales d'utilisation
                               </span>
                             </NavLink>
                           </li>
+                          {
+                            user && <li className="mb-1 last:mb-0">
+                              <NavLink
+                                end
+                                to="/changeprofile"
+                                className={({ isActive }) =>
+                                  "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                                }
+                              >
+                                <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                  Changement du photo de profil 
+                                </span>
+                              </NavLink>
+                            </li>
+                          }
                           {
                             user && <li className="mb-1 last:mb-0">
                               <NavLink
@@ -563,7 +585,7 @@ function Sidebar({
           </div>
           {/* user.role == 'user' && */}
           {
-            user && <div>
+            user.role != 'admin' && <div>
               <h3 className="text-xs uppercase text-gray-400 dark:text-gray-500 font-semibold pl-3">
                 <span className="hidden lg:block lg:sidebar-expanded:hidden 2xl:hidden text-center w-6" aria-hidden="true">
                   •••
@@ -626,7 +648,7 @@ function Sidebar({
                                 "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
                               }>
                                 <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                  Ajout Collaborateur
+                                  Ajout collaborateur
                                 </span>
                               </NavLink>
                             </li>
@@ -635,22 +657,19 @@ function Sidebar({
                                 "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
                               }>
                                 <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                  Liste des Collaborateurs
+                                  Liste des collaborateurs
                                 </span>
                               </NavLink>
                             </li>
-                            {
-                              user.id == 1 && <li className="mb-1 last:mb-0">
-                                <NavLink end to="/documents-utilisateurs" className={({ isActive }) =>
-                                  "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
-                                }>
-                                  <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                    Documents Admin.
-                                  </span>
-                                </NavLink>
-                              </li>
-                            }
-
+                            <li className="mb-1 last:mb-0">
+                              <NavLink end to="/documents-utilisateurs" className={({ isActive }) =>
+                                "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
+                              }>
+                                <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
+                                  Documents admin.
+                                </span>
+                              </NavLink>
+                            </li>
                           </ul>
                         </div>
                       </React.Fragment>
@@ -711,7 +730,7 @@ function Sidebar({
                                 "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
                               }>
                                 <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                  Historiques des demandes
+                                  Historique des demandes
                                 </span>
                               </NavLink>
                             </li>
@@ -720,7 +739,7 @@ function Sidebar({
                                 "block transition duration-150 truncate " + (isActive ? "text-sky-600" : "text-gray-500/90 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200")
                               }>
                                 <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                  Etat des demandes
+                                  Etat des soldes des droits
                                 </span>
                               </NavLink>
                             </li>
@@ -779,7 +798,7 @@ function Sidebar({
                                 }
                               >
                                 <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                  Liste
+                                  Cumul horaire mensuel
                                 </span>
                               </NavLink>
                             </li>
@@ -792,7 +811,7 @@ function Sidebar({
                                 }
                               >
                                 <span className="text-sm font-medium lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                                  Sessions
+                                  Liste des sessions
                                 </span>
                               </NavLink>
                             </li>
@@ -811,32 +830,17 @@ function Sidebar({
                       }`}
                   >
                     <div className="flex items-center">
-                      <svg
-                        className="w-4 h-4 shrink-0 ml-1 text-gray-400 dark:text-gray-500 icon icon-tabler icons-tabler-outline icon-tabler-user-cog"
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="24"
-                        height="24"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="text-gray-400 icon icon-tabler icons-tabler-outline icon-tabler-calendar-event">
                         <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-                        <path d="M8 7a4 4 0 1 0 8 0a4 4 0 0 0 -8 0" />
-                        <path d="M6 21v-2a4 4 0 0 1 4 -4h2.5" />
-                        <path d="M19.001 19m-2 0a2 2 0 1 0 4 0a2 2 0 1 0 -4 0" />
-                        <path d="M19.001 15.5v1.5" />
-                        <path d="M19.001 21v1.5" />
-                        <path d="M22.032 17.25l-1.299 .75" />
-                        <path d="M17.27 20l-1.3 .75" />
-                        <path d="M15.97 17.25l1.3 .75" />
-                        <path d="M20.733 20l1.3 .75" />
+                        <path d="M4 5m0 2a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2z" />
+                        <path d="M16 3l0 4" />
+                        <path d="M8 3l0 4" />
+                        <path d="M4 11l16 0" />
+                        <path d="M8 15h2v2h-2z" />
                       </svg>
 
                       <span className="text-sm font-medium ml-4 lg:opacity-0 lg:sidebar-expanded:opacity-100 2xl:opacity-100 duration-200">
-                        Modérateur
+                        Gestion des évènements
                       </span>
                     </div>
                   </NavLink>

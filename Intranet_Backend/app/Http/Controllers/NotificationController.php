@@ -23,6 +23,7 @@ class NotificationController extends Controller
         return response()->json($notifications);
     }
 
+
     public function markAsRead(Request $request, $id)
     {
         $request->validate([
@@ -37,6 +38,8 @@ class NotificationController extends Controller
 
         return response()->json(['message' => 'Notification marquée comme lue.']);
     }
+
+
 
     public function getAdminErrorReports()
     {
@@ -56,6 +59,8 @@ class NotificationController extends Controller
         ]);
     }
 
+
+
     public function markErrorAsRead($id)
     {
         $admins = User::where('role', 'admin')->get();
@@ -72,12 +77,12 @@ class NotificationController extends Controller
         return response()->json(['message' => 'Notification introuvable'], 404);
     }
 
-    public function deleteNotification(Request $request, $id)
+   public function deleteNotification(Request $request, $id)
     {
         $request->validate([
             'user_id' => 'required'
         ]);
-
+        
         $user = User::findOrFail($request->user_id);
         $notification = $user->notifications()->findOrFail($id);
         $notification->delete();

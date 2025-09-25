@@ -59,7 +59,6 @@ class User extends Authenticatable
         'contrat_code',
     ];
 
-
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -82,12 +81,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
     public function sendPasswordResetNotification($token)
     {
-        $url = url('http://intranet.ext.local:8080/changepswd/' . $token . '/' . $this->email);
+        $url = url('https://intranet.ext.local:8080/changepswd/' . $token . '/' . $this->email);
         Mail::to($this->email)->send(new ResetPasswordMail($url, $this));
     }
-
 
     public function sentMessages()
     {
@@ -104,12 +103,10 @@ class User extends Authenticatable
         return $this->belongsTo(Group::class);
     }
 
-
     public function groups()
     {
         return $this->belongsToMany(Group::class, 'group_user');
     }
-
 
     public function groupPosts()
     {
@@ -164,6 +161,7 @@ class User extends Authenticatable
         return $this->belongsToMany(MessageGroup::class, 'intranet_extedim.messages_groups_users', 'user_id', 'group_id')
             ->withPivot('is_admin');
     }
+
     public function posts()
     {
         return $this->hasMany(Post::class);

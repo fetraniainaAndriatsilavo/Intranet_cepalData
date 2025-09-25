@@ -71,7 +71,7 @@ export default function MessageBox({ msg, setMessageId, showTime }) {
 
             {/* Message bubble + attachments + actions */}
             <div className="flex flex-col max-w-xs sm:max-w-md">
-                {/* Bubble */} 
+                {/* Bubble */}
                 {
                     msg.content && <div
                         className={`p-3 relative ${isInactive
@@ -81,7 +81,7 @@ export default function MessageBox({ msg, setMessageId, showTime }) {
                                 : "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-r-xl rounded-b-xl"
                             }`}
                     >
-                        <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                        <p className="whitespace-pre-wrap break-words"> {isInactive ? 'Message Indisponible' : msg.content}</p>
                         {showTime && !isInactive && (
                             <span className="text-[10px] opacity-70">
                                 {formatHour(msg.created_at)}
@@ -92,8 +92,8 @@ export default function MessageBox({ msg, setMessageId, showTime }) {
                 }
 
                 {/* Attachments grid */}
-                {msg.attachments && msg.attachments.length > 0 && (
-                    <div className="grid grid-cols-2 gap-2 mt-1 justify-end items-center flex">
+                {msg.files && msg.files.length > 0 && (
+                    <div className="grid grid-cols-2 gap-2 mt-1 bg-black">
                         {msg.files.map((file, idx) => (
                             <img
                                 key={idx}
@@ -119,7 +119,7 @@ export default function MessageBox({ msg, setMessageId, showTime }) {
                             Suppr.
                         </span>
                         <span
-                            onClick={() => setMessageId(msg.message_id)}
+                            onClick={() => setMessageId(msg.id)}
                             className="cursor-pointer hover:text-sky-600"
                         >
                             Modif.

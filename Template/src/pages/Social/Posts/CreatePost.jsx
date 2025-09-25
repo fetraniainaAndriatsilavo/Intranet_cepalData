@@ -79,12 +79,48 @@ export default function CreatePost({ GroupId, fetchPost, fetchGroupPost }) {
     setDescription((prev) => prev + emojiData.emoji); // Append emoji to current text
   };
 
+
+  function stringToColor(string) {
+    let hash = 0;
+    for (let i = 0; i < string.length; i += 1) {
+      hash = string.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    let color = "#";
+    for (let i = 0; i < 3; i += 1) {
+      const value = (hash >> (i * 8)) & 0xff;
+      color += `00${value.toString(16)}`.slice(-2);
+    }
+    return color;
+  }
+
+
+  const colorName = user.last_name + ' ' + user.first_name || ''
+
+  function stringAvatar(name) {
+    const initials = name
+      ? name
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+      : "?";
+    return {
+      sx: {
+        bgcolor: stringToColor(name),
+        width: 40,
+        height: 40,
+        fontSize: "0.9rem",
+      },
+      children: initials.toUpperCase(),
+    };
+  }
+
   return (
     <div className="w-2/3">
       {/* en-tete */}
       <div className="bg-white p-2 mt-3 rounded-t-lg">
         <div className="flex items-center justify-start gap-2 w-full p-2">
-          <Avatar> {user.first_name.charAt(0) + "" + user.last_name.charAt(0)} </Avatar>
+          <Avatar {...stringAvatar(colorName)} />
           <span className="font-semibold"> Partager une nouvelle publication </span>
         </div>
       </div>
@@ -138,7 +174,7 @@ export default function CreatePost({ GroupId, fetchPost, fetchGroupPost }) {
           <div className="items-center justify-center flex gap-2">
             <label htmlFor="image">
               {" "}
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" className="text-sky-600 icon icon-tabler icons-tabler-outline icon-tabler-photo-plus">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-photo-plus">
                 <title> uploader des Images  </title>
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                 <path d="M15 8h.01" />
@@ -165,7 +201,7 @@ export default function CreatePost({ GroupId, fetchPost, fetchGroupPost }) {
               className="cursor-pointer"
               onClick={() => setIsShown((prev) => !prev)}
             >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-yellow-300 icon icon-tabler icons-tabler-filled icon-tabler-mood-happy">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="hover:text-yellow-300 icon icon-tabler icons-tabler-filled icon-tabler-mood-happy">
                 <title> Emojicons  </title>
                 <path stroke="none" d="M0 0h24v24H0z" fill="none" />
                 <path d="M17 3.34a10 10 0 1 1 -14.995 8.984l-.005 -.324l.005 -.324a10 10 0 0 1 14.995 -8.336zm-2 9.66h-6a1 1 0 0 0 -1 1v.05a3.975 3.975 0 0 0 3.777 3.97l.227 .005a4.026 4.026 0 0 0 3.99 -3.79l.006 -.206a1 1 0 0 0 -1 -1.029zm-5.99 -5l-.127 .007a1 1 0 0 0 .117 1.993l.127 -.007a1 1 0 0 0 -.117 -1.993zm6 0l-.127 .007a1 1 0 0 0 .117 1.993l.127 -.007a1 1 0 0 0 -.117 -1.993z" />
@@ -183,7 +219,7 @@ export default function CreatePost({ GroupId, fetchPost, fetchGroupPost }) {
           </div>
         </div>
         <button
-          className="bg-blue-500 py-2 px-2 text-white rounded-lg cursor-pointer hover:bg-blue-600"
+          className="bg-sky-600 py-2 px-2 text-white rounded-lg cursor-pointer hover:bg-blue-600"
           onClick={Publish}
         >
           Partager

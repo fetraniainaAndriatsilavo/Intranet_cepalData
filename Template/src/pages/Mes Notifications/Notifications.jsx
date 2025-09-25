@@ -35,15 +35,17 @@ export default function Notifications() {
         setCurrentView(allNotifications.slice(startIndex, endIndex));
     }, [allNotifications, currentPage]);
 
-    return <div className="sm:flex flex-col gap-5 sm:justify-between sm:items-center mb-8">
+    return <div className="sm:flex flex-col gap-5 sm:justify-between sm:items-center mb-8 h-full">
         <div className="mb-4 sm:mb-0">
             <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold"> Mes Notifications </h1>
         </div>
-        <div className="bg-white  w-1/2 rounded-lg">
-            <h3 className="p-3 "> Tous mes notifications non lues  <span className={`${allNotifications && allNotifications.length > 0 ? 'text-white bg-red-500 p-0.5 rounded' : 'text-gray-400 '} font-semibold `}> {allNotifications && allNotifications.length} </span> </h3>
-            {currentView.map((notification, index) => (
-                <CardNotification key={index} notification={notification} fetchNotifications={fetchNotifications} />
-            ))}
+        <div className="bg-white w-1/2 rounded-lg ">
+            <h3 className="p-3 "> Toutes mes notifications non lues  <span className={`${allNotifications && allNotifications.length > 0 ? 'text-white bg-red-500 p-0.5 rounded' : 'text-gray-400 '} font-semibold `}> {allNotifications && allNotifications.length} </span> </h3>
+            <div>
+                {currentView.map((notification, index) => (
+                    <CardNotification key={index} notification={notification} fetchNotifications={fetchNotifications} />
+                ))}
+            </div>
         </div>
         <div>
             <Pagination count={lastPageIndex} page={currentPage} onChange={handleChange} />

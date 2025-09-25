@@ -62,9 +62,32 @@ class TaskController extends Controller
         }
     }
 
+    public function getUserTasks($userId)
+    {
+        try {
+            $projects = Task::where('user_allocated_id', $userId)
+                ->with('project')
+                ->get()
+                ->pluck('project')
+                ->unique('id')
+                ->values();
+
+            return response()->json([
+                'statut' => 'success',
+                'projects' => $projects
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'statut' => 'error',
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function store(Request $request)
     {
         try {
+
             $validated = $request->validate([
                 'title' => 'required|string|max:255',
                 'description' => 'nullable|string',
@@ -72,7 +95,7 @@ class TaskController extends Controller
                 'type' => 'required|in:Task,Sub_Task,Story,Bug',
                 'priority' => 'required|string|max:50',
                 'status' => 'required|in:To-Do,In-Progress,Review,Deploy,Done',
-                'start_date' => 'nullable|date',
+                'start_date' => 'nullable|date|after_or_equal:today',
                 'due_date' => 'nullable|date|after_or_equal:start_date',
                 'sprint_id' => 'nullable|exists:intranet_extedim.sprints,id',
                 'task_parent_id' => 'nullable|exists:intranet_extedim.tasks,id',
@@ -101,7 +124,8 @@ class TaskController extends Controller
 
                 'start_date.date' => 'La date de début doit être une date valide.',
                 'due_date.date' => 'La date de fin doit être une date valide.',
-                'due_date.after_or_equal' => 'La date de fin doit être postérieure ou égale à la date de début.',
+                'due_date.after_or_equal' => 'La date de fin doit être postérieure ou égale à la date de début',
+                'start_date.after_or_equal' => 'La date de début doit être aujourd’hui ou dans le futur.',
 
                 'sprint_id.exists' => 'Le sprint spécifié n’existe pas.',
 
@@ -239,7 +263,6 @@ class TaskController extends Controller
             ], 500);
         }
     }
-
 
     public function destroy($id)
     {

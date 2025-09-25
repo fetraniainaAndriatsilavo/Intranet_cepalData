@@ -21,24 +21,24 @@ export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser, ses
     const [clients, setClients] = useState([]);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+    const [warning, setWarning] = useState(null)
     const [loading, setLoading] = useState(false);
+    const [projectList, setProjectList] = useState([])
+
+
+
 
     const [formData, setFormData] = useState({
         user_id: user?.id ?? null,
-        client: "",
-        projet: "",
+        client_code: "",
+        project_id: "",
         type: "Tâche",
         date: "",
         nb_hour: "",
         description: "",
-        ts_period_id: sessions || null,
+        ts_period_id: sessions,
         updated_by: user?.id ?? null, // Added for consistency
     });
-
-    const clientOptions = clients.map(client => ({
-        ...client,
-        label: client.name
-    }));
 
     const duration = [0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6, 6.5, 7, 7.5, 8];
 
@@ -49,6 +49,24 @@ export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser, ses
             [id || name]: value
         }));
     };
+
+    const clear = () => {
+        setFormData({
+            user_id: user?.id ?? null,
+            client_code: "",
+            project_id: "",
+            type: "tache",
+            date: "",
+            nb_hour: "",
+            description: "",
+            ts_period_id: null,
+            updated_by: user?.id ?? null,
+        })
+        setError('')
+        setSuccess('')
+        setLoading(false)
+        onClose()
+    }
 
     function convertIntoTime(n) {
         let totalMinutes = Math.round(n * 60);
@@ -78,6 +96,15 @@ export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser, ses
             });
     }, []);
 
+    const fetchProjectUserList = (userId) => {
+        api.get('/getProjectOrTask/' + userId)
+            .then((response) => {
+                setProjectList(response.data.projects)
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+    }
 
     // Fetch clients
     useEffect(() => {
@@ -89,18 +116,56 @@ export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser, ses
                 console.error(error);
                 setError("Erreur lors du chargement des clients.");
             });
-    }, []);
+
+        fetchProjectUserList(user.id)
+    }, [user.id]);
+
+    const clientOptions = clients.map(client => ({
+        ...client,
+        label: client.name
+    }));
 
     const handleSubmit = async () => {
         setLoading(true);
+
+        if (!formData.client && !formData.date && !formData.description && !formData.nb_hour) {
+            setError('Veuillez remplir les champs')
+            setLoading(false)
+            return;
+        }
+
+        if (!formData.client_code) {
+            setError('Veuillez remplir les champs')
+            setLoading(false)
+            return;
+        }
+
+        if (!formData.date) {
+            setError('La date de votre pointage est requise')
+            setLoading(false)
+            return;
+        }
+
+        if (!formData.description) {
+            setError('Veuillez inscrire une explication de votre tâche')
+            setLoading(false)
+            return;
+        }
+
+        if (!formData.nb_hour) {
+            setError('L\'horaire est requise')
+            setLoading(false)
+            return;
+        }
+
         try {
             const response = await api.post("/timesheet/store", formData, {
                 headers: { "Content-Type": "application/json" }
             });
             setFormData({
                 user_id: user?.id ?? null,
-                client: "",
-                projet: "",
+                client_code: "",
+                project_id: "",
                 type: "tache",
                 date: "",
                 nb_hour: "",
@@ -108,18 +173,21 @@ export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser, ses
                 ts_period_id: null,
                 updated_by: user?.id ?? null
             });
-            setSuccess(response.data.message);
-            setError(null);
-            setTimeout(() => {
-                onClose();
-            }, 1500);
+
+            if (!response.data.warning) {
+                setSuccess(response.data.message);
+                setError(null);
+                onClose()
+            } else {
+                setWarning(response.data.warning) 
+                setTimeout(() => {
+                    onClose()
+                }, 2000 )
+            }
             fetchTimeSheetUser(user.id)
         } catch (err) {
-            if (err.response?.status === 422) {
-                setError(err.response.data.message);
-            } else {
-                setError("Erreur lors de l'enregistrement.");
-            }
+            setLoading(false)
+            setError(err.response.data.message);
             setSuccess(null);
         } finally {
             setLoading(false);
@@ -127,7 +195,7 @@ export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser, ses
     };
 
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+        <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
             <DialogTitle>
                 <div className="flex items-center gap-3">
                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -153,7 +221,7 @@ export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser, ses
                         <path d="M10.01 17h.005" />
                     </svg>
                     <h1 className="text-xl font-semibold">
-                        Création de feuille de temps Journalière
+                        Pointage journalier
                     </h1>
                 </div>
             </DialogTitle>
@@ -169,19 +237,25 @@ export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser, ses
                         renderInput={(params) => (
                             <TextField {...params} label="Client" size="small" fullWidth />
                         )}
-                        value={clientOptions.find(c => c.code === formData.client) || null}
+                        value={clientOptions.find(c => c.code === formData.client_code) || null}
                         onChange={(e, value) =>
-                            setFormData({ ...formData, client: value ? value.code : "" })
+                            setFormData({ ...formData, client_code: value ? value.code : "" })
                         }
                     />
-                    <TextField
-                        id="projet"
-                        label="Projets"
-                        variant="outlined"
-                        value={formData.projet}
-                        onChange={handleChange}
+
+                    <Autocomplete
                         fullWidth
-                        size="small"
+                        disablePortal
+                        options={projectList || []}
+                        getOptionLabel={(option) => option.name}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
+                        renderInput={(params) => (
+                            <TextField {...params} label="Projets" size="small" fullWidth />
+                        )}
+                        value={projectList.find(c => c.id === formData.project_id) || null}
+                        onChange={(e, value) =>
+                            setFormData({ ...formData, project_id: value ? value.id : "" })
+                        }
                     />
                 </div>
 
@@ -193,11 +267,13 @@ export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser, ses
                         inputProps={{ name: "type", id: "type" }}
                     >
                         <option value="Tâche"> Tâches </option>
+                        <option value="Absence"> Absence </option>
                         <option value="Congé"> Congés </option>
                         <option value="Jour férié"> Fériés </option>
                         <option value="Convalescence"> Convalescence </option>
                         <option value="Repos médical">Repos Médical </option>
                         <option value="Assistance maternelle"> Assistance maternelle </option>
+                        <option value="Mise à pied"> Mise à pied </option>
                     </NativeSelect>
                 </FormControl>
 
@@ -244,31 +320,17 @@ export default function CreateTimeSheet({ open, onClose, fetchTimeSheetUser, ses
                 />
 
                 {success && <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>}
+                {warning && <Alert severity="warning" sx={{ mt: 2 }}>{warning}</Alert>}
                 {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
             </DialogContent>
 
             <DialogActions>
-                <Button variant="outlined" onClick={() => {
-                    setFormData({
-                        user_id: user?.id ?? null,
-                        client: "",
-                        projet: "",
-                        type: "tache",
-                        date: "",
-                        nb_hour: "",
-                        description: "",
-                        ts_period_id: null,
-                        updated_by: user?.id ?? null, // Added for consistency
-                    })
-                    onClose()
-                }}>Annuler</Button>
-                <Button
-                    variant="contained"
-                    onClick={handleSubmit}
-                    disabled={loading}
-                >
-                    {loading ? "Enregistrement..." : "Enregistrer"}
-                </Button>
+                <button className="p-2 rounded border border-sky-600 text-sky-600 cursor-pointer" onClick={clear}>
+                    Annuler
+                </button>
+                <button className="p-2 rounded text-white bg-sky-600 cursor-pointer" onClick={handleSubmit}>
+                    {loading == true ? "Enregistrement..." : "Enregistrer"}
+                </button>
             </DialogActions>
         </Dialog>
     );

@@ -16,7 +16,7 @@ export default function ConfidentialiteSecurite() {
 
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
+  const [newPassword_confirmation, setConfirmPassword] = useState("");
 
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
@@ -37,7 +37,7 @@ export default function ConfidentialiteSecurite() {
     setLoading(true);
     setError("");
 
-    if (!currentPassword || !newPassword || !confirmPassword) {
+    if (!currentPassword || !newPassword || !newPassword_confirmation) {
       setError("Merci de compléter tous les champs requis.");
       setLoading(false);
       return;
@@ -49,7 +49,7 @@ export default function ConfidentialiteSecurite() {
       return;
     }
 
-    if (newPassword !== confirmPassword) {
+    if (newPassword !== newPassword_confirmation) {
       setError(
         "Le nouveau mot de passe doit correspondre à celui de confirmation."
       );
@@ -61,21 +61,14 @@ export default function ConfidentialiteSecurite() {
       await api.post("/change-password/" + user.id, {
         currentPassword,
         newPassword,
-        confirmPassword
+        newPassword_confirmation
       });
       setSuccess("Le mot de passe a été mis à jour avec succès.");
       setTimeout(() => {
         window.location.href = "/accueil";
       }, 3000);
     } catch (err) {
-      console.log(err);
-      if (err.response?.status === 401) {
-        setError("Email ou mot de passe incorrect");
-      } else if (err.response?.status === 422) {
-        setError(err.response.data.message);
-      } else {
-        setError("Une erreur est survenue");
-      }
+       setError(err.response.data.message)      
     } finally {
       setLoading(false);
     }
@@ -94,7 +87,7 @@ export default function ConfidentialiteSecurite() {
           </a>
           <div>
             <span className="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">
-              Réinitialisation du mot de passe
+              Changer de mot de passe
             </span>
           </div>
         </div>
@@ -102,16 +95,10 @@ export default function ConfidentialiteSecurite() {
 
       {/* Body */}
       <div className="bg-gray-50 p-3 rounded w-full mt-3 mb-3">
-        <p className="text-justify">
-          Votre mot de passe doit contenir au moins huit (8) caractères ainsi
-          qu'une combinaison de chiffres, de lettres et de caractères spéciaux
-          (!$@%).
+        <p className="text-center">
+          Votre mot de passe doit contenir au moins 8 caractères ainsi qu’une combinaison de chiffres, de lettres et de caractères spéciaux ( !$@%).
         </p>
-
         <div className="mt-6 flex items-center justify-center flex-col gap-3">
-          <p className="font-medium text-center">
-            Modifier votre mot de passe :
-          </p>
           <div className="flex flex-col w-full sm:w-1/2 md:w-1/3 gap-4 mt-4 ">
             <TextField
               label="Mot de passe actuel"
@@ -163,7 +150,7 @@ export default function ConfidentialiteSecurite() {
               type={showConfirm ? "text" : "password"}
               size="small"
               fullWidth
-              value={confirmPassword}
+              value={newPassword_confirmation}
               onChange={(e) => setConfirmPassword(e.target.value)}
               InputProps={{
                 endAdornment: (
@@ -183,7 +170,7 @@ export default function ConfidentialiteSecurite() {
             {success && <Alert severity="success">{success}</Alert>}
 
             <button
-              className="px-3 py-2 bg-blue-500 hover:bg-blue-600 text-white w-full rounded cursor-pointer transition"
+              className="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white w-full rounded cursor-pointer transition"
               onClick={Changer}
               disabled={loading}
             >

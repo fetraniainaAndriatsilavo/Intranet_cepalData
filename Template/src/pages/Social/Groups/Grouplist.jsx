@@ -4,8 +4,10 @@ import CreateGroup from "./CreateGroup";
 import { Modal, Box } from "@mui/material";
 
 export default function Grouplist({ userID, lists, fetchUserGroup }) {
-  const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
+  const [open, setOpen] = useState(false); 
+
+  const handleOpen = () => setOpen(true); 
+  
   const handleClose = () => setOpen(false);
 
   return (
@@ -46,19 +48,7 @@ export default function Grouplist({ userID, lists, fetchUserGroup }) {
       </div>
 
       {/* MUI Modal */}
-      <Modal open={open} onClose={handleClose}>
-        <Box
-          className="bg-white rounded-lg shadow-lg p-6"
-          sx={{
-            width: 400,
-            margin: "100px auto",
-            outline: "none",
-            borderRadius: 2,
-          }}
-        >
-          <CreateGroup userID={userID} onClose={handleClose} fetchUserGroup={fetchUserGroup} />
-        </Box>
-      </Modal>
+          <CreateGroup userID={userID} open={open} onClose={handleClose} fetchUserGroup={fetchUserGroup} />
     </div>
   );
 }

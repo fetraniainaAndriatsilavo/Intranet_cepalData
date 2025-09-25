@@ -32,8 +32,7 @@ use Illuminate\Validation\Rules\Password as PasswordRule;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Broadcast;
-
-
+use Illuminate\Support\Facades\Validator;
 
 //Autehntification
 Route::post('/register', [AuthController::class, 'register'])->name('register');
@@ -46,6 +45,7 @@ Route::get('/dashboard/overview/{userId}', [ReferenceDataController::class, 'ove
 Route::get('/data', [ReferenceDataController::class, 'getDataUser']);
 Route::get('/user/{id}/info', [UserController::class, 'GetInfoUser']);
 Route::put('/user/{id}/update', [UserController::class, 'update']);
+Route::post('/users/{id}/upload-image', [UserController::class, 'uploadImage']);
 Route::get('/getUser/all', [UserController::class, 'GetAllUsers']);
 Route::put('v1/users/{id}', [UserController::class, 'toggleStatus']);
 Route::get('v1/personal/{id}', [UserController::class, 'personal']);
@@ -60,53 +60,25 @@ Route::get('v1/checkers/{id}', function ($id) {
 });
 Route::get('v1/modify/{id}', [UserController::class, 'personal']);
 Route::post('/change-password/{userId}', [UserController::class, 'changePassword']);
-Route::post('/forgot-password', function (Request $request) {
-    $request->validate(['email' => 'required|email']);
-    try {
-        $status = Password::sendResetLink($request->only('email'));
-        return response()->json([
-            'message' => __($status),
-            'email' => $request->email
-        ]);
-    } catch (Exception $e) {
-        return response()->json(['message' => __($e->getMessage())]);
-    }
-});
 
+Route::post('/forgot-password', [UserController::class, 'sendResetLink']);
 
-
-Route::post('/reset-password', function (Request $request) {
-    $request->validate([
-        'email' => 'required|email',
-        'token' => 'required',
-        'password' => ['required', 'confirmed', PasswordRule::min(8)]
-    ]);
-
-    $status = Password::reset(
-        $request->only('email', 'password', 'password_confirmation', 'token'),
-        function ($user, $password) {
-            $user->forceFill([
-                'password' => bcrypt($password),
-            ])->save();
-        }
-    );
-
-    return $status === Password::PASSWORD_RESET
-        ? response()->json(['message' => __($status)])
-        : response()->json(['message' => __($status)], 400);
-});
+Route::post('/reset-password', [UserController::class, 'reset']);
 
 Route::get('reset-password/{token}', function ($token) {
     return response()->json(['token' => $token]);
 })->name('password.reset');
 
 //Module Projet
+Route::get('/projects', [ProjectController::class, 'index']);
 Route::post('/projects/store', [ProjectController::class, 'store']);
 Route::put('/projects/{id}/status', [ProjectController::class, 'updateStatus']);
 Route::get('/getProject/{userId}', [ProjectController::class, 'getProjectByUserId']);
 Route::put('/projects/{id}/update', [ProjectController::class, 'updateProject']);
 Route::delete('/projects/{id}/delete', [ProjectController::class, 'destroy']);
 Route::get('/projects/{id}/getProject', [ProjectController::class, 'getProjectById']);
+Route::get('/getProjectOrTask/{userId}', [ProjectController::class, 'getUserProjectsOrTasks']);
+
 
 //Sprint (Module Projet)
 Route::post('/sprints', [SprintController::class, 'store']);
@@ -121,6 +93,7 @@ Route::get('/tasks/all', [TaskController::class, 'getAllTask']);
 Route::get('/gettask/{taskId}', [TaskController::class, 'getTaskById']);
 Route::get('/taches/{id}/getTache', [TaskController::class, 'getTacheById']);
 Route::get('/getTaches/{projectId}', [TaskController::class, 'getByProject']);
+Route::get('/users/{userId}/tasks', [TaskController::class, 'getUserTasks']);
 Route::put('/taches/{id}/update', [TaskController::class, 'update']);
 Route::delete('/taches/{id}/delete', [TaskController::class, 'destroy']);
 
@@ -132,10 +105,14 @@ Route::get(
     [LeaveRequestController::class, 'getAllTypeLeave']
 );
 Route::get('/users/{id}/leave-balances', [LeaveRequestController::class, 'getLeaveBalances']);
+Route::get('/users/{id}/leave-requests', [LeaveRequestController::class, 'getLeaveRequestsUser']);
 Route::get('manager/{managerId}/leave-requests', [LeaveRequestController::class, 'getTeamLeaveRequests']);
 Route::get('/all-requests', [LeaveRequestController::class, 'getAllLeaveRequests']);
-Route::put('/leave-requests/{id}/change', [LeaveRequestController::class, 'changeStatus']);
+// Route::put('/leave-requests/{id}/change', [LeaveRequestController::class, 'changeStatus']);
 Route::get('/all/holidays', [LeaveRequestController::class, 'getOgcHolidays']);
+Route::post('/leave-requests/{id}/approve', [LeaveRequestController::class, 'approve']);
+Route::post('/leave-requests/{id}/cancel', [LeaveRequestController::class, 'cancel']);
+Route::post('/leave-requests/{id}/reject', [LeaveRequestController::class, 'reject']);
 Route::get('manager/{managerId}/userCumul', [LeaveRequestController::class, 'getTeamCumul']);
 Route::patch('/conges/ajouter-solde', [LeaveBalanceController::class, 'ajouterSoldeMensuel']);
 
@@ -207,7 +184,7 @@ Route::delete('/groups/{groupId}', [GroupPostController::class, 'destroy']);
 Route::get('fliter/{mois_avant}/{mois_apres}/{recherche}');
 
 //Message
-// Route::get('/messages/{user1}/{user2}', [MessageController::class, 'getConversation']);
+Route::get('/messages/{user1}/{user2}', [MessageController::class, 'getConversation']);
 Route::post('/messages', [MessageController::class, 'store']);
 Route::post('/messages/{id}/read', [MessageController::class, 'markAsRead']);
 Route::prefix('group-messages')->controller(GroupMessageController::class)->group(function () {

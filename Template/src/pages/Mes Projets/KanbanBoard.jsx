@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import Column from '../../components/Projets/components/Column';
 import api from '../../components/axios';
-import { id } from 'date-fns/locale';
+import { AppContext } from '../../context/AppContext';
 
-export default function KanbanBoard({ project }) {
-  const [columns, setColumns] = useState([]);
+export default function KanbanBoard({ project, columns, setColumns }) {
+  const { user } = useContext(AppContext)
   const [draggedCard, setDraggedCard] = useState(null);
 
   const handleDragStart = (e, card) => {
@@ -46,7 +46,11 @@ export default function KanbanBoard({ project }) {
   const fetchTaskProject = (projectId) => {
     api.get('/getTaches/' + projectId)
       .then((response) => {
-        const tasks = response.data.tasks;
+        var tasks = response.data.tasks;
+
+        if (user.role === 'user') {
+          tasks = tasks.filter((task) => task.user_allocated_id === user.id);
+        } 
 
         // Define fixed columns
         const fixedColumns = [
@@ -57,7 +61,7 @@ export default function KanbanBoard({ project }) {
           { title: "Done", cards: [] }
         ];
 
-        // Distribute tasks into columns
+        // Distribute tasks into columns 
         tasks.forEach(task => {
           const status = task.status || "To-Do";
           const column = fixedColumns.find(c => c.title === status);
@@ -65,7 +69,6 @@ export default function KanbanBoard({ project }) {
             column.cards.push(task);
           }
         });
-
         setColumns(fixedColumns);
       })
       .catch((error) => {
@@ -73,7 +76,7 @@ export default function KanbanBoard({ project }) {
       });
   };
 
-  
+
   useEffect(() => {
     fetchTaskProject(project);
   }, [project]);
@@ -97,7 +100,7 @@ export default function KanbanBoard({ project }) {
 
   //  md:items-center lg:items-center lg:md:justify-center  sm:items-center  sm:gap-4
   return (
-    <div className="flex gap-4 p-4 lg:flex-row md:flex-row sm:flex-col sm:justify-center">  
+    <div className="flex gap-2 p-4 lg:flex-row md:flex-row sm:flex-col lg:justify-start md:justify-start sm:justify-center w-full overflow-x-auto overflow-y-hidden h-[66vh] scrollbar scrollbar-thin scrollbar-thumb-rounded">
       {columns.map((col) => (
         <Column
           key={col.title}

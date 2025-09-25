@@ -11,6 +11,11 @@ class DocumentAdmin extends Model
 
     protected $connection = 'pgsql';
     protected $table = 'intranet_extedim.documents_admin';
+    protected $casts = [
+        'is_public' => 'boolean',
+    ];
+    public $timestamps = false;
+
 
     protected $fillable = [
         'user_id',

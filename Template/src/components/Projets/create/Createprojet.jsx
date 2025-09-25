@@ -1,18 +1,20 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import {
     TextField,
     Autocomplete,
     Alert,
 } from "@mui/material";
 import api from "../../axios";
+import { AppContext } from "../../../context/AppContext";
 
 export default function Createprojet() {
+    const { user } = useContext(AppContext)
     const [form, setForm] = useState({
         name: "",
         description: "",
         start_date: "",
         end_date: "",
-        // project_lead_id: "",
+        project_lead_id: user? user.id : 0,
         client_code: "",
         type: '',
         status: ''
@@ -38,9 +40,46 @@ export default function Createprojet() {
         setForm({ ...form, [e.target.name]: e.target.value });
     };
 
+    const cancel = () => {
+        setForm({
+            name: "",
+            description: "",
+            start_date: "",
+            end_date: "",
+            project_lead_id: user? user.id : 0,
+            client_code: "",
+            type: '',
+            status: ''
+        })
+        setError('')
+        setSuccess('')
+        setLoading(false)
+    }
 
     const Creer = async () => {
+        if (!form.name) {
+            setError('Le nom du projet est requis')
+            setLoading(false)
+            return;
+        }
 
+        if (!form.status) {
+            setError('Veuillez préciser le status du projet')
+            setLoading(false)
+            return;
+        }
+
+        if(!form.start_date){
+            setError('La date de début du projet est requise')
+            setLoading(false)
+            return;
+        } 
+
+        if(!form.client_code){
+            setError('Le client assigné à ce projet est requis')
+            setLoading(false)
+            return;
+        }
         try {
             const response = await api.post('/projects/store',
                 form
@@ -57,6 +96,7 @@ export default function Createprojet() {
             setLoading(false)
         }
     }
+
     return (
         <div className="sm:flex flex-col gap-5 sm:justify-between sm:items-center mb-8">
             <div className="mb-4 sm:mb-0">
@@ -65,7 +105,7 @@ export default function Createprojet() {
                 </h1>
             </div>
 
-            <div className="bg-white w-1/2 rounded-lg p-6 flex flex-col gap-4">
+            <div className="bg-white w-1/2 rounded-lg p-6 flex flex-col gap-3">
                 <TextField
                     label="Nom du projet **"
                     name="name"
@@ -101,7 +141,7 @@ export default function Createprojet() {
                         setForm({ ...form, status: value || "" })
                     }
                     renderInput={(params) => (
-                        <TextField {...params} label="Status**" size="small" />
+                        <TextField {...params} label="Status **" size="small" />
                     )}
                 />
 
@@ -158,13 +198,19 @@ export default function Createprojet() {
                         error && <Alert severity="error"> {error}</Alert>
                     }
                 </div>
-                <button className="px-3 py-2 bg-sky-600 text-white rounded uppercase cursor-pointer" onClick={(e) => {
-                    e.preventDefault()
-                    setLoading(true)
-                    Creer()
-                }}>
-                    {loading ? 'En cours d\' enregistement' : 'Enregistrer'}
-                </button>
+                <div className="w-full flex flex-row gap-2">
+                    <button className="px-3 w-1/3 py-2 bg-white border border-sky-600 text-sky-600 rounded cursor-pointer" onClick={(e) => {
+                        cancel()
+                    }}>
+                        Effacer
+                    </button>
+                    <button className="px-3 py-2 w-2/3 bg-sky-600 text-white rounded cursor-pointer" onClick={() => {
+                        Creer()
+                    }}>
+                        {loading ? 'En cours d\' enregistrement' : 'Enregistrer'}
+                    </button>
+                </div>
+
             </div>
         </div>
     );

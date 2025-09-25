@@ -26,16 +26,18 @@ function App() {
         {/* Authentification */}
         <Route path="/" element={<SignIn />} />
         <Route path="/reset" element={<SignIn />} />
-        <Route path="/changepswd/:token/:email" element={<SignIn />} />
+        <Route path="/changepswd/:token/:email" element={<SignIn />} /> 
+        
         {user ? (
           <>
             {/* Dashboard */}
             <Route path="/accueil" element={<Dashboard />} />
             <Route path="/cgu" element={<Dashboard />} />
             <Route path="/reinit" element={<Dashboard />} />
-
+            <Route path="/changeprofile" element={<Dashboard/>} />
             {/* Ma Fiche */}
-            <Route path="/mesinformations" element={<Dashboard />} />
+            <Route path="/mesinformations" element={<Dashboard />} /> 
+            <Route path="/mesdocuments" element={<Dashboard/>} />
             <Route path="/ajout-utilisateur" element={<Dashboard />} />
             <Route path="/liste-utilisateur" element={<Dashboard />} />
             <Route path="/modif-utilisateur/:id" element={<Dashboard />} />
@@ -45,6 +47,7 @@ function App() {
             {/* OGC */}
             <Route path="/mesconges" element={<Dashboard />} />
             <Route path="/mesvalidations" element={<Dashboard />} />
+            <Route path="/meslists" element={<Dashboard />} />
             <Route path="/listeconges" element={<Dashboard />} />
             <Route path="/etats" element={<Dashboard />} />
 

@@ -16,6 +16,7 @@ use Illuminate\Validation\Rule;
 
 class GroupPostController extends Controller
 {
+
     public function store(Request $request)
     {
         try {

@@ -22,4 +22,3 @@ export default function SignIn() {
     </div>
   );
 }
-// style={{ backgroundColor: '#04adf0' }}

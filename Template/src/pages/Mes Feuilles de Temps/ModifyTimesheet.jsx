@@ -6,31 +6,31 @@ import {
 import { useContext, useEffect, useState } from "react";
 import { AppContext } from "../../context/AppContext";
 import api from "../../components/axios";
+import dayjs from "dayjs";
 
-export default function ModifyTimeSheet({ open, onClose, id }) {
+export default function ModifyTimeSheet({ open, onClose, id, fetchTimeSheetUser }) {
     const { user } = useContext(AppContext);
 
     const [clients, setClients] = useState([]);
     const [formData, setFormData] = useState(initialFormState());
     const [error, setError] = useState(null);
+    const [warning, setWarning] = useState(null)
     const [success, setSuccess] = useState(null);
+    const [loading, setLoading] = useState(false)
+    const [projectList, setProjectList] = useState([])
+
 
     function initialFormState() {
         return {
             user_id: user?.id ?? null,
-            client: "",
-            projet: "",
-            type: "tache",
+            client_code: "",
+            project_id: "",
+            type: "",
             date: "",
             nb_hour: "",
             description: "",
         };
     }
-
-    // const formatDate = (date) => {
-    //     const d = new Date(date);
-    //     return `${String(d.getDate()).padStart(2, "0")}/${String(d.getMonth() + 1).padStart(2, "0")}/${d.getFullYear()}`;
-    // };
 
     function convertIntoTime(n) {
         const totalMinutes = Math.round(n * 60);
@@ -39,17 +39,16 @@ export default function ModifyTimeSheet({ open, onClose, id }) {
         return `${String(hours).padStart(2, "0")}:${String(minutes).padStart(2, "0")}:00`;
     }
 
-
     const fetchTimesheet = async (timesheetId) => {
         try {
-            const { data } = await api.get(`/timesheet/${timesheetId}`);
-            console.log({data})
+            const response = await api.get(`/timesheet/${timesheetId}`);
+            const data = response.data
             setFormData({
                 user_id: user?.id ?? null,
                 client: data.client_code || "",
-                projet: data.project_id || "",
-                type: data.type || "tache",
-                date: data.date || "",
+                project_id: data.project_id || "",
+                type: data.type,
+                date: data.date ? dayjs(data.date).format("YYYY-MM-DD") : "",
                 nb_hour: data.nb_hour || "",
                 description: data.description || "",
             });
@@ -62,21 +61,32 @@ export default function ModifyTimeSheet({ open, onClose, id }) {
 
     const fetchClients = async () => {
         try {
-            const { data } = await api.get("/data"); 
-            setClients(data.clients || []); 
+            const { data } = await api.get("/data");
+            setClients(data.clients || []);
         } catch (err) {
             alert(err.response?.message || "Erreur de chargement des données");
         }
     };
 
+    const fetchProjectUserList = (userId) => {
+        api.get('/getProjectOrTask/' + userId)
+            .then((response) => {
+                setProjectList(response.data.projects)
+            })
+            .catch((error) => {
+                console.log(error)
+            })
+    }
+
     // ---------- Lifecycle ----------
     useEffect(() => {
         if (id) fetchTimesheet(id);
-    }, [id]);
+    }, [id, open]);
 
     useEffect(() => {
         fetchClients();
-    }, []);
+        fetchProjectUserList(user.id)
+    }, [user.id]);
 
     // ---------- Handlers ----------
     const handleChange = (e) => {
@@ -88,27 +98,68 @@ export default function ModifyTimeSheet({ open, onClose, id }) {
     };
 
     const handleSubmit = async () => {
+        setLoading(true)
+        if (!formData.client && !formData.date && !formData.description && !formData.nb_hour) {
+            setError('Veuillez remplir les champs')
+            setLoading(false)
+            return;
+        }
+
+        if (!formData.client) {
+            setError('Veuillez remplir les champs')
+            setLoading(false)
+            return;
+        }
+
+        if (!formData.date) {
+            setError('La date de votre pointage est requise')
+            setLoading(false)
+            return;
+        }
+
+        if (!formData.description) {
+            setError('Veuillez inscrire une explication de votre tâche')
+            setLoading(false)
+            return;
+        }
+
+        if (!formData.nb_hour) {
+            setError('L\'horaire est requise')
+            setLoading(false)
+            return;
+        }
+
         try {
             const { data } = await api.put(`/timesheet/${id}/update`, formData, {
                 headers: { "Content-Type": "application/json" },
             });
-            setSuccess(data.message);
-            setError(null);
-            setFormData(initialFormState());
-            setTimeout(() => onClose(), 3000);   
-            window.location.reload()
-        } catch (err) {
-            if (err.response?.status === 422) {
-                setError(err.response.data.message);
+            setLoading(false)
+
+            if (!response.data.warning) {
+                setFormData(initialFormState());
+                setSuccess(response.data.message);
+                setWarning(null)
+                setError(null);
+                onClose()
             } else {
-                setError("Erreur lors de l'enregistrement.");
+                setWarning(response.data.warning)
+                setError(null)
+                setTimeout(() => {
+                    onClose()
+                }, 5000)
             }
+            fetchTimeSheetUser(user.id)
+        } catch (err) {
+            setLoading(false)
+            setError(err.response.data.message)
             setSuccess(null);
         }
     };
 
     const handleClose = () => {
         onClose();
+        setError('')
+        setSuccess('')
         setFormData(initialFormState());
     };
 
@@ -119,7 +170,7 @@ export default function ModifyTimeSheet({ open, onClose, id }) {
 
     // ---------- Render ----------
     return (
-        <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
+        <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
             <DialogTitle>
                 <div className="flex items-center gap-3">
                     <svg xmlns="http://www.w3.org/2000/svg"
@@ -145,7 +196,7 @@ export default function ModifyTimeSheet({ open, onClose, id }) {
                         <path d="M10.01 17h.005" />
                     </svg>
                     <h1 className="text-xl font-semibold">
-                        Modification du feuille de temps Journalière
+                        Modification de votre pointage journalier
                     </h1>
                 </div>
             </DialogTitle>
@@ -170,14 +221,20 @@ export default function ModifyTimeSheet({ open, onClose, id }) {
                             }))
                         }
                     />
-                    <TextField
-                        id="projet"
-                        label="Projets"
-                        variant="outlined"
-                        value={formData.projet}
-                        onChange={handleChange}
+
+                    <Autocomplete
                         fullWidth
-                        size="small"
+                        disablePortal
+                        options={projectList || []}
+                        getOptionLabel={(option) => option.name}
+                        isOptionEqualToValue={(option, value) => option.id === value.id}
+                        renderInput={(params) => (
+                            <TextField {...params} label="Projets" size="small" fullWidth />
+                        )}
+                        value={projectList.find(c => c.id === formData.project_id) || null}
+                        onChange={(e, value) =>
+                            setFormData({ ...formData, project_id: value ? value.id : "" })
+                        }
                     />
                 </div>
 
@@ -189,11 +246,14 @@ export default function ModifyTimeSheet({ open, onClose, id }) {
                         onChange={handleChange}
                         inputProps={{ name: "type", id: "type" }}
                     >
-                        <option value="tache">Tâches</option>
-                        <option value="conges">Congés</option>
-                        <option value="ferie">Fériés</option>
-                        <option value="recuperation">Récupération</option>
-                        <option value="repos medical">Repos Médical</option>
+                        <option value="Tâche"> Tâches </option>
+                        <option value="Absence"> Absence </option>
+                        <option value="Congé"> Congés </option>
+                        <option value="Jour férié"> Fériés </option>
+                        <option value="Convalescence"> Convalescence </option>
+                        <option value="Repos médical">Repos Médical </option>
+                        <option value="Assistance maternelle"> Assistance maternelle </option>
+                        <option value="Mise à pied"> Mise à pied </option>
                     </NativeSelect>
                 </FormControl>
 
@@ -244,12 +304,17 @@ export default function ModifyTimeSheet({ open, onClose, id }) {
 
                 {/* Alerts */}
                 {success && <Alert severity="success" sx={{ mt: 2 }}>{success}</Alert>}
+                {warning && <Alert severity="warning" sx={{ mt: 2 }}>{warning}</Alert>}
                 {error && <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>}
             </DialogContent>
 
             <DialogActions>
-                <Button variant="outlined" onClick={handleClose}>Annuler</Button>
-                <Button variant="contained" onClick={handleSubmit}>Enregistrer</Button>
+                <button className="p-2 rounded border border-sky-600 text-sky-600 cursor-pointer" onClick={handleClose}>
+                    Annuler
+                </button>
+                <button className="p-2 rounded text-white bg-sky-600 cursor-pointer" onClick={handleSubmit}>
+                    {loading ? "Modification..." : "Modifier"}
+                </button>
             </DialogActions>
         </Dialog>
     );

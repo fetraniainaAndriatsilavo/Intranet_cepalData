@@ -29,6 +29,9 @@ export default function ListEvent() {
             .catch((error) => {
                 console.log(error)
             })
+            .finally(() => {
+                setLoading(false)
+            })
     }
 
 
@@ -50,7 +53,7 @@ export default function ListEvent() {
     return <div className="sm:flex flex-col gap-5 sm:justify-between sm:items-center mb-8">
         <div className="mb-4 sm:mb-0 flex items-center justify-between w-full">
             <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
-                Events
+                Gestion des évènements
             </h1>
             <button className="px-3 bg-sky-600 py-2 text-white cursor-pointer rounded-lg"
                 onClick={() => {
@@ -71,10 +74,10 @@ export default function ListEvent() {
                 </div> : <>
                     <div className="bg-white w-full rounded-lg">
                         <h3 className="p-3">
-                            Tous les Evènements
                             <span className="text-gray-400 font-semibold">
                                 {eventList ? '  ' + eventList.length : 0}
                             </span>
+                            &nbsp;{eventList && eventList.length > 1 ? 'évènements' : 'évènement'}
                         </h3>
                         <TableEvents listHeader={headers}
                             datas={eventList}
@@ -96,7 +99,6 @@ export default function ListEvent() {
         <CreateEvent fecthEvent={fecthEvent} open={open} onClose={() => {
             setOpen(false)
         }} />
-
         {
             selecteEvent != 0 && <EditEvent fecthEvent={fecthEvent} open={openModif} onClose={() => {
                 setOpenModif(false)

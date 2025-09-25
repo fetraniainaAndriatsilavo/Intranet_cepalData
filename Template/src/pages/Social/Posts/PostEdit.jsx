@@ -1,7 +1,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import api from "../../../components/axios";
-import { Avatar } from "@mui/material";
+import { Alert, Avatar } from "@mui/material";
 
 export default function EditPost({ PostID, setIsOpen, fetchPost }) {
   const [post, setPost] = useState({
@@ -11,7 +11,8 @@ export default function EditPost({ PostID, setIsOpen, fetchPost }) {
     attachments: []
   })
   const modalRef = useRef(null);
-
+  const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   useEffect(() => {
     api
       .get('/posts/' + PostID + '/getInfo')
@@ -42,9 +43,13 @@ export default function EditPost({ PostID, setIsOpen, fetchPost }) {
 
   const Publish = async (e) => {
     e.preventDefault();
-
     const formData = new FormData();
     formData.append("content", post.content);
+
+    if (!post.content) {
+      setError('Vous devez remplir ce champ')
+      return;
+    }
 
     try {
       const response = await api.put(
@@ -56,33 +61,37 @@ export default function EditPost({ PostID, setIsOpen, fetchPost }) {
           },
         }
       );
-      alert("La modification de votre contenu a été effectuée.");
+      setError('')
+      setSuccess("La modification de votre contenu a été effectuée.")
       setIsOpen(false);
       fetchPost()
     } catch (error) {
-      console.error("Error creating post:", error);
-      alert("Une erreur s’est produite lors de la publication.");
+      setSuccess('')
+      setError('Une erreur s’est produite lors de la publication.')
+    } finally {
+      setError('')
+      setSuccess('')
     }
-  };
+  }; 
 
   return (
     <div className="fixed inset-0 z-25 flex items-center justify-center 
                 bg-white/30 backdrop-blur-md">
       <div
         ref={modalRef}
-        className="bg-white w-full max-w-xl mx-auto rounded-xl shadow-lg animate-scaleIn overflow-hidden"
+        className="bg-white w-[400px] max-w-xl mx-auto rounded-xl shadow-lg animate-scaleIn overflow-hidden"
       >
         {/* Header */}
-        <div className="flex justify-between items-center p-4">
+        <div className="flex justify-between items-center p-2">
           <div className="flex items-center gap-2">
             <Avatar> {post.lastName.charAt(0) + '' + post.firstName.charAt(0) || ''} </Avatar>
-            <span className="font-semibold text-lg">
-              Éditer le contenu
+            <span className="font-semibold text-md">
+              Modifier le contenu votre publication
             </span>
           </div>
           <button
             onClick={() => setIsOpen(false)}
-            className="text-gray-500 hover:text-black text-2xl"
+            className="text-gray-500 hover:text-black text-xl cursor-pointer"
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-x">
               <path stroke="none" d="M0 0h24v24H0z" fill="none" />
@@ -93,7 +102,7 @@ export default function EditPost({ PostID, setIsOpen, fetchPost }) {
         </div>
 
         {/* Body */}
-        <div className="p-4 max-h-[70vh] overflow-y-auto space-y-4">
+        <div className="p-1 max-h-[70vh] overflow-y-auto space-y-2">
           <textarea
             name="description"
             id="description"
@@ -104,15 +113,29 @@ export default function EditPost({ PostID, setIsOpen, fetchPost }) {
                 content: e.target.value
               })
             }
-            className="w-full p-2 rounded bg-gray-50 border border-none"
-            rows={2}
+            className="w-full p-2 rounded bg-gray-50 border border-none resize-none"
+            rows={4}
             placeholder="A quoi pensiez-vous ?"
           />
-
+          {error && (
+            <div className="w-full">
+              <Alert severity="error" className="dark:bg-gray-700 dark:text-red-400">
+                {error}
+              </Alert>
+            </div>
+          )}
+          {success && (
+            <div className="w-full">
+              <Alert severity="error" className="dark:bg-gray-700 dark:text-red-400">
+                {success}
+              </Alert>
+            </div>
+          )}
           {/* Footer */}
-          <div className="flex justify-end p-4">
+          <div className="flex justify-end"> 
+            
             <button
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition-all w-full cursor-pointer"
+              className="bg-sky-600 hover:bg-sky-700 text-white px-4 py-2 rounded-md transition-all w-full cursor-pointer"
               onClick={Publish}
             >
               Modifier

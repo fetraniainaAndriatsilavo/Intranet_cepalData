@@ -74,6 +74,47 @@ export default function GroupChat({ groupId, setOpenEdit, fetchGroupConversation
     }, []);
 
 
+    // Real-time message Suppression 
+    useEffect(() => {
+        const pusher = new Pusher("4f33dbef2b1faa768199", { cluster: "eu" });
+        const channel = pusher.subscribe(`conversation.${groupId}`);
+
+        channel.bind("MessageUpdated", (data) => {
+            setMessages((prev) =>
+                prev.map((msg) =>
+                    msg.id === data.id ? { ...msg, status: 'inactive' } : msg
+                )
+            );
+        });
+
+        return () => {
+            channel.unbind_all();
+            channel.unsubscribe();
+            pusher.disconnect();
+        };
+    }, [groupId]);
+
+
+    // Real-time "message.read" updates (e.g., sender sees it's been read)
+    useEffect(() => {
+        const pusher = new Pusher("4f33dbef2b1faa768199", { cluster: "eu" });
+        const channel = pusher.subscribe(`conversation.${groupId}`);
+
+        channel.bind("MessageUpdated", (updatedMessage) => {
+            setMessages((prev) =>
+                prev.map((msg) =>
+                    msg.id === updatedMessage.id ? updatedMessage : msg
+                )
+            );
+        });
+        return () => {
+            channel.unbind_all();
+            channel.unsubscribe();
+            pusher.disconnect();
+        };
+    }, [groupId]);
+
+
     // Date/time helpers
     const isNewDay = (prev, current) => prev.toDateString() !== current.toDateString();
 

@@ -1,73 +1,43 @@
 import { useState } from 'react';
 import Card from './Card';
-import CreateTask from '../create/CreateTask';
 import ViewTask from '../view/ViewTask';
+import PerfectScrollbar from 'react-perfect-scrollbar';
+// import 'react-perfect-scrollbar/dist/css/styles.css';
 
 export default function Column({ title, cards, isNote = false, onDrop, onDragStart, projectId, fetchTaskProject }) {
-  const [open, setOpen] = useState(false);
   const [openView, setOpenView] = useState(false);
-
   const [selectedTask, setSelectedTask] = useState(0);
 
   return (
     <div
-      className="w-[300px] mx-2"
+      className="w-[350px] shrink-0 p-3
+       overflow-y-auto scroll-container
+        scroll-container:focus scroll-container:active 
+        scroll-container:hover scrollbar scrollbar-thin 
+        scrollbar-thumb-rounded 
+      "
       onDragOver={(e) => e.preventDefault()}
       onDrop={(e) => onDrop(e, title)}
     >
       {/* Column header */}
-      <div className="flex items-center justify-between flex-row p-3 w-full">
-        <h3 className="font-semibold text-lg">{title}</h3>
-        <button
-          className="font-bold text-sky-600 cursor-pointer"
-          onClick={() => {
-            setOpen(true);
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="icon icon-tabler icons-tabler-outline icon-tabler-plus"
-          >
-            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
-            <path d="M12 5l0 14" />
-            <path d="M5 12l14 0" />
-          </svg>
-        </button>
+      <div className="flex items-center justify-start flex-row p-3">
+        <h3 className="font-semibold text-lg"> {title} </h3>
       </div>
-
       {/* Cards */}
       {cards.map((card, index) => (
         <Card
           key={card.id || index}
           data={card}
           isNote={isNote}
-          onDragStart={(e) => onDragStart(e, card)} 
+          onDragStart={(e) => onDragStart(e, card)}
           ViewCard={() => {
             setSelectedTask(card.id);
             setOpenView(true);
           }}
           projectId={projectId}
+          fetchTaskProject={fetchTaskProject}
         />
       ))}
-
-      {/* Modals */}
-      <CreateTask
-        open={open}
-        onClose={() => {
-          setOpen(false);
-        }}
-        projectId={projectId}
-        fetchTaskProject={fetchTaskProject}
-      />
-
       <ViewTask
         open={openView}
         onClose={() => {

@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { TextField, Alert, Box, Chip } from "@mui/material";
 import api from "../../../components/axios";
 
-export default function GroupEdit({ open, onClose, GroupId}) {
+export default function GroupEdit({ open, onClose, GroupId }) {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -19,16 +19,10 @@ export default function GroupEdit({ open, onClose, GroupId}) {
 
   const [allUsers, setAllUsers] = useState([]);
 
-  // Fetch users
-  useEffect(() => {
-    api
-      .get("/getUser/all")
-      .then((res) => setAllUsers(res.data.users))
-      .catch(console.error);
-  }, []);
 
-  // fetch group Information
-  useEffect(() => {
+
+  // fetch group Information 
+  const fetchGroupInformation = (id) => {
     api
       .get("/getMembersGroup/" + GroupId)
       .then((response) => {
@@ -44,21 +38,7 @@ export default function GroupEdit({ open, onClose, GroupId}) {
       .catch((error) => {
         console.log(error);
       });
-  }, [GroupId]);
-
-
-  useEffect(() => {
-    if (searchUser.trim() === "") {
-      setSuggestions([]);
-    } else {
-      const filtered = allUsers.filter(
-        (user) =>
-          user.first_name.toLowerCase().includes(searchUser.toLowerCase()) &&
-          !selectedUsers.find((u) => u.id === user.id)
-      );
-      setSuggestions(filtered);
-    }
-  }, [searchUser, allUsers, selectedUsers]);
+  }
 
   const handleSelectUser = (user) => {
     setSelectedUsers([...selectedUsers, user]);
@@ -75,19 +55,24 @@ export default function GroupEdit({ open, onClose, GroupId}) {
 
   if (!open) return null;
 
+  //envoi du formulaire 
+  const HandleSubmit = async () => { 
 
+    if (!group.name.trim()) {
+      setError("Le nom du groupe ne peut pas être vide.");
+      return;
+    } else if (!group.name.trim() && group.members.length === 0) {
+      setError("Vous devez remplir ce champ");
+      return;
+    } 
 
-  const HandleSubmit = async () => {
     const formData = new FormData();
 
     selectedUsers.forEach((user, index) => {
       formData.append(`user_ids[${index}]`, user.id);
     });
 
-    if (!group.name.trim()) {
-      setError("Le nom du groupe ne peut pas être vide.");
-      return;
-    }
+
 
     formData.append("name", group.name);
     try {
@@ -103,11 +88,11 @@ export default function GroupEdit({ open, onClose, GroupId}) {
           },
         }
       );
-      setSuccess(response.data.message); 
+      setSuccess(response.data.message);
 
       setTimeout(() => {
         onClose();
-      }, [1500]); 
+      }, [1500]);
 
       window.location.reload()
     } catch (err) {
@@ -117,14 +102,39 @@ export default function GroupEdit({ open, onClose, GroupId}) {
     }
   };
 
+  // Fetch users
+  useEffect(() => {
+    api
+      .get("/getUser/all")
+      .then((res) => setAllUsers(res.data.users))
+      .catch(console.error);
+  }, []);
+
+  useEffect(() => {
+    fetchGroupInformation(GroupId)
+  }, [GroupId]);
+
+
+  useEffect(() => {
+    if (searchUser.trim() === "") {
+      setSuggestions([]);
+    } else {
+      const filtered = allUsers.filter(
+        (user) =>
+          user.first_name.toLowerCase().includes(searchUser.toLowerCase()) &&
+          !selectedUsers.find((u) => u.id === user.id)
+      );
+      setSuggestions(filtered);
+    }
+  }, [searchUser, allUsers, selectedUsers]);
   return (
-    <div className="fixed inset-0  bg-opacity-100 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white p-6 rounded-lg shadow-xl w-[90%] max-w-md">
+    <div className="fixed inset-0 bg-opacity-100 bg-gray-50 flex items-center justify-center z-50">
+      <div className="bg-white p-3 rounded-lg w-[90%] max-w-md">
 
         <div className="flex items-center justify-between flex-row mb-5">
           <h1 className="text-xl font-bold"> Modifier le Groupe </h1>
           <button
-            className="text-gray-500 hover:text-black"
+            className="text-gray-500 hover:text-black cursor-pointer"
             onClick={onClose}
           >
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-x">
@@ -138,7 +148,8 @@ export default function GroupEdit({ open, onClose, GroupId}) {
           fullWidth
           label="Nom du groupe"
           variant="outlined"
-          className="mb-6"
+          className="mb-1"
+          size="small"
           value={group.name}
           onChange={(e) => {
             setGroup({

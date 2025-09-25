@@ -13,4 +13,8 @@ class Event extends Model
         'description',
         'date',
     ];
+
+    protected $casts = [
+        'date' => 'datetime',
+    ];
 }

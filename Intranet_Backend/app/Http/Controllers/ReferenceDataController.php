@@ -114,9 +114,12 @@ class ReferenceDataController extends Controller
 
             $projects = DB::table('intranet_extedim.projects as p')
                 ->select('p.id', 'p.name', 'p.status', 'p.start_date')
-                ->whereIn('p.status', ['To-Do', 'In-Progress', 'Review', 'Deploy', 'Done'])
+                ->where('p.status', 'In-Progress')
+                ->where('p.project_lead_id', $userId)
                 ->orderBy('p.start_date', 'desc')
+                ->limit(5)
                 ->get();
+
 
             return response()->json([
                 'success' => true,

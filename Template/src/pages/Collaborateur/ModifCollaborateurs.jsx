@@ -6,6 +6,7 @@ import { useParams } from "react-router-dom";
 export default function ModifCollaborateurs() {
     const { id } = useParams()
     const [profilePhoto, setProfilePhoto] = useState(null);
+    const [loading, setLoading] = useState(false);
 
     const [form, setForm] = useState({
         image: profilePhoto ? profilePhoto : '',
@@ -45,7 +46,7 @@ export default function ModifCollaborateurs() {
     const [classification, setClassification] = useState([])
     const [managers, setManagers] = useState([])
 
-    useEffect(() => {
+    const fetchData = () => {
         api.get("/data")
             .then((response) => {
                 setClients(response.data.clients)
@@ -58,6 +59,51 @@ export default function ModifCollaborateurs() {
             .catch((error) => {
                 alert(error.response.message)
             })
+    }
+
+    const fetchUserInformation = (UserId) => {
+        if (!UserId) return;
+        api.get('/user/' + UserId + '/info')
+            .then((response) => {
+                const user = response.data.user;
+
+                // const classOption = classificationOptions.find(c => c.label === user.classification_name);
+
+                setForm({
+                    image: user.image || '',
+                    last_name: user.last_name || "",
+                    first_name: user.first_name || "",
+                    email: user.email || "",
+                    phone_number: user.phone_number || "",
+                    address: user.address || "",
+                    birth_place: user.birth_place || '',
+                    birth_date: user.birth_date || '',
+                    marital_status: user.marital_status || '',
+                    gender: user.gender || '',
+                    role: user.role || '',
+                    client_code: user.client_code || '',
+                    type: user.contrat_code || '',
+                    employee_number: user.employee_number || '',
+                    cnaps_number: user.cnaps_number || '',
+                    departement_id: user.department || '',
+                    position_id: user.position_id || '',
+                    class_id: user.classification_id || '',
+                    manager_id: user.manager || '',
+                    hire_date: user.hire_date || '',
+                });
+            })
+            .catch((error) => {
+                console.log(error);
+            });
+    }
+
+    //collecte les donnés de l'utilisateur 
+    useEffect(() => {
+        fetchUserInformation(id)
+    }, [id]);
+
+    useEffect(() => {
+        fetchData()
     }, []);
 
     const positionOptions = Object.entries(positions).map(([id, label]) => ({
@@ -78,51 +124,41 @@ export default function ModifCollaborateurs() {
     const departmentOptions = Object.entries(department).map(([id, name]) => ({
         id: parseInt(id),
         label: name,
-    })); 
-
-    //collecte les donnés de l'utilisateur 
-    useEffect(() => {
-        if (!id) return;
-
-        api.get('/user/' + id + '/info')
-            .then((response) => {
-                const user = response.data.user;
-
-                // const classOption = classificationOptions.find(c => c.label === user.classification_name);
-
-                setForm({
-                    image: user.image || '',
-                    first_name: user.first_name || "",
-                    email: user.email || "",
-                    phone_number: user.phone_number || "",
-                    address: user.address || "",
-                    birth_place: user.birth_place || '',
-                    birth_date: user.birth_date || '',
-                    marital_status: user.marital_status || '',
-                    gender: user.gender || '',
-                    role: user.role || '',
-                    client_code: user.client_code || '',
-                    employee_number: user.employee_number || '',
-                    cnaps_number: user.cnaps_number || '',
-                    departement_id: user.department || '',
-                    position_id: user.position_id || '',
-                    class_id: user.classification_id || '',
-                    manager_id: user.manager || '',
-                });
-            })
-            .catch((error) => {
-                console.log(error);
-            });
-    }, [id]);
-
-
+    }));
 
     // soumettre la modification de l'utilisateur 
     const [error, setError] = useState('')
-    
-    const Modifier = async (e) => {
-        e.preventDefault();
+    const [success, setSuccess] = useState('')
 
+    const clear = () => {
+        setForm({
+            image: profilePhoto ? profilePhoto : '',
+            first_name: "",
+            last_name: "",
+            email: "",
+            phone_number: "",
+            address: "",
+            birth_place: '',
+            birth_date: ' ',
+            marital_status: '',
+            gender: '',
+            role: '',
+            client_code: '',
+            type: '',
+            hire_date: '',
+            employee_number: '',
+            cnaps_number: '',
+            departement_id: '',
+            position_id: '',
+            class_id: '',
+            manager_id: ''
+        })
+        setLoading(false)
+        setError('')
+    }
+
+    const Modifier = async (UserId) => {
+        setLoading(true)
         const requiredFields = [
             "first_name",
             "last_name",
@@ -131,20 +167,25 @@ export default function ModifCollaborateurs() {
             "gender",
             "marital_status",
             "position_id",
+            "type",
         ];
         const errors = requiredFields.filter((field) => !form[field]);
-        setErrorFields(errors);
+
+        if (errors.length > 0) {
+            setErrorFields(errors);
+            setLoading(false)
+        }
 
         if (errors.length === 0) {
             try {
-                const response = await api.put("/user/" + id + "/update", form, {
+                const response = await api.put("/user/" + UserId + "/update", form, {
                     headers: {
                         'Content-Type': 'multipart/form-data'
                     }
                 }
                 );
                 console.log("Response from backend:", response.data);
-
+                setLoading(false)
                 setForm({
                     image: '',
                     first_name: "",
@@ -170,12 +211,13 @@ export default function ModifCollaborateurs() {
                 setProfilePhoto(null);
                 setErrorFields([]);
                 setError('')
-
+                setSuccess(response.data.message) 
+                
                 setTimeout(() => {
                     window.location.href = '/liste-utilisateur'
-                }, 250);
-
+                }, 1500);
             } catch (error) {
+                setLoading(false)
                 setError(error.response.data.message)
             }
         }
@@ -183,127 +225,133 @@ export default function ModifCollaborateurs() {
 
 
     return (
-        <div className="bg-light min-h-screen p-6 flex justify-center">
+        <div className="bg-light flex justify-center">
             <div className="w-full max-w-6xl">
-                <div className="relative mb-20 rounded shadow overflow-hidden bg-white">
-                    <div className="h-52 w-full bg-cover bg-center relative" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?auto=format&fit=crop&w=1950&q=80')" }}>
-                        <div className="absolute left-6 bottom-[-40px] flex flex-col items-center">
+                {/* <div className="relative mb-20 rounded shadow overflow-hidden bg-white">
+                    <div className="pt-2 px-6 pb-6">
+                        <div className="flex flex-col mb-2">
                             <Avatar
-                                src={profilePhoto || "https://i.pravatar.cc/150?img=32"}
+                                src={profilePhoto}
                                 alt="Profile"
                                 sx={{ width: 96, height: 96, border: '4px solid white' }}
                             />
                         </div>
-                    </div>
-                    <div className="pt-16 px-6 pb-6">
                         <label className="uppercase mt-2 bg-white text-sm px-4 py-2 rounded shadow cursor-pointer hover:bg-gray-100 border-2 border-sky-600 text-sky-600 hover:border-none hover:bg-sky-600 hover:text-white">
                             Ajouter
                             <input type="file" accept="image/*" className="hidden" onChange={handleProfileUpload} />
                         </label>
                     </div>
-                </div>
+                </div> */}
 
-                <div className="grid md:grid-cols-2 gap-6 -mt-8">
-                    <div className="bg-white rounded shadow p-6">
-                        <h4 className="text-lg font-semibold mb-4 text-slate-700"> Personnelles </h4>
-                        <div className="grid grid-cols-2 gap-4">
-                            <input
+                <div className="grid md:grid-cols-2 gap-2">
+                    <div className="bg-white rounded shadow p-4 space-y-6">
+                        <h4 className="text-xl font-semibold text-slate-800 border-b pb-2">
+                            Informations personnelles
+                        </h4>
+                        <div className="grid grid-cols-1 gap-4">
+                            <TextField
                                 type="text"
-                                placeholder="Nom **"
-                                className={`form-input border rounded px-3 py-2 text-sm ${errorFields.includes("last_name") ? "border-red-500" : ""}`}
+                                label="Nom **"
+                                size="small"
+                                fullWidth
                                 value={form.last_name}
                                 onChange={(e) => setForm({ ...form, last_name: e.target.value })}
+                                error={errorFields.includes("last_name")}
                             />
-                            <input
+                            <TextField
                                 type="text"
-                                placeholder="Prénom **"
-                                className={`form-input border rounded px-3 py-2 text-sm ${errorFields.includes("first_name") ? "border-red-500" : ""}`}
+                                label="Prénom **"
+                                size="small"
+                                fullWidth
                                 value={form.first_name}
                                 onChange={(e) => setForm({ ...form, first_name: e.target.value })}
+                                error={errorFields.includes("first_name")}
                             />
                             <Autocomplete
                                 disablePortal
                                 options={['user', 'admin', 'manager']}
                                 renderInput={(params) => (
-                                    <TextField {...params} label="Role **" size="small" fullWidth error={errorFields.includes("role")} />
+                                    <TextField {...params} label="Rôle **" size="small" fullWidth error={errorFields.includes("role")} />
                                 )}
                                 value={form.role}
                                 onChange={(e, value) => setForm({ ...form, role: value })}
+                                className="w-1/2"
                             />
-                            <input
-                                type="email"
-                                placeholder="Adresse email **"
-                                className={`form-input border rounded px-3 py-2 col-span-2 text-sm ${errorFields.includes("email") ? "border-red-500" : ""}`}
+                            <TextField
+                                type="text"
+                                label="Adresse email **"
+                                size="small"
+                                fullWidth
                                 value={form.email}
                                 onChange={(e) => setForm({ ...form, email: e.target.value })}
+                                error={errorFields.includes("email")}
                             />
-                            <input
+                            <TextField
                                 type="text"
-                                placeholder="Numero de Téléphone"
-                                className="form-input border rounded px-3 py-2 col-span-2 text-sm"
+                                label="Numéro de téléphone"
+                                size="small"
+                                fullWidth
                                 value={form.phone_number}
                                 onChange={(e) => setForm({ ...form, phone_number: e.target.value })}
                             />
-                            <input
+
+                            <TextField
                                 type="text"
-                                placeholder="Adresse"
-                                className="form-input border rounded px-3 py-2 col-span-2 text-sm"
+                                label="Adresse"
+                                size="small"
+                                fullWidth
                                 value={form.address}
                                 onChange={(e) => setForm({ ...form, address: e.target.value })}
                             />
-                            <input
-                                type="date"
-                                placeholder="Date de Naissance"
-                                className="form-input border rounded px-3 py-2 col-span-2 text-sm"
-                                value={form.birth_date}
-                                onChange={(e) => setForm({ ...form, birth_date: e.target.value })}
-                            />
-                            <input
-                                type="text"
-                                placeholder="Lieu de Naissance"
-                                className="form-input border rounded px-3 py-2 col-span-2 text-sm"
-                                value={form.birth_place}
-                                onChange={(e) => setForm({ ...form, birth_place: e.target.value })}
-                            />
-                            <div className="mb-4">
-                                <p className="text-sm font-medium mb-2"> Genre **:  </p>
-                                {["male", "female"].map((opt) => (
-                                    <label key={opt} className="flex items-center gap-2 mb-1 text-sm">
-                                        <input
-                                            type="radio"
-                                            name="genre"
-                                            value={opt}
-                                            checked={form.gender === opt}
-                                            onChange={(e) => setForm({ ...form, gender: e.target.value })}
-                                            className={`${errorFields.includes("gender") ? "ring-2 ring-red-500" : ""}`}
-                                        />
-                                        {opt}
-                                    </label>
-                                ))}
+                            <div className="flex flex-row w-full gap-3">
+                                <TextField
+                                    type="date"
+                                    label="Date de naissance"
+                                    size="small"
+                                    InputLabelProps={{ shrink: true }}
+                                    fullWidth
+                                    value={form.birth_date}
+                                    onChange={(e) => setForm({ ...form, birth_date: e.target.value })}
+                                />
+                                <TextField
+                                    type="text"
+                                    label="Lieu de naissance"
+                                    size="small"
+                                    fullWidth
+                                    value={form.birth_place}
+                                    onChange={(e) => setForm({ ...form, birth_place: e.target.value })}
+                                />
                             </div>
-                            <div className="mb-4">
-                                <p className="text-sm font-medium mb-2"> Situation Matrimoniale ** :  </p>
-                                {["marié(e)", "veuf(e)", "célibataire", "divorcé(e)"].map((opt) => (
-                                    <label key={opt} className="flex items-center gap-2 mb-1 text-sm">
-                                        <input
-                                            type="radio"
-                                            name="situation"
-                                            value={opt}
-                                            checked={form.marital_status === opt}
-                                            onChange={(e) => setForm({ ...form, marital_status: e.target.value })}
-                                            className={`${errorFields.includes("marital_status") ? "ring-2 ring-red-500" : ""}`}
-                                        />
-                                        {opt}
-                                    </label>
-                                ))}
+                            <div className="flex flex-row w-full gap-3">
+                                <Autocomplete
+                                    disablePortal
+                                    options={["male", "female"]}
+                                    fullWidth
+                                    renderInput={(params) => (
+                                        <TextField {...params} name="genre" label="Genre **" size="small" fullWidth error={errorFields.includes("gender")} />
+                                    )}
+                                    value={form.gender}
+                                    onChange={(e, value) => setForm({ ...form, gender: value })}
+                                />
+
+                                <Autocomplete
+                                    disablePortal
+                                    options={["marié(e)", "veuf(e)", "célibataire", "divorcé(e)"]}
+                                    fullWidth
+                                    renderInput={(params) => (
+                                        <TextField {...params} name="genre" label="Situation matrimoniale **" size="small" error={errorFields.includes("marital_status")} />
+                                    )}
+                                    value={form.marital_status}
+                                    onChange={(e, value) => setForm({ ...form, marital_status: value })}
+                                />
                             </div>
                         </div>
                     </div>
 
-                    <div className="bg-white rounded shadow p-6 space-y-6 h-full flex flex-col justify-between">
+                    <div className="bg-white rounded shadow p-4  h-full flex flex-col justify-between">
                         <div className="flex-grow space-y-6">
                             <h4 className="text-xl font-semibold text-slate-800 border-b pb-2">
-                                Professionnelles
+                                Informations Professionnelles
                             </h4>
                             <div className="grid grid-cols-1 md:grid-cols-1 gap-4">
                                 <Autocomplete
@@ -311,7 +359,7 @@ export default function ModifCollaborateurs() {
                                     options={managers || []} // full manager objects
                                     getOptionLabel={(option) => option.first_name || ''} // show first_name
                                     renderInput={(params) => (
-                                        <TextField {...params} label="Managers" size="small" fullWidth />
+                                        <TextField {...params} label="Manager" size="small" fullWidth />
                                     )}
                                     value={
                                         managers.find((manager) => manager.id === form.manager_id) || null
@@ -345,7 +393,7 @@ export default function ModifCollaborateurs() {
                                     disablePortal
                                     options={contract ? contract : []}
                                     renderInput={(params) => (
-                                        <TextField {...params} label="Contrat" size="small" fullWidth />
+                                        <TextField {...params} label="Contrat **" size="small" fullWidth error={errorFields.includes("type")} />
                                     )}
                                     value={form.type}
                                     onChange={(e, value) => setForm({ ...form, type: value })}
@@ -359,20 +407,22 @@ export default function ModifCollaborateurs() {
                                     value={form.hire_date}
                                     onChange={(e) => setForm({ ...form, hire_date: e.target.value })}
                                 />
-                                <div className="flex flex-row items-center gap-3 w-full">
-                                    {/* ID */}
-                                    <input
+                                <div className="flex flex-row w-full gap-3">
+                                    <TextField
                                         type="text"
-                                        placeholder="Numero Cnaps"
-                                        className="form-input border rounded px-3 py-2 col-span-2 text-sm"
+                                        label="Numéro Cnaps"
+                                        size="small"
+                                        fullWidth
                                         value={form.cnaps_number}
                                         onChange={(e) => setForm({ ...form, cnaps_number: e.target.value })}
                                     />
 
-                                    <input
+
+                                    <TextField
                                         type="text"
-                                        placeholder="Matricule ID"
-                                        className="form-input border rounded px-3 py-2 col-span-2 text-sm"
+                                        label="Numéro matricule"
+                                        size="small"
+                                        fullWidth
                                         value={form.employee_number}
                                         onChange={(e) => setForm({ ...form, employee_number: e.target.value })}
                                     />
@@ -417,7 +467,7 @@ export default function ModifCollaborateurs() {
                                                 size="small"
                                                 fullWidth
                                                 name="poste"
-                                                error={errorFields.includes("poste")}
+                                                error={errorFields.includes("position_id")}
                                             />
                                         )}
                                         value={positionOptions.find((p) => p.id === form.position_id) || null}
@@ -425,43 +475,51 @@ export default function ModifCollaborateurs() {
                                             setForm({ ...form, position_id: value ? value.id : null })
                                         }
                                     />
+                                    <Autocomplete
+                                        disablePortal
+                                        options={classificationOptions}
+                                        getOptionLabel={(option) => option.label}
+                                        isOptionEqualToValue={(option, value) => option.id === value.id}
+                                        renderInput={(params) => (
+                                            <TextField
+                                                {...params}
+                                                label="Classification"
+                                                size="small"
+                                                fullWidth
+                                                name="classification"
+                                            />
+                                        )}
+                                        value={classificationOptions.find(c => c.id === form.class_id) || null}
+                                        onChange={(e, value) => {
+                                            setForm({
+                                                ...form,
+                                                class_id: value ? value.id : ''
+                                            });
+                                        }}
+                                    />
                                 </div>
-                                <Autocomplete
-                                    disablePortal
-                                    options={classificationOptions}
-                                    getOptionLabel={(option) => option.label}
-                                    isOptionEqualToValue={(option, value) => option.id === value.id}
-                                    renderInput={(params) => (
-                                        <TextField
-                                            {...params}
-                                            label="Classification"
-                                            size="small"
-                                            fullWidth
-                                            name="classification"
-                                        />
-                                    )}
-                                    value={classificationOptions.find(c => c.id === form.class_id) || null}
-                                    onChange={(e, value) => {
-                                        setForm({
-                                            ...form,
-                                            class_id: value ? value.id : ''
-                                        });
-                                    }}
-                                />
                             </div>
                         </div>
                         <div>
                             {
                                 error && <Alert severity="error"> {error}</Alert>
                             }
+
+                            {
+                                success && <Alert severity="success"> {success}</Alert>
+                            }
                         </div>
 
                         <div className="flex justify-end mt-4 gap-3">
-                            <button className="px-3 py-2 border border-sky-600 text-sky-600 rounded uppercase cursor-pointer" type="reset">
+                            <button className="px-3 py-2 border border-sky-600 text-sky-600 rounded uppercase cursor-pointer" onClick={clear}>
                                 Effacer
                             </button>
-                            <button className="px-3 py-2 bg-sky-600 text-white rounded uppercase cursor-pointer hover:bg-sky-700" onClick={Modifier}>
-                                Enregistrer
+                            <button className="px-3 py-2 bg-sky-600 text-white rounded uppercase cursor-pointer hover:bg-sky-700" onClick={() => {
+                                Modifier(id)
+                            }}>
+                                {
+                                    loading == true ? 'En cours de modification' : 'Modifier'
+                                }
                             </button>
                         </div>
                     </div>

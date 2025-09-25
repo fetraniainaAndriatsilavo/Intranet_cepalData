@@ -151,7 +151,7 @@ export default function ResetPassword() {
         <button
           type="submit"
           className="p-3 hover:bg-sky-900 text-white rounded-lg mt-3 w-2/3 cursor-pointer"
-          style={{ backgroundColor: "#04adf0" }}
+          style={{ backgroundColor: "#1a497f" }}
           disabled={loading}
         >
           {loading ? "Chargement..." : "Valider"}

@@ -1,34 +1,34 @@
 import api from "../axios";
 
 export default function EventRows({ data, fecthEvent, setSelectedEvent, setOpenModif }) {
-    const formatDate = (d) => {
-        const jours = [
-            "Dimanche",
-            "Lundi",
-            "Mardi",
-            "Mercredi",
-            "Jeudi",
-            "Vendredi",
-            "Samedi"
-        ]
+    // const formatDate = (d) => {
+    //     const jours = [
+    //         "Dimanche",
+    //         "Lundi",
+    //         "Mardi",
+    //         "Mercredi",
+    //         "Jeudi",
+    //         "Vendredi",
+    //         "Samedi"
+    //     ]
 
-        const mois = [
-            "Janvier",
-            "Février",
-            "Mars",
-            "Avril",
-            "Mai",
-            "Juin",
-            "Juillet",
-            "Aout",
-            "Septembre",
-            "Octobre",
-            "Novembre",
-            "Décembre"
-        ]
-        const date = new Date(d)
-        return jours[date.getDay()] + " " + date.getDate() + " " + mois[date.getMonth()] + " " + date.getFullYear()
-    }
+    //     const mois = [
+    //         "Janvier",
+    //         "Février",
+    //         "Mars",
+    //         "Avril",
+    //         "Mai",
+    //         "Juin",
+    //         "Juillet",
+    //         "Aout",
+    //         "Septembre",
+    //         "Octobre",
+    //         "Novembre",
+    //         "Décembre"
+    //     ]
+    //     const date = new Date(d)
+    //     return jours[date.getDay()] + " " + date.getDate() + " " + mois[date.getMonth()] + " " + date.getFullYear()
+    // }
 
 
     const deleteEvent = (EvenetId) => {
@@ -38,6 +38,13 @@ export default function EventRows({ data, fecthEvent, setSelectedEvent, setOpenM
             })
     }
 
+    const formatDate = (d) => {
+        const date = new Date(d);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
+    };
     return <tr
         className={`bg-white hover:bg-gray-50  odd:bg-white `}
     >

@@ -8,7 +8,6 @@ export default function GroupCard({
   setSelectedNewConversation,
 }) {
   const [anchorEl, setAnchorEl] = useState(null);
-  const [isHovered, setIsHovered] = useState(false);
 
   const open = Boolean(anchorEl);
 
@@ -32,10 +31,10 @@ export default function GroupCard({
   function stringAvatar(name) {
     const initials = name
       ? name
-          .split(" ")
-          .map((n) => n[0])
-          .slice(0, 2)
-          .join("")
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
       : "?";
     return {
       sx: {
@@ -52,23 +51,19 @@ export default function GroupCard({
 
   return (
     <div
-      className={`flex items-center justify-between gap-2 p-2 cursor-pointer transition rounded-lg mt-1.5 overflow-hidden w-full ${
-        isHovered ? "bg-gray-100" : ""
-      }`}
+      className={`flex items-center justify-between gap-2 p-2 cursor-pointer transition rounded-lg mt-1.5 overflow-hidden w-full`}
       onClick={() => {
         setSelectedGroupChat(data.id);
         setSelectedConversation(null);
         setSelectedNewConversation(null);
       }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       {/* Avatar */}
       <div className="flex-shrink-0">
         <Avatar {...stringAvatar(colorName)} />
-      </div>
-
-      {/* Content */}
+      </div> 
+      
+      {/* Contenu */}
       <div className="flex flex-col min-w-0 flex-1">
         <div className="flex justify-between items-center">
           <h1 className="font-semibold text-gray-900 text-sm truncate">
@@ -88,52 +83,6 @@ export default function GroupCard({
           {data.last_message ? data.last_message.content : "Démarrez une conversation"}
         </span>
       </div>
-
-      {/* Hover Menu */}
-      {isHovered && (
-        <button
-          className="cursor-pointer p-1 hover:bg-gray-200 rounded-full"
-          onClick={(e) => {
-            e.stopPropagation(); // prevent triggering card click
-            handleClick(e);
-          }}
-        >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            className="text-gray-600"
-          >
-            <circle cx="12" cy="5" r="1" />
-            <circle cx="12" cy="12" r="1" />
-            <circle cx="12" cy="19" r="1" />
-          </svg>
-        </button>
-      )}
-
-      <Menu
-        anchorEl={anchorEl}
-        open={open}
-        onClose={handleClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "center" }}
-      >
-        <MenuItem
-          onClick={(e) => {
-            e.preventDefault();
-            if (confirm("Voulez-vous vraiment supprimer cette conversation?")) {
-              deleteConversation(data.id, user.id);
-            }
-          }}
-        >
-          Supprimer
-        </MenuItem>
-      </Menu>
     </div>
   );
 }

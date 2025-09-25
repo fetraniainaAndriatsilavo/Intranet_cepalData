@@ -5,7 +5,6 @@ import InputBox from "./InputBox";
 import api from "../axios";
 import Pusher from "pusher-js";
 import { AppContext } from "../../context/AppContext";
-import { Snackbar } from "@mui/material";
 
 export default function Chatwindow({ conversationId, fetchConversationList, setInstantNotif }) {
     const { user } = useContext(AppContext)
@@ -174,10 +173,11 @@ export default function Chatwindow({ conversationId, fetchConversationList, setI
                             return elements;
                         })}
                         <div ref={messagesEndRef} />
-                    </div>
+                    </div>  
 
                     {/* Input box */}
-                    <InputBox
+                    <InputBox 
+                        conversationId={conversationId}
                         setMessages={setMessages}
                         conversation={conversation}
                         messageId={messageId}

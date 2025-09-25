@@ -5,15 +5,30 @@ import { AppContext } from "../../context/AppContext"
 export default function TeamRowFeuille({ data, setDetails, setOpen, setMessage }) {
     const { user } = useContext(AppContext)
 
-    const fetchTeamTimesheet = (id) => { 
+    const fetchTeamTimesheet = (id) => {
         api.get('/managers/' + id + '/timesheets/sent')
             .then((response) => {
                 setLists(response.data)
             })
             .catch((error) => {
                 console.log(error)
-            }) 
-    }  
+            })
+    }
+
+    const validateTimesheet = () => {
+        api.post('/timesheets/approve', {
+            user_id: data.user_id,
+            approved_by: user.id,
+            ts_period_id: data.timesheet_period.id,
+        })
+            .then((response) => {
+                setMessage(response.data.message)
+                fetchTeamTimesheet(user.id)
+            })
+            .catch((error) => {
+                console.log(error.response.data.message)
+            })
+    } 
 
     return <tr
         className={`bg-white hover:bg-gray-50 odd:bg-white`}
@@ -31,21 +46,8 @@ export default function TeamRowFeuille({ data, setDetails, setOpen, setMessage }
                     <path d="M21 12c-2.4 4 -5.4 6 -9 6c-3.6 0 -6.6 -2 -9 -6c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6" />
                 </svg>
             </button>
-            <button className="text-green-600 hover:underline cursor-pointer" onClick={(e) => {
-                e.preventDefault()
-                alert(data.id)
-                api.post('/timesheets/approve', {
-                    user_id: data.id,
-                    approved_by: user.id,
-                    ts_period_id: data.timesheet_period.id,
-                })
-                    .then((response) => { 
-                        setMessage(response.data.message)
-                        fetchTeamTimesheet(user.id) 
-                    })
-                    .catch((error) => {
-                        console.log(error.response.data.message)
-                    })
+            <button className="text-green-600 hover:underline cursor-pointer" onClick={() => {
+                validateTimesheet()
             }}>
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" className="text-green-500 icon icon-tabler icons-tabler-filled icon-tabler-circle-check">
                     <path stroke="none" d="M0 0h24v24H0z" fill="none" />

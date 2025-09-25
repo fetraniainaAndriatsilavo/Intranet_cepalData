@@ -51,14 +51,11 @@ export default function NewInputBox({ receiverId, messageId, setMessageId, setMe
     const UpdateMessage = (id) => {
         setSending(true)
         if (!input.trim() && picture.length === 0) return;
-        setInput("");
-        setPicture([]);
-
         api.put('/messages/' + id + '/update', {
             content: input,
         }, {
             headers: {
-                "Content-Type": 'application/json'
+                 "Content-Type": 'multipart/form-data'
             }
         })
             .then(() => {
@@ -93,7 +90,7 @@ export default function NewInputBox({ receiverId, messageId, setMessageId, setMe
 
     // Handle emoji selection
     const handleEmojiClick = (emojiData) => {
-        setMessages((prev) => prev + emojiData.emoji);
+        setInput((prev) => prev + emojiData.emoji);
     };
 
     // Handle file input change (support multiple)

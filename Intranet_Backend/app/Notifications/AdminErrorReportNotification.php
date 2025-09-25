@@ -26,7 +26,7 @@ class AdminErrorReportNotification extends Notification
     public function toArray($notifiable)
     {
         return [
-            'title' => "Erreur signalé",
+            'title' => "Erreur signalée",
             'message' => "{$this->user->first_name} {$this->user->last_name} a signalé une erreur : {$this->errorsText}",
             'user_id' => $this->user->id,
             'user_name' => $this->user->first_name,

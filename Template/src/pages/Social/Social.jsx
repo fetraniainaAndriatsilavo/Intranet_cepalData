@@ -4,22 +4,29 @@ import Events from "./Events/Events";
 import Grouplist from "./Groups/Grouplist";
 import { AppContext } from "../../context/AppContext";
 import api from "../../components/axios";
+import { BeatLoader, PulseLoader } from "react-spinners";
 
 export default function Social() {
   const [lists, setLists] = useState([]);
   const { user } = useContext(AppContext)
   const [groups, setGroups] = useState([]);
   const [opened, setOpened] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   const fetchPost = () => {
+    setLoading(true)
     api
       .get("/posts/published")
       .then((response) => {
         setLists(response.data.posts);
+        setLoading(false)
       })
       .catch((error) => {
         console.log(error);
-      });
+      })
+      .finally(() => {
+        setLoading(false)
+      })
   }
 
   const fetchUserGroup = (id) => {
@@ -47,7 +54,20 @@ export default function Social() {
       <div className="flex flex-grow overflow-hidden w-full gap-6">
         {/* Feed - scrollable */}
         <div className="flex-grow p-2 overflow-y-auto">
-          <Feed posts={lists || []} fetchPost={fetchPost} />
+          {
+            loading ? (
+              <div className="flex items-center justify-center w-full h-full">
+                <BeatLoader
+                  color={"#1a497f"}
+                  loading={loading}
+                  aria-label="Loading Spinner"
+                  data-testid="loader"
+                />
+              </div>
+            ) : (
+              <Feed posts={lists || []} fetchPost={fetchPost} />
+            )
+          }
         </div>
 
         {/* Right Sidebar - fixed height */}

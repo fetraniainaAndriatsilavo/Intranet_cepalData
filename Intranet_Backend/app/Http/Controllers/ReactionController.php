@@ -17,6 +17,7 @@ class ReactionController extends Controller
         return response()->json($reaction);
     }
 
+
     public function react(Request $request, $postId)
     {
         $request->validate([

@@ -5,8 +5,6 @@ import Header from '../partials/Header';
 import { matchPath, useLocation } from 'react-router-dom';
 import TermsOfUse from './Parametres/TermOfUse';
 import Reinitialisation from './Parametres/Reinitialisation';
-import FilterButton from '../components/DropdownFilter';
-import Datepicker from '../components/Datepicker';
 import DashboardCard01 from '../partials/dashboard/DashboardCard01';
 import DashboardCard06 from '../partials/dashboard/DashboardCard06';
 import DashboardCard07 from '../partials/dashboard/DashboardCard07';
@@ -36,6 +34,10 @@ import api from '../components/axios';
 import { AppContext } from '../context/AppContext';
 import { Snackbar } from '@mui/material';
 import ProfilUitlisateur from './Ma Fiche/ProfilUtilisateur';
+import MesDemandes from './Mes Conges/MesDemandes';
+import MesDocuments from './Ma Fiche/MesDocuments';
+import Changeprofil from './Parametres/Changeprofil';
+
 
 function Dashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -49,32 +51,40 @@ function Dashboard() {
 
 
   // data user 
-  const [isLoaded, setIsLoaded] = useState(true)
+  const [isLoaded, setIsLoaded] = useState(null)
   const [project, setProject] = useState(null);
   const [contracts, setContracts] = useState({ label: [], value: [] });
   const [departements, setDepartements] = useState({ label: [], value: [] });
   const [roles, setRoles] = useState({ label: [], value: [] });
   const [leaveBalance, setLeaveBalance] = useState(0)
   const [permBalance, setPermBalance] = useState(0)
-
-
+  const [person, setPerson] = useState({
+    label: [],
+    value: []
+  })
 
   const fetchUser = (id) => {
+    setIsLoaded(true)
     api.get('/dashboard/overview/' + id)
       .then((response) => {
-        setIsLoaded(true)
-        const { by_role, by_department, by_contract, projects } = response.data.data;
+        console.log(response.data)
+        const by_role = response.data.data.by_role;
+        const by_department = response.data.data.by_department;
+        const by_contract = response.data.data.by_contract;
+        const projects = response.data.data.projects
 
-        setLeaveBalance(response.data.data.user.ogc_leav_bal ? response.data.data.user.ogc_leav_bal : 0)
-        setPermBalance(response.data.data.user.ogc_perm_bal ? response.data.data.user.ogc_perm_bal : 0)
+        const value = []
+
+        setLeaveBalance(response.data.data.user.ogc_leav_bal !== null ? response.data.data.user.ogc_leav_bal : 0)
+        setPermBalance(response.data.data.user.ogc_perm_bal !== null ? response.data.data.user.ogc_perm_bal : 0)
 
         setRoles({
-          label: by_role.map(item => item.code),
-          value: by_role.map(item => item.users_count)
+          label: by_role.map(item => item.role),
+          value: by_role.map(item => item.total_users)
         });
 
         setDepartements({
-          label: by_department.map(item => item.departement_name),
+          label: by_department.map(item => item.department_name),
           value: by_department.map(item => item.total)
         });
 
@@ -85,29 +95,24 @@ function Dashboard() {
 
         setProject(projects);
 
-        console.log("Success:", response.data.success);
-        console.log("Projects:", projects);
-        setIsLoaded(false)
+        value.push(by_department.reduce((sum, item) => sum + item.male, 0))
+        value.push(by_department.reduce((sum, item) => sum + item.female, 0))
+
+        setPerson({
+          label: ['Homme', 'Femme'],
+          value: value ? value : []
+        })
       })
       .catch((error) => {
         console.log(error.response);
+      })
+      .finally(() => {
+        setIsLoaded(false)
       });
   };
 
-  const fetchUserInformation = (id) => {
-    api.get('/user/' + id + '/info')
-      .then((response) => {
-        setLeaveBalance(response.data.user.ogc_leav_bal)
-        setPermBalance(response.data.user.ogv_perm_bal)
-      })
-      .catch((error) => {
-        console.log(error)
-      })
-  }
-
   useEffect(() => {
     if (user?.id) {
-      fetchUserInformation(user.id)
       fetchUser(user.id);
     }
   }, [user]);
@@ -126,44 +131,40 @@ function Dashboard() {
           <div className="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
             {pathname === '/accueil' && (
               <>
-                {/* Dashboard actions */}
-                <div className="sm:flex sm:justify-between sm:items-center mb-8">
-                  {/* Left: Title */}
-                  <div className="mb-4 sm:mb-0">
-                    <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">Dashboard</h1>
-                  </div>
 
-                  {/* Right: Actions */}
-                  {/* <div className="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-                    <FilterButton align="right" />
-                    <Datepicker align="right" />
-                    <button className="btn bg-gray-900 text-gray-100 hover:bg-gray-800 dark:bg-gray-100 dark:text-gray-800 dark:hover:bg-white">
-                      <svg className="fill-current shrink-0 xs:hidden" width="16" height="16" viewBox="0 0 16 16">
-                        <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z" />
-                      </svg>
-                      <span className="max-xs:sr-only">Add View</span>
-                    </button>
-                  </div> */}
-                </div>
+                {/* Dashboard Layout */}
+                <div className="grid grid-cols-12 gap-4">
+                  <DashboardCard01 className="col-span-6 lg:col-span-3" title={'Solde de congés'} soldes={leaveBalance} />
+                  <DashboardCard01 className="col-span-6 lg:col-span-3" title={'Solde de permissions'} soldes={permBalance} />
+                  <DashboardCard01 className="col-span-6 lg:col-span-3" title={'Autres'} soldes={permBalance} />
 
-                {/* Cards */}
-                <div className="grid grid-cols-8 gap-6">
-                  <DashboardCard01 title={'Soldes Congés'} soldes={leaveBalance} />
-                  <DashboardCard01 title={'Soldes Permissions'} soldes={permBalance} />
-                  <DashboardCard07 title={'Projet en cours'} tasks={project || []} />
+                  {isLoaded === false && (
+                    <>
+                      <DashboardCard06 className="col-span-3 lg:col-span-3" title={'Répartition par rôles'} labels={roles.label} value={roles.value} />
+                      <DashboardCard06 className="col-span-3 lg:col-span-3" title={'Répartition par services'} labels={departements.label} value={departements.value} />
+                      <DashboardCard06 className="col-span-3 lg:col-span-3" title={'Status contractuels'} labels={contracts.label} value={contracts.value} />
+                      <DashboardCard06 className="col-span-3 lg:col-span-3" title={'Identités de genre'} labels={person.label} value={person.value} />
+                    </>
+                  )}
+                  {
+                    project && project.length > 0 && <DashboardCard07 className="col-span-12" title={'Projets actifs'} tasks={project || []} />
+                  }
                 </div>
               </>
             )}
 
             {pathname === '/cgu' && <TermsOfUse />}
             {pathname === '/reinit' && <Reinitialisation />}
+            {pathname == '/changeprofile' && <Changeprofil />}
             {pathname === '/mesconges' && <Conges />}
             {pathname === '/mesvalidations' && <Validation />}
+            {pathname === '/meslists' && <MesDemandes />}
             {pathname === '/listeconges' && <ListeConges />}
             {pathname === '/etats' && <Etats />}
             {pathname === '/ajout-utilisateur' && <Collaborateur />}
             {pathname === '/liste-utilisateur' && <ListesUtilisateurs />}
             {pathname === '/mesinformations' && <Informations />}
+            {pathname === '/mesdocuments' && <MesDocuments />}
             {matchPath('/modif-utilisateur/:id', pathname) && <ModifCollaborateurs />}
             {matchPath('/profil-utilisateur/:UserId', pathname) && <ProfilUitlisateur />}
             {pathname === '/documents-utilisateurs' && <UploadDocument />}
@@ -184,7 +185,6 @@ function Dashboard() {
                 <PulseLoader color="#0369a1" size={15} aria-label="Loading Spinner" data-testid="loader" />
               </div>
             )}
-
 
             {
               instantNotif && <Snackbar

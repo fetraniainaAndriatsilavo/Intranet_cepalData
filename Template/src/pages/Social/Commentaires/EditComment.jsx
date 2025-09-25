@@ -43,7 +43,8 @@ export default function EditComment({ id, commentId, setIsOpen, fetchComments })
       .catch((error) => {
         console.error(error);
       });
-  };
+  }; 
+  
   const close = () => {
     setIsOpen(false)
   }

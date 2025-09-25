@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Conversation;
 use App\Models\Message;
 use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
 class ConversationController extends Controller
@@ -65,6 +66,17 @@ class ConversationController extends Controller
         }
     }
 
+    // public function myConversations($userId)
+    // {
+
+    //     $conversations = Conversation::where('user_one_id', $userId)
+    //         ->orWhere('user_two_id', $userId)
+    //         ->with(['userOne', 'userTwo'])
+    //         ->orderBy('updated_at', 'desc')
+    //         ->get();
+
+    //     return response()->json($conversations);
+    // }
     public function myConversations($userId)
     {
         $conversations = Conversation::where(function ($query) use ($userId) {
@@ -86,12 +98,12 @@ class ConversationController extends Controller
         return response()->json($conversations);
     }
 
+
     public function getConversationInfo($conversationId)
     {
         try {
             $conversation = Conversation::with([
                 'messages.sender',
-                'messages.files',
                 'userOne:id,first_name,last_name,email',
                 'userTwo:id,first_name,last_name,email'
             ])->find($conversationId);
@@ -115,18 +127,9 @@ class ConversationController extends Controller
                             'content' => $msg->content,
                             'status' => $msg->status,
                             'is_read' => $msg->is_read,
-                            'created_at' => $msg->created_at,
+                            'created_at' => $msg->created_at, 
+                            'files' => $msg->files,
                             'sender' => $msg->sender,
-                            'files'      => $msg->files->map(
-                                function ($file) {
-                                    return [
-                                        'id'            => $file->id,
-                                        'path'          => $file->path,
-                                        'original_name' => $file->original_name,
-                                        'mime_type'     => $file->mime_type,
-                                    ];
-                                }
-                            )
                         ];
                     })
                 ]
@@ -145,6 +148,7 @@ class ConversationController extends Controller
     public function destroy($conversationId)
     {
         $conversation = Conversation::findOrFail($conversationId);
+
 
         $conversation->delete();
 

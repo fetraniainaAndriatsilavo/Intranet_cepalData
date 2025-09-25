@@ -1,15 +1,18 @@
-import axios from "axios";
 import { useState } from "react";
+import { Menu, MenuItem, ListItemIcon, ListItemText } from "@mui/material";
+import { Edit, Delete } from "@mui/icons-material";
 import PostEdit from "./PostEdit";
 import api from "../../../components/axios";
 
-function PostOption({ id, fetchPost, onClose }) {
+export default function PostOption({ anchorEl, onClose, id, fetchPost }) {
   const [isOpen, setIsOpen] = useState(false);
+  const open = Boolean(anchorEl);
 
-  const DeletePost = (e) => {
+  // supprimer le post
+  const deletePost = (e) => {
     e.preventDefault();
     api
-      .delete("/posts/" + id + "/delete", {
+      .delete(`/posts/${id}/delete`, {
         data: { status: "published" },
         headers: { "Content-Type": "application/json" },
       })
@@ -17,7 +20,9 @@ function PostOption({ id, fetchPost, onClose }) {
         onClose();
         fetchPost();
       })
-      .catch((error) => {});
+      .catch((error) => {
+        console.error("Erreur lors de la suppression du post :", error);
+      });
   };
 
   const toggleEditPost = () => {
@@ -25,30 +30,50 @@ function PostOption({ id, fetchPost, onClose }) {
   };
 
   return (
-    <div className="absolute mt-2 w-35 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-      <ul className="py-2 text-gray-800">
-        <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer flex items-center gap-2">
-          <button onClick={toggleEditPost}>Modifier</button>
-        </li>
-        <li className="px-4 py-2 hover:bg-gray-100 hover:text-red-500 cursor-pointer flex items-center gap-2">
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              if (confirm("Souhaitez-vous retirer cette publication ?")) {
-                DeletePost(e);
-              }
-            }}
-          >
-            Supprimer
-          </button>
-        </li>
-      </ul>
+    <>
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={onClose}
+        PaperProps={{
+          elevation: 1,
+          sx: {
+            mt: 1,
+            borderRadius: 2,
+            minWidth: 150,
+          },
+        }}
+      >
+        <MenuItem
+          onClick={() => {
+            toggleEditPost();
+            onClose();
+          }}
+        >
+          <ListItemIcon>
+            <Edit fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Modifier" />
+        </MenuItem>
+
+        <MenuItem
+          onClick={(e) => {
+            e.preventDefault();
+            if (confirm("Souhaitez-vous retirer cette publication ?")) {
+              deletePost(e);
+            }
+          }}
+        >
+          <ListItemIcon>
+            <Delete fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary="Supprimer" />
+        </MenuItem>
+      </Menu> 
 
       {isOpen && (
         <PostEdit PostID={id} setIsOpen={setIsOpen} fetchPost={fetchPost} />
       )}
-    </div>
+    </>
   );
 }
-
-export default PostOption;

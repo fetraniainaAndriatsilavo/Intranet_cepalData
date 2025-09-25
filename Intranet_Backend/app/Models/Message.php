@@ -74,6 +74,6 @@ class Message extends Model
 
     public function files()
     {
-        return $this->hasMany(File::class, 'message_id');
+        return $this->hasMany(File::class,'message_id');
     }
 }

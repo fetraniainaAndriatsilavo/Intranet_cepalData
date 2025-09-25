@@ -1,50 +1,32 @@
 import api from "../axios";
 
 export default function HistoricRow({ data }) {
-
-    function getWorkingDays(startDateStr, endDateStr) {
-        const startDate = new Date(startDateStr);
-        const endDate = new Date(endDateStr);
-        let count = 0;
-
-        if (endDate < startDate) {
-            return 0;
-        }
-
-        const currentDate = new Date(startDate);
-
-        while (currentDate <= endDate) {
-            const day = currentDate.getDay();
-            if (day !== 0 && day !== 6) {
-                count++;
-            }
-            currentDate.setDate(currentDate.getDate() + 1);
-        }
-        return count;
-    }
-
-    function FormatDate(d) {
-        let date = new Date(d)
-        return date.getDate() + "/" + date.getMonth() + "/" + date.getFullYear();
-    }
-
-    const toggleArchive = (id, ChangedStatus) => {
-        if (ChangedStatus == 'approved') {
-            api.put(`/leave-requests/${id}/approved`, { status: ChangedStatus })
-                .then(() => {
-                })
-                .catch((error) => {
-                    console.error("Failed to update status:", error);
-                });
-        } else {
-            api.put(`/leave-requests/${id}/refused`, { status: ChangedStatus })
-                .then(() => {
-                })
-                .catch((error) => {
-                    console.error("Failed to update status:", error);
-                });
-        }
+    const formatDate = (d) => {
+        const date = new Date(d);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Months are zero-indexed
+        const year = date.getFullYear();
+        return `${day}/${month}/${year}`;
     };
+
+    const excludedPermission = [
+        'Congé payé',
+        'Congé sans solde',
+        "Hospitalisation d'un enfant",
+        "Hospitalisation de conjoint",
+        "Mises à pieds"
+    ];
+
+    const AutreTypes = [
+        "Hospitalisation d'un enfant",
+        "Hospitalisation de conjoint",
+        "Mises à pieds"
+    ]
+
+    const CongeType = [
+        'Congé payé',
+        'Congé sans solde'
+    ]
 
     return (
         <tr
@@ -58,7 +40,14 @@ export default function HistoricRow({ data }) {
 
             {/* Soldes */}
             <td className="px-6 py-4 text-center">
-                {data.user?.ogc_leav_bal || 20}
+                {
+                    CongeType.includes(data.leave_type?.name)
+                        ? data.user?.ogc_leav_bal ?? 0
+                        : !excludedPermission.includes(data.leave_type?.name)
+                            ? data.user?.ogc_perm_bal ?? 0
+                            : data.user?.ogc_othr_bal ?? 0
+                }
+
             </td>
 
             {/* Motif */}
@@ -68,22 +57,22 @@ export default function HistoricRow({ data }) {
 
             {/* Date de début */}
             <td className="px-6 py-4">
-                {FormatDate(data.start_date)}
+                {formatDate(data.start_date)}
             </td>
 
             {/* Date de fin */}
-            <td className="px-6 py-4">{FormatDate(data.end_date)}</td>
+            <td className="px-6 py-4">{formatDate(data.end_date)}</td>
 
             {/* Durée */}
             <td className="px-6 py-4 text-center">
                 {
-                    getWorkingDays(data.start_date, data.end_date)
+                    Number(data.number_day)
                 }
             </td>
 
 
             {/* Créé le */}
-            <td className="px-6 py-4">{FormatDate(data.created_at)}</td>
+            <td className="px-6 py-4">{formatDate(data.created_at)}</td>
 
             {/* Action */}
             <td className="px-6 py-4 flex items-center justify-center gap-2">
@@ -106,7 +95,15 @@ export default function HistoricRow({ data }) {
                         <path d="M7.75 16.25l-2.15 2.15" />
                         <path d="M6 12l-3 0" />
                         <path d="M7.75 7.75l-2.15 -2.15" />
-                    </svg> :
+                    </svg> : data.status == 'canceled' ?
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="icon icon-tabler icons-tabler-outline icon-tabler-u-turn-left">
+                            <title> demandes annulée </title>
+                            <g transform="rotate(90 12 12)">
+                                <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                                <path d="M17 20v-11.5a4.5 4.5 0 1 0 -9 0v8.5" />
+                                <path d="M11 14l-3 3l-3 -3" />
+                            </g>
+                        </svg> :
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             width="24"

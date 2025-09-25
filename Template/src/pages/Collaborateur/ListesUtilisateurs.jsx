@@ -15,128 +15,124 @@ export default function ListesUtilisateurs() {
     ];
 
     const [allUsers, setAllUsers] = useState([]);
-    const [loading, setLoading] = useState(false)
+    const [loading, setLoading] = useState(false);
+
     useEffect(() => {
-        setLoading(true)
+        setLoading(true);
         api.get('/getUser/all')
             .then((response) => {
                 setAllUsers(response.data.users);
-                setLoading(false)
+                setLoading(false);
             })
             .catch((error) => {
                 console.log(error);
-            });
+            })
+            .finally(() => {
+                setLoading(false)
+            })
+
     }, []);
 
-    // pagination du tableau
-    const [currentPage, setCurrentPage] = useState(1);
-    const userPerPage = 5;
-    const lastPageIndex = Math.ceil(allUsers.length / userPerPage);
-    const [currentView, setCurrentView] = useState([]);
-
-    const handleChange = (event, value) => {
-        setCurrentPage(value);
-        setCurrentView(allUsers.slice((value * userPerPage) - 10, value * userPerPage));
-    };
-
-    useEffect(() => {
-        const startIndex = (currentPage - 1) * userPerPage;
-        const endIndex = currentPage * userPerPage;
-        setCurrentView(allUsers.slice(startIndex, endIndex));
-    }, [allUsers, currentPage]);
-
-    // filtre par nom et role 
+    // filtre
     const [searchUsers, setSearchUsers] = useState("");
-    const [active, setActive] = useState('active')
+    const [active, setActive] = useState("tous");
 
-    const filteredUsers = allUsers.filter((user) => {
+    // 1. filter by status
+    const statusFiltered = active === "tous"
+        ? allUsers
+        : allUsers.filter(user => user.status === active);
+
+    // 2. filter by search
+    const filteredUsers = statusFiltered.filter((user) => {
         const first_name = user.first_name?.toLowerCase() || "";
         const last_name = user.last_name?.toLowerCase() || "";
         const email = user.email?.toLowerCase() || "";
         const role = user.role?.toLowerCase() || "";
-        const status = user.status?.toLowerCase() || "";
 
-        const matchesSearch =
-            first_name.includes(searchUsers.toLowerCase()) ||
-            last_name.includes(searchUsers.toLowerCase()) ||
-            email.includes(searchUsers.toLowerCase()) ||
-            role.includes(searchUsers.toLowerCase());
-
-        const matchesStatus = status == active;
-
-        if (!searchUsers && status) {
-            return matchesStatus;
-        } else {
-            return matchesSearch && matchesStatus;
-        }
+        const search = searchUsers.toLowerCase();
+        return (
+            first_name.includes(search) ||
+            last_name.includes(search) ||
+            email.includes(search) ||
+            role.includes(search)
+        );
     });
 
+    // pagination (always applied to filtered users)
+    const [currentPage, setCurrentPage] = useState(1);
+    const userPerPage = 10;
+    const lastPageIndex = Math.ceil(filteredUsers.length / userPerPage);
 
-    // pagination pour filtered users
-    const lastFilteredPageIndex = Math.ceil(filteredUsers.length / userPerPage);
-    const filteredView = filteredUsers.slice((currentPage - 1) * userPerPage, currentPage * userPerPage);
+    const displayedUsers = filteredUsers.slice(
+        (currentPage - 1) * userPerPage,
+        currentPage * userPerPage
+    );
 
-    // choisir laquelle  utilisateurs 
-    const displayedUsers = searchUsers
-        ? filteredView
-        : currentView.length < 1
-            ? allUsers.slice(0, 10)
-            : currentView;
+    // reset to page 1 whenever filters change
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [active, searchUsers]);
 
     return (
         <div className="sm:flex flex-col gap-5 sm:justify-between sm:items-center mb-8">
-
             <div className="mb-4 sm:mb-0 flex items-center justify-between w-full">
                 <h1 className="text-2xl md:text-3xl text-gray-800 dark:text-gray-100 font-bold">
                     Les Collaborateurs
                 </h1>
                 <div className="flex flex-row gap-3">
-                    <select className="rounded border-0" onChange={(e) => {
-                        setActive(e.target.value)
-                    }}>
-                        <option value={'active'}> active </option>
-                        <option value={'inactive'}> inactive </option>
+                    <select
+                        className="rounded border-0"
+                        value={active}
+                        onChange={(e) => setActive(e.target.value)}
+                    >
+                        <option value="tous">Tous</option>
+                        <option value="active">Actifs</option>
+                        <option value="inactive">Inactifs</option>
                     </select>
 
                     <TextField
                         size="small"
-                        label='Rechercher par nom, role'
+                        label="Rechercher par nom, role"
                         className="bg-white border-transparent rounded-lg"
                         value={searchUsers}
-                        onChange={(e) => {
-                            setSearchUsers(e.target.value);
-                            setCurrentPage(1);
-                        }}
+                        onChange={(e) => setSearchUsers(e.target.value)}
                     />
                 </div>
             </div>
-            {
-                loading == true ? <div className="flex items-center justify-center w-full h-full">
+
+            {loading ? (
+                <div className="flex items-center justify-center w-full h-full">
                     <PulseLoader
-                        color={'#1a497f'}
+                        color={"#1a497f"}
                         loading={loading}
                         aria-label="Loading Spinner"
                         data-testid="loader"
-                    ></PulseLoader>
-                </div> : <>
+                    />
+                </div>
+            ) : (
+                <>
                     <div className="bg-white w-full rounded-lg">
                         <h3 className="p-3">
-                            Total des Collaborateurs : {" "}
                             <span className="text-gray-400 font-semibold">
-                                {searchUsers ? filteredUsers.length : allUsers ? allUsers.length : 0}
-                            </span>
+                                {filteredUsers.length}
+                            </span> 
+                            &nbsp;collaborateurs
                         </h3>
-                        <TableUser listHeader={headers} datas={displayedUsers} setAllUsers={setAllUsers} />
+                        <TableUser
+                            listHeader={headers}
+                            datas={displayedUsers}
+                            setAllUsers={setAllUsers}
+                        /> 
                     </div>
                     <div>
                         <Pagination
-                            count={searchUsers ? lastFilteredPageIndex : lastPageIndex}
+                            count={lastPageIndex}
                             page={currentPage}
-                            onChange={handleChange}
+                            onChange={(event, value) => setCurrentPage(value)}
                         />
                     </div>
                 </>
-            }
+            )}
         </div>
     );
 }

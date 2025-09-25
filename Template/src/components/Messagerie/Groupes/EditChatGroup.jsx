@@ -23,6 +23,7 @@ export default function EditChatGroup({
     const [searchUser, setSearchUser] = useState("");
     const [selectedUsers, setSelectedUsers] = useState([]);
     const [suggestions, setSuggestions] = useState([]);
+
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -35,12 +36,9 @@ export default function EditChatGroup({
         updated_at: "",
     });
 
-    // Load group info
-    useEffect(() => {
-        if (!groupId) return;
-
+    const fetchGroupInformation = (id) => {
         api
-            .get(`/message-groups/${groupId}/info`)
+            .get(`/message-groups/${id}/info`)
             .then((res) => {
                 const g = res.data.group;
                 setGroup({
@@ -54,15 +52,26 @@ export default function EditChatGroup({
                 setSelectedUsers(g.members)
             })
             .catch(() => { });
-    }, [groupId]);
+    }
 
 
-    // Fetch all users
-    useEffect(() => {
+    const fetchAllUser = () => {
         api
             .get("/getUser/all")
             .then((res) => setAllUsers(res.data.users))
             .catch(console.error);
+    }
+
+    // Load group info
+    useEffect(() => {
+        if (!groupId || !open) return;
+        fetchGroupInformation(groupId)
+    }, [groupId, open]);
+
+
+    // Fetch all users
+    useEffect(() => {
+        fetchAllUser()
     }, []);
 
     // Filter suggestions
@@ -90,6 +99,13 @@ export default function EditChatGroup({
     };
 
     const handleCancel = () => {
+        setGroup({
+            id: groupId || 0,
+            name: "",
+            members: [],
+            updated_by: 0,
+            updated_at: "",
+        })
         setError(null);
         setSuccess(false);
         onClose();
@@ -101,9 +117,17 @@ export default function EditChatGroup({
         setError(null);
         setSuccess(false);
 
-        if (selectedUsers.length < 2) {
-            setError("Le groupe doit contenir au moins trois (3) personnes.");
-            setLoading(false);
+        if (!groupName && selectedUsers.length < 1) {
+            setError('Vous devez remplir ce champ')
+            setLoading(false)
+            return;
+        } else if (!groupName) {
+            setError('Le nom du groupe est requis pour continuer')
+            setLoading(false)
+            return;
+        } else if (selectedUsers.length < 2 && groupName) {
+            setError('Le groupe doit contenir au moins trois personnes')
+            setLoading(false)
             return;
         }
 
@@ -138,22 +162,57 @@ export default function EditChatGroup({
     };
 
     return (
-        <Modal open={open} onClose={onClose}>
+        <Modal open={open} onClose={handleCancel}>
             <Box
                 sx={{
                     position: "absolute",
                     top: "50%",
                     left: "50%",
                     transform: "translate(-50%, -50%)",
-                    width: 500,
+                    width: 400,
                     bgcolor: "background.paper",
-                    borderRadius: 2,
+                    borderRadius: 1,
                     boxShadow: 24,
-                    p: 4,
+                    p: 1.5,
                 }}
             >
-                <Typography variant="h6" gutterBottom>
-                    Créer un groupe de discussion
+                <Typography
+                    variant="h6"
+                    component="h2"
+                    gutterBottom
+                    sx={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}
+                >
+                    Modification de votre groupe
+                    <button
+                        onClick={handleCancel}
+                        style={{
+                            background: 'transparent',
+                            border: 'none',
+                            cursor: 'pointer',
+                            padding: 0,
+                            marginLeft: 'auto',
+                            display: 'flex',
+                            alignItems: 'center'
+                        }}
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            width="24"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className="hover:text-sky-600"
+                        >
+                            <title> Fermer la fenêtre </title>
+                            <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+                            <path d="M18 6l-12 12" />
+                            <path d="M6 6l12 12" />
+                        </svg>
+                    </button>
                 </Typography>
 
                 {/* Group Name */}
@@ -162,14 +221,19 @@ export default function EditChatGroup({
                     label="Nom du groupe"
                     variant="outlined"
                     margin="normal"
+                    size="small"
+                    className="mb-1 bg-gray-50 border border-2"
                     value={group.name}
                     onChange={(e) =>
                         setGroup((prev) => ({ ...prev, name: e.target.value }))
                     }
+                    sx={{
+                        marginBottom: '20px'
+                    }}
                 />
 
                 {/* Selected Users */}
-                <Box className="mt-4 rounded-md p-3 bg-white">
+                <Box className="mt-1 rounded-md p-1 bg-gray-50"> 
                     <Box className="flex flex-wrap gap-2 mb-2">
                         {selectedUsers.map((u) => (
                             <Chip
@@ -185,7 +249,8 @@ export default function EditChatGroup({
                     <TextField
                         fullWidth
                         variant="standard"
-                        placeholder="Inviter vos amis..."
+                        size="small"
+                        placeholder="Inviter d'autres amis à vous rejoindre..."
                         value={searchUser}
                         onChange={(e) => setSearchUser(e.target.value)}
                     />
@@ -208,22 +273,11 @@ export default function EditChatGroup({
 
                 {/* Actions */}
                 <Box className="flex flex-row gap-2 mt-3">
-                    <Button
-                        fullWidth
-                        variant="outlined"
-                        onClick={handleCancel}
-                        disabled={loading}
-                    >
-                        Fermer
-                    </Button>
-                    <Button
-                        fullWidth
-                        variant="contained"
-                        onClick={handleSubmit}
-                        disabled={loading}
-                    >
-                        {loading ? "Création en cours..." : "Créer"}
-                    </Button>
+                    <button
+                        className="w-full bg-sky-600 hover:bg-sky-700 text-white rounded p-1.5 cursor-pointer"
+                        onClick={handleSubmit}>
+                        {loading ? "Modification en cours..." : "Modifier"}
+                    </button>
                 </Box>
 
                 {/* Alerts */}

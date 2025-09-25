@@ -146,3 +146,43 @@ input[type="search"]::-webkit-search-results-decoration {
   outline: none !important;
   box-shadow: none !important;
 }
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thumb-rounded {
+    scrollbar-color: #94a3b8 transparent; /* thumb color */
+  }
+
+  .scrollbar::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar::-webkit-scrollbar-thumb {
+    background-color: #94a3b8; /* slate-400 */
+    border-radius: 9999px;
+  }
+  /* Hide scrollbar by default */
+  .scroll-container {
+    overflow: hidden;
+  }
+
+  /* Show scrollbar on hover or focus */
+  .scroll-container:hover,
+  .scroll-container:focus,
+  .scroll-container:active {
+    overflow: auto;
+  }
+
+  /* Optional: smooth scrolling */
+  .scroll-container {
+    scroll-behavior: smooth;
+  } 
+}

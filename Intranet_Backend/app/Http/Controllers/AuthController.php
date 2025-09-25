@@ -18,7 +18,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException as ValidationValidationException;
 
 
@@ -43,10 +42,7 @@ class AuthController extends Controller
             'last_name.string' => 'Le nom doit être une chaîne de caractères.',
             'last_name.max' => 'Le nom ne peut pas dépasser 255 caractères.',
 
-            // position_id
-            'position_id.required' => 'L\'identifiant du poste est requis.',
             'position_id.integer' => 'L\'identifiant du poste doit être un nombre entier.',
-
             'hire_date.date' => 'La date d\'embauche doit être une date valide.',
             'department_id.integer' => 'L\'identifiant du département doit être un nombre entier.',
             'birth_date.date' => 'La date de naissance doit être une date valide.',
@@ -64,11 +60,7 @@ class AuthController extends Controller
 
             'address.string' => 'L\'adresse doit être une chaîne de caractères.',
             'class_id.integer' => 'L\'identifiant de la classification doit être un nombre entier.',
-
-            // image (upload)
-            'image.image' => 'Le fichier doit être une image.',
-            'image.mimes' => 'L\'image doit être de type : jpeg, png, jpg, gif ou webp.',
-            'image.max' => 'L\'image ne doit pas dépasser 2 Mo.',
+            'image.string' => 'L\'image doit être un chemin sous forme de chaîne de caractères.',
 
             'client_code.string' => 'Le code client doit être une chaîne de caractères.',
             'client_code.max' => 'Le code client est trop long (maximum 100 caractères).',
@@ -93,14 +85,8 @@ class AuthController extends Controller
             'ogc_perm_bal_date.date' => 'La date du solde permanent OGC doit être une date valide.',
 
             'ogc_othr_bal.numeric' => 'Le solde OGC autre doit être un nombre.',
-
-            // type (contrat)
-            'type.required' => 'Le type de contrat est requis.',
-            'type.exists' => 'Le type de contrat sélectionné est invalide.',
-
-            'first_name.unique' => 'Une personne avec ce prénom et ce nom existe déjà.',
-
         ];
+
 
         try {
             $fields = $request->validate([
@@ -108,15 +94,9 @@ class AuthController extends Controller
                 'status' => 'nullable|string',
                 'last_login' => 'nullable|date',
                 'role' => 'required|string',
-                'first_name' => [
-                    'nullable',
-                    'string',
-                    'max:255',
-                    Rule::unique('intranet_extedim.users')->where(function ($query) use ($request) {
-                        return $query->where('last_name', $request->last_name);
-                    }),
-                ],
+                'first_name' => 'nullable|string|max:255',
                 'last_name' => 'nullable|string|max:255',
+
                 'position_id' => 'required|integer',
                 'hire_date' => 'nullable|date',
                 'department_id' => 'nullable|integer',
@@ -145,6 +125,17 @@ class AuthController extends Controller
                 'type' => 'required|exists:intranet_extedim.contracts_type,code',
 
             ], $messages);
+
+            $exists = User::where('first_name', $fields['first_name'])
+                ->where('last_name', $fields['last_name'])
+                ->exists();
+
+            if ($exists) {
+                return response()->json([
+                    'message' => 'Un utilisateur avec ce prénom et ce nom existe déjà.'
+                ], 422);
+            }
+
             $defaultPassword = 'intranet2025';
 
             // Création du user
@@ -207,17 +198,10 @@ class AuthController extends Controller
                 'image_url' => $imageUrl,
             ], 201);
         } catch (ValidationException $ve) {
-            if (User::where('first_name', $fields['first_name'])
-                ->where('last_name', $fields['last_name'])
-                ->exists()
-            ) {
-                return response()->json([
-                    'message' => 'Échec de la validation.',
-                    'errors' => [
-                        'first_name' => ['Une personne avec ce prénom et ce nom existe déjà.']
-                    ]
-                ], 422);
-            }
+            return response()->json([
+                'message' => 'Échec de la validation.',
+                'errors' => $ve->errors()
+            ], 422);
         } catch (Exception $e) {
             return response()->json([
                 'error' => 'Erreur interne.',
@@ -274,10 +258,13 @@ class AuthController extends Controller
                 'token' => $token
             ], 200);
         } catch (\Throwable $e) {
-            Log::error('Erreur lors de la tentative de login : ' . $e->getMessage());
+            Log::error('Erreur lors de la tentative de login : ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'Erreur serveur : ' . $e->getMessage(),
+                'message' => 'Une erreur est survenue lors de la connexion. Veuillez vérifier votre connexion internet ou réessayer plus tard. Si le problème persiste, contactez le support.',
             ], 500);
         }
     }
